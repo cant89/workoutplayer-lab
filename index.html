@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>WorkoutPlayer — turn your training plan into a guided workout</title>
-<meta name="description" content="Upload your trainer's card: it becomes a guided workout with timer, sets, rest and notes. Try the live player.">
+<meta name="description" content="Upload your trainer's plan: it becomes a guided workout with timer, sets, rest and notes. Try the live player.">
 <meta name="robots" content="noindex, nofollow">
 <!-- Pagina in 5 lingue (IT EN FR ES DE): vedi il dizionario DICT più sotto e README.md per come aggiungerne una. -->
 <link rel="alternate" hreflang="it" href="?lang=it">
@@ -71,6 +71,7 @@
   .langs button[aria-current="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
   /* ---------- Hero ---------- */
+  /* Sotto i 900 px: tutto impilato, in un'unica colonna, nell'ordine del markup (mobile-first). */
   .hero .wrap { padding-block: 44px 8px; }
   .hero-head { text-align: center; max-width: 760px; margin-inline: auto; }
   .hero-head h1 {
@@ -94,13 +95,13 @@
   }
   .btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
 
-  /* ---------- Flusso "file → player": la prova visiva sopra la piega ---------- */
-  .flow { margin-top: 40px; display: flex; align-items: flex-start; justify-content: center; gap: 28px; }
+  /* ---------- Flusso "file → player" (< 900 px): documenti → freccia verticale, poi il telefono sotto ---------- */
+  .flow-mobile { margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
   .flow-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; flex: 0 0 auto; }
   .flow-docs { display: flex; gap: 10px; }
   .doc-icon { width: 60px; height: 78px; display: block; overflow: visible; }
-  .flow-arrow { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; padding-top: 13px; }
-  .flow-arrow svg { width: 100%; height: 100%; overflow: visible; }
+  .flow-arrow { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; }
+  .flow-arrow svg { width: 100%; height: 100%; overflow: visible; transform: rotate(90deg); }
   .flow-dot { opacity: .55; }
   @media (prefers-reduced-motion: no-preference) {
     .flow-dot-1 { animation: flowPulse 1.4s ease-in-out infinite; }
@@ -108,14 +109,22 @@
     .flow-dot-3 { animation: flowPulse 1.4s ease-in-out infinite .36s; }
   }
   @keyframes flowPulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
-  .step { display: flex; align-items: center; gap: 8px; max-width: 30ch; }
+  .step { display: flex; align-items: center; gap: 8px; max-width: 260px; }
   .step-n { font: 700 26px/1 var(--display); color: var(--work); }
   .step-label { font: 600 13.5px/1.25 var(--body); color: var(--ink-2); text-align: left; }
 
+  /* ---------- I tre passi con icona (≥ 900 px), colonna sinistra ---------- */
+  .steps-desktop { display: none; }
+  .step-row { display: flex; align-items: center; gap: 16px; padding-block: 11px; }
+  .step-icon { width: 40px; height: 40px; flex: 0 0 auto; display: block; overflow: visible; }
+  .step-row .step-n { font: 700 15px/1 var(--display); color: var(--work); margin-right: 4px; }
+  .step-row .step-label { font: 600 15.5px/1.35 var(--body); color: var(--ink-2); }
+
   /* ---------- Telefono con la demo dal vivo ---------- */
+  .phone-block { margin-top: 22px; display: flex; justify-content: center; }
   .phone-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .phone {
-    width: min(390px, 100%); background: var(--ink); border-radius: 40px; padding: 12px; position: relative;
+    width: min(360px, 100%); background: var(--ink); border-radius: 40px; padding: 12px; position: relative;
     box-shadow: 0 30px 60px -30px rgba(0,0,0,.35);
   }
   :root:not([data-theme="light"]) .phone { box-shadow: 0 30px 60px -30px rgba(0,0,0,.6); }
@@ -132,12 +141,20 @@
   .phone-caption .eyebrow { display: block; }
   .phone-caption a { display: inline-block; margin-top: 4px; font-weight: 600; font-size: 14.5px; border-bottom: 1px solid var(--line); }
 
-  @media (max-width: 900px) {
-    .flow { flex-direction: column; align-items: center; gap: 22px; }
-    .flow-arrow { padding-top: 0; }
-    .flow-arrow svg { transform: rotate(90deg); }
-    .step { max-width: 260px; }
-    .phone { width: min(360px, 100%); }
+  /* ---------- ≥ 900 px: due colonne, testo + passi a sinistra, telefono a destra, allineato in alto ---------- */
+  @media (min-width: 900px) {
+    .hero .wrap {
+      display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: 56px; align-items: start;
+    }
+    .hero-head { grid-column: 1; grid-row: 1; text-align: left; max-width: none; margin-inline: 0; }
+    .flow-mobile { display: none; }
+    .steps-desktop { display: flex; flex-direction: column; grid-column: 1; grid-row: 2; margin-top: 30px; }
+    .hero-foot { grid-column: 1; grid-row: 3; text-align: left; max-width: 480px; margin: 30px 0 0; }
+    .hero-foot .fine-print { text-align: left; }
+    .cta-row { justify-content: flex-start; }
+    .phone-block { grid-column: 2; grid-row: 1 / span 3; margin-top: 4px; justify-content: flex-start; }
+    .phone-block .phone { width: 340px; }
+    .phone-block .step { display: none; }
   }
 
   /* ---------- Pubblici ---------- */
@@ -209,7 +226,8 @@
       <h1 data-i18n="heroTitle"></h1>
     </div>
 
-    <div class="flow">
+    <!-- < 900 px: documenti → freccia verticale → telefono, impilati -->
+    <div class="flow-mobile">
       <div class="flow-stage">
         <div class="flow-docs">
           <svg class="doc-icon" viewBox="0 0 70 90" aria-hidden="true">
@@ -255,8 +273,43 @@
         </div>
         <div class="step"><span class="step-n num">2</span><span class="step-label" data-i18n="step2"></span></div>
       </div>
+    </div>
 
-      <div class="flow-stage phone-col">
+    <!-- ≥ 900 px: stessi tre passi, in verticale con icona, colonna sinistra -->
+    <div class="steps-desktop">
+      <div class="step-row">
+        <svg class="step-icon" viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M5 9h18l5 5v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
+          <path d="M23 9v5h5" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-linejoin="round"/>
+          <rect x="7" y="20" width="12" height="2.4" rx="1.2" fill="var(--work)"/>
+          <rect x="7" y="25" width="16" height="2" rx="1" fill="var(--ink-3)"/>
+          <rect x="26" y="4" width="10" height="13" rx="1.5" fill="var(--surface)" stroke="var(--line)" stroke-width="1.4" transform="rotate(8 31 10)"/>
+        </svg>
+        <span><span class="step-n num">1</span><span class="step-label" data-i18n="step1"></span></span>
+      </div>
+      <div class="step-row">
+        <svg class="step-icon" viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="2" y="16" width="11" height="2.6" rx="1.3" fill="var(--ink-3)"/>
+          <rect x="2" y="21.5" width="8" height="2.6" rx="1.3" fill="var(--ink-3)"/>
+          <path d="M18 20l4.5 4-4.5 4" fill="none" stroke="var(--ink-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="26" y="13.5" width="12" height="5.4" rx="2.7" fill="var(--work)"/>
+          <rect x="26" y="21" width="9" height="5.4" rx="2.7" fill="var(--work)" opacity=".55"/>
+        </svg>
+        <span><span class="step-n num">2</span><span class="step-label" data-i18n="step2"></span></span>
+      </div>
+      <div class="step-row">
+        <svg class="step-icon" viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="12" y="3" width="16" height="34" rx="4" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
+          <circle cx="20" cy="21" r="7.5" fill="none" stroke="var(--work)" stroke-width="1.8"/>
+          <path d="M20 21V15.5" stroke="var(--work)" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M20 21l4 2.3" stroke="var(--work)" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span><span class="step-n num">3</span><span class="step-label" data-i18n="step3"></span></span>
+      </div>
+    </div>
+
+    <div class="phone-block">
+      <div class="phone-col">
         <div class="phone">
           <div class="screen">
             <iframe data-demo-src data-i18n-title="demoFrameTitle" src="demo-it.html" title="WorkoutPlayer" loading="eager"></iframe>
@@ -412,26 +465,26 @@
     en: {
       topEyebrow: "Demand test",
       langLabel: "Language",
-      heroEyebrow: "From training card to guided workout",
+      heroEyebrow: "From training plan to guided workout",
       heroTitle: "Turn your training plan\ninto a guided workout.",
-      heroLede: "You upload a PDF or Excel card, or a photo of a paper card, and get a workout with sets, rest, a timer and notes you use straight from your phone.",
+      heroLede: "You upload your training plan — a PDF, an Excel file, or a photo of the printed page — and get a workout with sets, rest, a timer and notes you use straight from your phone.",
       heroFine: "Free preview of the first 2 exercises. No sign-up.",
-      step1: "Upload your card",
+      step1: "Upload your plan",
       step2: "We read it and transform it",
       step3: "Train with the player",
       priceValue: "€4.99",
-      priceDesc: "VAT included, per card you upload. One upload = one plan, no subscription.",
+      priceDesc: "VAT included, per plan you upload. One upload = one plan, no subscription.",
       ctaWaitlist: "Join the waitlist",
       ctaFullscreen: "Open the demo full-screen ↗",
-      phoneCaptionEyebrow: "Live demo · sample card, no real data",
+      phoneCaptionEyebrow: "Live demo · sample plan, no real data",
       phoneCaptionLink: "Open it full-screen ↗",
       demoFrameTitle: "Live demo of the WorkoutPlayer player",
       audEyebrow: "Not just for solo training",
       audTitle: "Four ways to use it.",
-      aud1Title: "Training with a card",
-      aud1Body: "Got a card from a trainer, a physio, or an osteopath? Upload it and start training right away, guided step by step — in the language it was written in.",
+      aud1Title: "Training with a plan",
+      aud1Body: "Got a plan from a trainer, a physio, or an osteopath? Upload it and start training right away, guided step by step — in the language it was written in.",
       aud2Title: "Personal trainers",
-      aud2Body: "Write the card for a client and upload it yourself.",
+      aud2Body: "Write the plan for a client and upload it yourself.",
       aud2Case: "You pay, you send it: your client runs it with the player, without being able to change it.",
       aud3Title: "Physiotherapists",
       aud3Body: "The rehab plan becomes a guided workout, with timing and sets always under control.",
@@ -449,38 +502,38 @@
       privacyPurpose: "What it's for: letting you know when WorkoutPlayer is ready. We don't share it with anyone.",
       privacyDeletePre: "Want off the list? Email",
       daSapereTitle: "Good to know",
-      disclaimerAI: "The workouts on this page are generated by AI from your trainer's card: they don't replace advice from a health professional.",
-      disclaimerDemo: "The card shown in the demo above is a sample: no names, no real data.",
+      disclaimerAI: "The workouts on this page are generated by AI from your trainer's plan: they don't replace advice from a health professional.",
+      disclaimerDemo: "The plan shown in the demo above is a sample: no names, no real data.",
       metaTitle: "WorkoutPlayer — turn your training plan into a guided workout",
-      metaDescription: "Upload your trainer's card: it becomes a guided workout with timer, sets, rest and notes. Try the live player."
+      metaDescription: "Upload your trainer's plan: it becomes a guided workout with timer, sets, rest and notes. Try the live player."
     },
     fr: {
       topEyebrow: "Test de la demande",
       langLabel: "Langue",
-      heroEyebrow: "De la fiche au workout guidé",
-      heroTitle: "Transformez votre programme\nen séance guidée.",
-      heroLede: "Tu charges une fiche PDF, Excel ou une photo de ta fiche papier, et tu obtiens une séance avec séries, repos, minuteur et notes que tu utilises directement depuis ton téléphone.",
+      heroEyebrow: "Du programme au workout guidé",
+      heroTitle: "Transforme ton programme\nen séance guidée.",
+      heroLede: "Tu charges ton programme — en PDF, en Excel ou en photo de la feuille — et tu obtiens une séance avec séries, repos, minuteur et notes, à utiliser directement depuis ton téléphone.",
       heroFine: "Aperçu gratuit des 2 premiers exercices. Sans inscription.",
-      step1: "Tu charges ta fiche",
+      step1: "Tu charges ton programme",
       step2: "On la lit et on la transforme",
       step3: "Tu t'entraînes avec le player",
       priceValue: "4,99 €",
-      priceDesc: "TVA incluse, par fiche chargée. Un envoi = un programme, sans abonnement.",
+      priceDesc: "TVA incluse, par programme chargé. Un envoi = un programme, sans abonnement.",
       ctaWaitlist: "Rejoindre la liste d'attente",
       ctaFullscreen: "Ouvrir la démo en plein écran ↗",
-      phoneCaptionEyebrow: "Démo en direct · fiche d'exemple, aucune donnée réelle",
+      phoneCaptionEyebrow: "Démo en direct · programme d'exemple, aucune donnée réelle",
       phoneCaptionLink: "Ouvrir en plein écran ↗",
       demoFrameTitle: "Démo en direct du player WorkoutPlayer",
       audEyebrow: "Pas seulement pour s'entraîner seul",
       audTitle: "Quatre façons de l'utiliser.",
-      aud1Title: "Tu t'entraînes avec une fiche",
-      aud1Body: "Tu as une fiche écrite par un coach, un kiné ou un ostéopathe ? Charge-la et entraîne-toi tout de suite, guidé pas à pas — dans la langue où elle a été écrite.",
+      aud1Title: "Tu t'entraînes avec un programme",
+      aud1Body: "Tu as un programme écrit par un coach, un kiné ou un ostéopathe ? Charge-le et entraîne-toi tout de suite, guidé pas à pas — dans la langue où il a été écrit.",
       aud2Title: "Coachs sportifs",
-      aud2Body: "Tu écris la fiche pour un client et tu la charges toi-même.",
-      aud2Case: "Tu payes, tu l'envoies : ton client l'exécute avec le player, sans pouvoir la modifier.",
+      aud2Body: "Tu écris le programme pour un client et tu le charges toi-même.",
+      aud2Case: "Tu payes, tu l'envoies : ton client l'exécute avec le player, sans pouvoir le modifier.",
       aud3Title: "Kinésithérapeutes",
       aud3Body: "Le programme de rééducation devient une séance guidée, avec temps et séries toujours sous contrôle.",
-      aud3Case: "Tu payes, tu l'envoies à ton patient : il la suit, toi seul peux la modifier.",
+      aud3Case: "Tu payes, tu l'envoies à ton patient : il le suit, toi seul peux le modifier.",
       aud4Title: "Ostéopathes",
       aud4Body: "Les exercices d'entretien donnés en séance deviennent une séance guidée à faire à la maison.",
       aud4Case: "Tu payes, tu l'envoies à ton patient : même logique, même player.",
@@ -494,34 +547,34 @@
       privacyPurpose: "À quoi ça sert : te prévenir quand WorkoutPlayer est prêt. On ne le partage avec personne.",
       privacyDeletePre: "Tu veux être retiré·e de la liste ? Écris à",
       daSapereTitle: "À savoir",
-      disclaimerAI: "Les séances de cette page sont générées par IA à partir de la fiche de ton coach : elles ne remplacent pas l'avis d'un professionnel de santé.",
-      disclaimerDemo: "La fiche montrée dans la démo ci-dessus est un exemple : aucun nom, aucune donnée réelle.",
-      metaTitle: "WorkoutPlayer — transformez votre programme en séance guidée",
-      metaDescription: "Charge la fiche de ton coach : elle devient une séance guidée avec minuteur, séries, repos et notes. Essaie le player en direct."
+      disclaimerAI: "Les séances de cette page sont générées par IA à partir du programme de ton coach : elles ne remplacent pas l'avis d'un professionnel de santé.",
+      disclaimerDemo: "Le programme montré dans la démo ci-dessus est un exemple : aucun nom, aucune donnée réelle.",
+      metaTitle: "WorkoutPlayer — transforme ton programme en séance guidée",
+      metaDescription: "Charge le programme de ton coach : il devient une séance guidée avec minuteur, séries, repos et notes. Essaie le player en direct."
     },
     es: {
       topEyebrow: "Prueba de demanda",
       langLabel: "Idioma",
-      heroEyebrow: "De la ficha al entreno guiado",
+      heroEyebrow: "De la rutina al entreno guiado",
       heroTitle: "Convierte tu rutina\nen un entrenamiento guiado.",
-      heroLede: "Subes una ficha en PDF, Excel o una foto de tu ficha en papel, y obtienes un entreno con series, descansos, temporizador y notas que usas directamente desde tu móvil.",
+      heroLede: "Subes tu rutina — en PDF, en Excel o en foto de la hoja impresa — y obtienes un entreno con series, descansos, temporizador y notas que usas directamente desde tu móvil.",
       heroFine: "Vista previa gratis de los 2 primeros ejercicios. Sin registro.",
-      step1: "Subes tu ficha",
+      step1: "Subes tu rutina",
       step2: "La leemos y la transformamos",
       step3: "Entrenas con el player",
       priceValue: "4,99 €",
-      priceDesc: "IVA incluido, por ficha subida. Una subida = un plan, sin suscripción.",
+      priceDesc: "IVA incluido, por rutina subida. Una subida = un plan, sin suscripción.",
       ctaWaitlist: "Apuntarme a la lista de espera",
       ctaFullscreen: "Abrir la demo a pantalla completa ↗",
-      phoneCaptionEyebrow: "Demo en directo · ficha de ejemplo, sin datos reales",
+      phoneCaptionEyebrow: "Demo en directo · rutina de ejemplo, sin datos reales",
       phoneCaptionLink: "Ábrela a pantalla completa ↗",
       demoFrameTitle: "Demo en directo del player WorkoutPlayer",
       audEyebrow: "No solo para entrenar en solitario",
       audTitle: "Cuatro formas de usarlo.",
-      aud1Title: "Entrenas con una ficha",
-      aud1Body: "¿Tienes una ficha de un entrenador, un fisio o un osteópata? Súbela y empieza a entrenar ya, guiado paso a paso — en el idioma en que está escrita.",
+      aud1Title: "Entrenas con una rutina",
+      aud1Body: "¿Tienes una rutina de un entrenador, un fisio o un osteópata? Súbela y empieza a entrenar ya, guiado paso a paso — en el idioma en que está escrita.",
       aud2Title: "Entrenadores personales",
-      aud2Body: "Escribes la ficha para un cliente y la subes tú.",
+      aud2Body: "Escribes la rutina para un cliente y la subes tú.",
       aud2Case: "Pagas tú, se la envías tú: tu cliente la ejecuta con el player, sin poder modificarla.",
       aud3Title: "Fisioterapeutas",
       aud3Body: "El plan de rehabilitación se convierte en un entreno guiado, con tiempos y series siempre bajo control.",
@@ -539,17 +592,17 @@
       privacyPurpose: "Para qué sirve: avisarte cuando WorkoutPlayer esté listo. No lo compartimos con nadie.",
       privacyDeletePre: "¿Quieres salir de la lista? Escribe a",
       daSapereTitle: "Para que lo sepas",
-      disclaimerAI: "Los entrenos de esta página los genera una IA a partir de la ficha de tu entrenador: no sustituyen el consejo de un profesional de la salud.",
-      disclaimerDemo: "La ficha que se ve en la demo de arriba es de ejemplo: ningún nombre, ningún dato real.",
+      disclaimerAI: "Los entrenos de esta página los genera una IA a partir de la rutina de tu entrenador: no sustituyen el consejo de un profesional de la salud.",
+      disclaimerDemo: "La rutina que se ve en la demo de arriba es de ejemplo: ningún nombre, ningún dato real.",
       metaTitle: "WorkoutPlayer — convierte tu rutina en un entrenamiento guiado",
-      metaDescription: "Sube la ficha de tu entrenador: se convierte en un entreno guiado con temporizador, series, descansos y notas. Prueba el player en directo."
+      metaDescription: "Sube la rutina de tu entrenador: se convierte en un entreno guiado con temporizador, series, descansos y notas. Prueba el player en directo."
     },
     de: {
       topEyebrow: "Bedarfstest",
       langLabel: "Sprache",
       heroEyebrow: "Vom Trainingsplan zum geführten Workout",
       heroTitle: "Mach aus deinem Trainingsplan\nein geführtes Workout.",
-      heroLede: "Du lädst einen Plan als PDF, Excel-Datei oder ein Foto deines Papierplans hoch und bekommst ein Workout mit Sätzen, Pausen, Timer und Hinweisen, das du direkt auf deinem Handy nutzt.",
+      heroLede: "Du lädst deinen Trainingsplan hoch — als PDF, Excel-Datei oder Foto der ausgedruckten Seite — und bekommst ein Workout mit Sätzen, Pausen, Timer und Hinweisen, das du direkt auf deinem Handy nutzt.",
       heroFine: "Kostenlose Vorschau der ersten 2 Übungen. Keine Registrierung.",
       step1: "Plan hochladen",
       step2: "Wir lesen ihn und wandeln ihn um",
