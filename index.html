@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WorkoutPlayer — dalla scheda al workout guidato</title>
+<meta name="description" content="Carica la scheda del tuo trainer: diventa un workout guidato con timer, serie, riposi e note. Prova il player dal vivo.">
+<meta name="robots" content="noindex, nofollow">
+<!-- Stessi caratteri del player (lib/tokens.css): se vuoi una pagina senza nessuna richiesta di rete, rimuovi
+     questo link e i due qui sotto: i token hanno già un ripiego di sistema (Arial Narrow / system-ui). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<script>
+  /* LISTA D'ATTESA — unico punto da cambiare prima di pubblicare la pagina.
+     Sostituisci con il link del modulo vero (Tally, Google Form o simili): il pulsante lo legge da qui. */
+  const WAITLIST_URL = "https://tally.so/r/jaNPLR";
+</script>
+<style>
+  /* ---------- Token e temi: copia di lib/tokens.css (fonte del design system del player) ---------- */
+  :root {
+    --bg: #ECEFEA; --surface: #FFFFFF; --surface-2: #E1E5DF; --line: #CFD5CD;
+    --ink: #14181A; --ink-2: #49545A; --ink-3: #6F7B80;
+    --work: #D9480B; --rest: #0A8070; --prep: #9A6A00; --on-phase: #FFFFFF;
+    --note-bg: #FFF4D6; --note-ink: #4A3600; --note-line: #E9C767;
+    --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1113; --surface: #181D20; --surface-2: #232A2E; --line: #2E373B;
+      --ink: #F0F3EE; --ink-2: #B1BBBF; --ink-3: #87939A;
+      --work: #FF6B2C; --rest: #2CC7B0; --prep: #F0B429; --on-phase: #0E1113;
+      --note-bg: #2B2410; --note-ink: #F6E3A6; --note-line: #6B5618;
+    }
+  }
+
+  /* ---------- Base ---------- */
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 400 17px/1.5 var(--body); -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  h1, h2 { text-wrap: balance; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 3px solid var(--work); outline-offset: 2px; }
+  .wrap { max-width: 1040px; margin-inline: auto; padding-inline: 24px; }
+  .eyebrow { font: 600 13px/1.2 var(--body); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); }
+  .num { font-variant-numeric: tabular-nums; }
+  section { padding-block: 56px; }
+
+  /* ---------- Barra superiore ---------- */
+  .top { border-bottom: 1px solid var(--line); }
+  .top .wrap { padding-block: 16px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .brand { font: 700 20px/1 var(--display); text-transform: uppercase; letter-spacing: .01em; }
+
+  /* ---------- Hero ---------- */
+  .hero .wrap {
+    padding-block: 44px 8px; display: grid; grid-template-columns: 1fr 390px; gap: 44px; align-items: start;
+  }
+  .pitch h1 {
+    font: 700 clamp(34px, 5.2vw, 58px)/0.98 var(--display); text-transform: uppercase; letter-spacing: -.01em;
+    margin-top: 10px;
+  }
+  .pitch .lede { color: var(--ink-2); margin-top: 16px; max-width: 48ch; font-size: 18px; }
+  .pitch .fine-print { color: var(--ink-3); font-size: 14.5px; margin-top: 10px; }
+  .price {
+    display: inline-flex; align-items: baseline; gap: 10px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 6px; padding: 14px 18px; margin-top: 24px;
+  }
+  .price b { font: 700 34px/1 var(--display); }
+  .price span { color: var(--ink-2); font-size: 14px; max-width: 22ch; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 6px; padding: 15px 20px;
+    font: 600 17px/1 var(--display); letter-spacing: .03em; text-transform: uppercase;
+    background: var(--work); color: var(--on-phase); text-decoration: none;
+  }
+  .btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+
+  /* ---------- Telefono con la demo dal vivo ---------- */
+  .phone-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .phone {
+    width: min(390px, 100%); background: var(--ink); border-radius: 40px; padding: 12px; position: relative;
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,.35);
+  }
+  :root:not([data-theme="light"]) .phone { box-shadow: 0 30px 60px -30px rgba(0,0,0,.6); }
+  .phone::before {
+    content: ""; position: absolute; top: 12px; left: 50%; translate: -50% 0; width: 90px; height: 22px;
+    background: var(--ink); border-radius: 0 0 14px 14px; z-index: 2;
+  }
+  .screen {
+    width: 100%; aspect-ratio: 390 / 800; border-radius: 28px; overflow: hidden; background: var(--bg);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .screen iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .phone-caption { text-align: center; }
+  .phone-caption .eyebrow { display: block; }
+  .phone-caption a { display: inline-block; margin-top: 4px; font-weight: 600; font-size: 14.5px; border-bottom: 1px solid var(--line); }
+
+  @media (max-width: 900px) {
+    .hero .wrap { grid-template-columns: 1fr; padding-block: 28px 8px; }
+    .phone-col { order: -1; }
+    .phone { width: min(360px, 100%); }
+  }
+
+  /* ---------- Pubblici ---------- */
+  .aud-head { max-width: 56ch; }
+  .aud-head h2 {
+    font: 700 clamp(28px, 4vw, 40px)/1.02 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 8px;
+  }
+  .aud-list { margin-top: 28px; }
+  .aud {
+    display: grid; grid-template-columns: 56px 1fr; gap: 16px; align-items: start;
+    padding-block: 22px; border-top: 1px solid var(--line);
+  }
+  .aud:last-child { border-bottom: 1px solid var(--line); }
+  .aud-n { font: 700 40px/0.85 var(--display); color: var(--work); }
+  .aud b {
+    display: block; font: 600 21px/1.2 var(--display); text-transform: uppercase; letter-spacing: .01em; margin-bottom: 5px;
+  }
+  .aud p { color: var(--ink-2); font-size: 15.5px; max-width: 60ch; }
+  .aud .case { color: var(--ink-3); font-size: 14px; margin-top: 6px; }
+
+  /* ---------- Lista d'attesa ---------- */
+  .waitlist { background: var(--ink); color: var(--bg); }
+  .waitlist .eyebrow { color: var(--ink-3); }
+  :root:not([data-theme="light"]) .waitlist { background: var(--surface); color: var(--ink); }
+  .waitlist h2 {
+    font: 700 clamp(28px, 4vw, 40px)/1.05 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 8px;
+    max-width: 24ch;
+  }
+  .waitlist-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 26px; }
+  .waitlist .btn { background: var(--bg); color: var(--ink); }
+  :root:not([data-theme="light"]) .waitlist .btn { background: var(--work); color: var(--on-phase); }
+  .waitlist-row span { color: var(--ink-3); font-size: 15px; }
+  :root:not([data-theme="light"]) .waitlist-row span { color: var(--ink-2); }
+
+  /* ---------- Piè di pagina ---------- */
+  footer { border-top: 1px solid var(--line); }
+  .legal { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding-block: 36px; }
+  .legal h3 { font: 600 13px/1.2 var(--body); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+  .legal p { color: var(--ink-2); font-size: 14px; line-height: 1.55; }
+  .legal p + p { margin-top: 8px; }
+  @media (max-width: 640px) { .legal { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <span class="brand">WorkoutPlayer</span>
+    <span class="eyebrow">Prova di domanda</span>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="pitch">
+      <span class="eyebrow">Dalla scheda al workout guidato</span>
+      <h1>Carica la scheda.<br>Parte il workout.</h1>
+      <p class="lede">La scheda del tuo trainer — PDF, foto, Excel o testo, in qualsiasi lingua — diventa un allenamento guidato: timer, serie, riposi e note, nella lingua in cui te l'hanno scritta.</p>
+      <p class="fine-print">Anteprima gratuita dei primi 2 esercizi. Nessuna registrazione.</p>
+      <div class="price">
+        <b class="num">4,99&nbsp;€</b>
+        <span>IVA inclusa, per scheda caricata. Un caricamento = un piano, nessun abbonamento.</span>
+      </div>
+      <div class="cta-row">
+        <a class="btn" href="#lista-attesa">Iscriviti alla lista d'attesa</a>
+        <a class="btn ghost" href="demo.html" target="_blank" rel="noopener">Apri la demo a schermo intero ↗</a>
+      </div>
+    </div>
+    <div class="phone-col">
+      <div class="phone">
+        <div class="screen">
+          <iframe src="demo.html" title="Demo dal vivo del player WorkoutPlayer su una scheda di esempio" loading="eager"></iframe>
+        </div>
+      </div>
+      <p class="phone-caption">
+        <span class="eyebrow">Demo dal vivo · scheda di esempio, nessun dato reale</span>
+        <a href="demo.html" target="_blank" rel="noopener">Aprilo a schermo intero ↗</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<section id="pubblici" style="padding-block:0 56px">
+  <div class="wrap">
+    <div class="aud-head">
+      <span class="eyebrow">Non solo per chi si allena da solo</span>
+      <h2>Quattro modi di usarlo.</h2>
+    </div>
+    <div class="aud-list">
+      <div class="aud">
+        <span class="aud-n num">1</span>
+        <div>
+          <b>Chi si allena con una scheda</b>
+          <p>Hai una scheda scritta da un trainer, un fisioterapista o un osteopata? Caricala e allenati da subito, guidato passo per passo — nella lingua in cui te l'hanno scritta.</p>
+        </div>
+      </div>
+      <div class="aud">
+        <span class="aud-n num">2</span>
+        <div>
+          <b>Personal trainer</b>
+          <p>Scrivi la scheda per un cliente e caricala tu.</p>
+          <p class="case">Paghi tu, gliela mandi tu: il cliente la esegue con il player, senza poterla modificare.</p>
+        </div>
+      </div>
+      <div class="aud">
+        <span class="aud-n num">3</span>
+        <div>
+          <b>Fisioterapisti</b>
+          <p>Il percorso di riabilitazione diventa un workout guidato, con tempi e serie sempre sotto controllo.</p>
+          <p class="case">Paghi tu, lo invii al paziente: lui lo segue, tu resti il solo a poterlo cambiare.</p>
+        </div>
+      </div>
+      <div class="aud">
+        <span class="aud-n num">4</span>
+        <div>
+          <b>Osteopati</b>
+          <p>Gli esercizi di mantenimento assegnati in seduta diventano un allenamento guidato da fare a casa.</p>
+          <p class="case">Paghi tu, lo invii al paziente: stessa logica, stesso player.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="waitlist" id="lista-attesa">
+  <div class="wrap">
+    <span class="eyebrow">In arrivo</span>
+    <h2>Vuoi essere avvisato quando è pronto?</h2>
+    <div class="waitlist-row">
+      <a class="btn" href="https://tally.so/r/jaNPLR" data-waitlist>Avvisami quando è pronto</a>
+      <span>Nessun account: solo la tua email.</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap legal">
+    <div>
+      <h3>Informativa privacy</h3>
+      <p>Cosa raccogliamo: solo l'indirizzo email che lasci nel modulo della lista d'attesa (un servizio di terzi, non nostro).</p>
+      <p>A cosa serve: avvisarti quando WorkoutPlayer è pronto. Non lo cediamo a nessuno.</p>
+      <p>Vuoi essere cancellato dalla lista? Scrivi a <a href="mailto:blinko@pec.it">blinko@pec.it</a>.</p>
+    </div>
+    <div>
+      <h3>Da sapere</h3>
+      <p>I workout di questa pagina sono generati dall'intelligenza artificiale a partire dalla scheda del tuo trainer: non sostituiscono il parere di un professionista della salute.</p>
+      <p>La scheda mostrata nella demo qui sopra è di esempio: nessun nome, nessun dato reale.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll("[data-waitlist]").forEach(function (el) { el.href = WAITLIST_URL; });
+</script>
+</body>
+</html>
