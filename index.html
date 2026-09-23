@@ -136,6 +136,14 @@
   .waitlist .btn { background: var(--bg); color: var(--ink); }
   :root:not([data-theme="light"]) .waitlist .btn { background: var(--work); color: var(--on-phase); }
   .waitlist-row span { color: var(--ink-3); font-size: 15px; }
+  .waitlist-note { color: var(--ink-3); font-size: 15px; margin: 8px 0 16px; }
+  :root:not([data-theme="light"]) .waitlist-note { color: var(--ink-2); }
+  .waitlist-embed { max-width: 520px; background: var(--bg); color: var(--ink); border-radius: 12px; padding: 8px 12px 0; }
+  :root:not([data-theme="light"]) .waitlist-embed { background: var(--card, var(--bg)); }
+  .waitlist-embed iframe { display: block; max-width: 100%; }
+  .waitlist-fallback { color: var(--ink-3); font-size: 14px; margin-top: 12px; }
+  .waitlist-fallback a { color: inherit; }
+  :root:not([data-theme="light"]) .waitlist-fallback { color: var(--ink-2); }
   :root:not([data-theme="light"]) .waitlist-row span { color: var(--ink-2); }
 
   /* ---------- Piè di pagina ---------- */
@@ -232,10 +240,12 @@
   <div class="wrap">
     <span class="eyebrow">In arrivo</span>
     <h2>Vuoi essere avvisato quando è pronto?</h2>
-    <div class="waitlist-row">
-      <a class="btn" href="https://tally.so/r/jaNPLR" data-waitlist>Avvisami quando è pronto</a>
-      <span>Nessun account: solo la tua email.</span>
+    <p class="waitlist-note">Nessun account: solo la tua email.</p>
+    <div class="waitlist-embed">
+      <iframe data-tally-src="https://tally.so/embed/jaNPLR?alignLeft=1&amp;hideTitle=1&amp;transparentBackground=1&amp;dynamicHeight=1" loading="lazy" width="100%" height="180" frameborder="0" marginheight="0" marginwidth="0" title="Lista d'attesa WorkoutPlayer"></iframe>
     </div>
+    <p class="waitlist-fallback">Se il modulo non compare, <a href="https://tally.so/r/jaNPLR" data-waitlist>aprilo in una nuova scheda</a>.</p>
+    <script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){e.src=e.dataset.tallySrc})};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s)}</script>
   </div>
 </section>
 
