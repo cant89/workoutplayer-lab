@@ -1,0 +1,1188 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><title>Scheda di esempio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* WorkoutPlayer · token e temi (chiaro, scuro automatico, scuro forzato). Da src/style.css:1-26. */
+:root {
+  --bg: #ECEFEA; --surface: #FFFFFF; --surface-2: #E1E5DF; --line: #CFD5CD;
+  --ink: #14181A; --ink-2: #49545A; --ink-3: #6F7B80;
+  --work: #D9480B; --rest: #0A8070; --prep: #9A6A00; --on-phase: #FFFFFF;
+  --note-bg: #FFF4D6; --note-ink: #4A3600; --note-line: #E9C767;
+  --img-filter: none; --img-blend: multiply;
+  --phase: var(--ink);
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1113; --surface: #181D20; --surface-2: #232A2E; --line: #2E373B;
+    --ink: #F0F3EE; --ink-2: #B1BBBF; --ink-3: #87939A;
+    --work: #FF6B2C; --rest: #2CC7B0; --prep: #F0B429; --on-phase: #0E1113;
+    --note-bg: #2B2410; --note-ink: #F6E3A6; --note-line: #6B5618;
+    --img-filter: invert(1) hue-rotate(180deg); --img-blend: screen;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1113; --surface: #181D20; --surface-2: #232A2E; --line: #2E373B;
+  --ink: #F0F3EE; --ink-2: #B1BBBF; --ink-3: #87939A;
+  --work: #FF6B2C; --rest: #2CC7B0; --prep: #F0B429; --on-phase: #0E1113;
+  --note-bg: #2B2410; --note-ink: #F6E3A6; --note-line: #6B5618;
+  --img-filter: invert(1) hue-rotate(180deg); --img-blend: screen;
+}
+/* WorkoutPlayer · stili dei componenti (home, anteprima, player, dialog, schermata finale). Da src/style.css:28-193;
+   unica aggiunta: il colore del passo libero (#player[data-kind="free"]). */
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 17px/1.45 var(--body); -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+:focus-visible { outline: 3px solid var(--phase); outline-offset: 2px; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+.wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; }
+.eyebrow { font: 600 13px/1.2 var(--body); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); }
+.num { font-family: var(--display); font-variant-numeric: tabular-nums; }
+
+/* ---------- Home ---------- */
+#home .wrap, #preview .wrap, #done .wrap { padding-block: 28px 40px; display: flex; flex-direction: column; gap: 22px; }
+.masthead h1 { font: 700 46px/0.95 var(--display); letter-spacing: -.01em; text-transform: uppercase; margin-top: 6px; }
+.masthead p { color: var(--ink-2); margin-top: 10px; max-width: 46ch; }
+.choices { display: flex; flex-direction: column; gap: 12px; }
+.choice {
+  display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center; text-align: left;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 14px 16px 16px; width: 100%;
+}
+.choice:active { transform: translateY(1px); }
+.choice .letter { font: 700 64px/0.8 var(--display); color: var(--work); text-align: center; }
+.choice .letter svg { width: 48px; height: 48px; display: block; margin: 0 auto; }
+.choice .t { display: block; font: 600 24px/1.05 var(--display); text-transform: uppercase; letter-spacing: .01em; }
+.choice .focus { display: block; color: var(--ink-2); font-size: 15px; margin-top: 3px; }
+.choice .meta { display: block; color: var(--ink-3); font-size: 13.5px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.choice .go { color: var(--ink-3); font-size: 26px; line-height: 1; }
+.resume {
+  display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  background: var(--ink); color: var(--bg); border-radius: 6px; padding: 14px 16px;
+}
+.resume strong { font: 600 19px/1.1 var(--display); text-transform: uppercase; letter-spacing: .02em; display: block; }
+.resume span { font-size: 14px; opacity: .8; }
+.resume .row { display: flex; gap: 8px; }
+.resume button { border: 1px solid currentColor; background: transparent; color: inherit; border-radius: 4px; padding: 9px 14px; font-weight: 600; font-size: 15px; }
+.resume button.solid { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+.fine { color: var(--ink-3); font-size: 13.5px; }
+.rules { border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+.rules ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 15px; display: flex; flex-direction: column; gap: 4px; }
+
+/* ---------- Preview ---------- */
+.back { align-self: flex-start; background: none; border: 0; padding: 6px 0; color: var(--ink-2); font-weight: 500; }
+.pv-head h1 { font: 700 40px/0.95 var(--display); text-transform: uppercase; margin-top: 4px; }
+.pv-head p { color: var(--ink-2); margin-top: 8px; }
+.stats { display: flex; gap: 22px; flex-wrap: wrap; }
+.stats div { display: flex; flex-direction: column; }
+.stats b { font: 600 30px/1 var(--display); font-variant-numeric: tabular-nums; }
+.stats span { font-size: 13px; color: var(--ink-3); }
+.plan { display: flex; flex-direction: column; gap: 18px; }
+.plan section { display: flex; flex-direction: column; gap: 2px; }
+.plan h3 { font: 600 13px/1.2 var(--body); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.plan .row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.plan .row span:last-child { color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 15px; }
+.cta {
+  position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 10px;
+}
+.btn {
+  border: 0; border-radius: 6px; padding: 17px 18px; font: 600 22px/1 var(--display); letter-spacing: .04em; text-transform: uppercase;
+  background: var(--phase); color: var(--on-phase); flex: 1; min-height: 58px;
+}
+.btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); flex: 0 0 auto; }
+#preview, #done { --phase: var(--work); }
+
+/* ---------- Player ---------- */
+#player[data-kind="work"] { --phase: var(--work); }
+#player[data-kind="rest"] { --phase: var(--rest); }
+#player[data-kind="prep"] { --phase: var(--prep); }
+#player[data-kind="free"] { --phase: var(--work); }
+#player[data-kind="gate"] { --phase: var(--ink); --on-phase: var(--bg); }
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.topbar .wrap { display: flex; flex-direction: column; gap: 8px; padding-block: 10px; }
+.topbar .line { display: flex; align-items: center; gap: 8px; }
+.topbar .where { flex: 1; min-width: 0; font-size: 14px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar .where b { color: var(--ink); font-weight: 600; }
+.icon-btn { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; height: 40px; min-width: 40px; padding: 0 10px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.icon-btn svg { width: 18px; height: 18px; }
+.track { display: flex; gap: 3px; height: 5px; }
+.track i { display: block; background: var(--line); border-radius: 2px; overflow: hidden; min-width: 6px; }
+.track i b { display: block; height: 100%; background: var(--phase); width: 0; transition: width .3s; }
+.stage { padding-block: 16px 130px; display: flex; flex-direction: column; gap: 16px; }
+.state {
+  align-self: flex-start; font: 600 14px/1 var(--body); letter-spacing: .1em; text-transform: uppercase;
+  background: var(--phase); color: var(--on-phase); padding: 7px 10px; border-radius: 3px;
+}
+.title h2 { font: 700 38px/0.98 var(--display); text-transform: uppercase; letter-spacing: -.005em; }
+.title p { color: var(--ink-2); margin-top: 4px; font-size: 16px; }
+.dial { position: relative; width: min(100%, 300px); aspect-ratio: 1; max-width: 100%; margin: 2px auto 0; }
+.dial svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+.dial circle { fill: none; stroke-width: 10; }
+.dial .bg { stroke: var(--surface-2); }
+.dial .fg { stroke: var(--phase); stroke-linecap: butt; transition: stroke-dashoffset .25s linear; }
+.dial .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px; }
+.dial .big { font: 700 96px/0.9 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.dial .big.long { font-size: 80px; }
+.dial .sub { font-size: 15px; color: var(--ink-2); font-weight: 500; }
+.dial .sub2 { font: 600 20px/1 var(--display); color: var(--ink-3); font-variant-numeric: tabular-nums; margin-top: 4px; }
+.paused .dial .big { opacity: .45; }
+.adjust { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.adjust button { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 10px 14px; font-weight: 600; font-size: 15px; min-width: 76px; font-variant-numeric: tabular-nums; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 8px 12px; display: flex; flex-direction: column; min-width: 78px; }
+.chip span { font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.chip b { font: 600 26px/1.05 var(--display); font-variant-numeric: tabular-nums; }
+.chip.kg .kgrow { display: flex; align-items: center; gap: 8px; }
+.chip.kg button { width: 34px; height: 34px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg); font-size: 20px; line-height: 1; font-weight: 600; }
+.chip.kg small { font-size: 12px; color: var(--ink-3); }
+.note { background: var(--note-bg); color: var(--note-ink); border: 1px solid var(--note-line); border-radius: 4px; padding: 11px 13px; font-weight: 500; }
+.note .eyebrow { color: inherit; opacity: .75; display: block; margin-bottom: 3px; font-size: 12px; }
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 6px; }
+.figure img { display: block; width: 100%; height: auto; max-width: 100%; aspect-ratio: 2 / 1; object-fit: contain; filter: var(--img-filter); mix-blend-mode: var(--img-blend); }
+.how { display: flex; flex-direction: column; gap: 8px; }
+.how ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; color: var(--ink); }
+.how li::marker { font-family: var(--display); font-weight: 600; color: var(--ink-3); }
+.gear { color: var(--ink-2); font-size: 15px; }
+.nextup { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 12px; }
+.gate-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.gate-ex { display: flex; flex-direction: column; }
+.gate-ex .row { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.gate-ex .row span:last-child { color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 15px; }
+.hr { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; }
+.hr label { font-size: 15px; color: var(--ink-2); }
+.hr input { width: 72px; font: 600 22px/1 var(--display); padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); }
+.hr output { font: 600 22px/1 var(--display); }
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--bg); border-top: 1px solid var(--line);
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px));
+}
+.bar .wrap { display: flex; gap: 8px; align-items: stretch; }
+.bar .nav { flex: 0 0 54px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; font-size: 22px; }
+.bar .nav:disabled { opacity: .35; }
+
+/* ---------- Dialogs ---------- */
+dialog { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); padding: 0; width: min(520px, calc(100% - 24px)); max-height: 84vh; }
+dialog::backdrop { background: rgba(0, 0, 0, .55); }
+.dlg { display: flex; flex-direction: column; gap: 14px; padding: 18px 16px; }
+.dlg header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.dlg h3 { font: 700 26px/1 var(--display); text-transform: uppercase; }
+.dlg .row { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.dlg .btn { font-size: 19px; min-height: 50px; padding: 13px 16px; }
+.sl-phase { font: 600 12.5px/1.2 var(--body); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); margin-top: 8px; }
+.sl-item { display: flex; justify-content: space-between; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 11px 2px; align-items: baseline; }
+.sl-item span:last-child { color: var(--ink-3); font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sl-item.done { color: var(--ink-3); text-decoration: line-through; text-decoration-thickness: 1px; }
+.sl-item.now { font-weight: 600; }
+.sl-item.now span:first-child::before { content: "▸ "; color: var(--work); }
+.set-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.set-row small { display: block; color: var(--ink-3); font-size: 13.5px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; flex: 0 0 auto; }
+.seg button { border: 0; background: var(--surface); padding: 9px 12px; font-weight: 600; font-size: 15px; min-width: 46px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+
+/* ---------- Done ---------- */
+.done-mark { font: 700 60px/0.92 var(--display); text-transform: uppercase; }
+.done-mark em { font-style: normal; color: var(--work); }
+
+@media (max-width: 380px) {
+  .masthead h1 { font-size: 40px; } .title h2 { font-size: 33px; } .dial .big { font-size: 84px; } .dial .big.long { font-size: 70px; }
+  .choice { grid-template-columns: 52px 1fr auto; } .choice .letter { font-size: 54px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+<!-- WorkoutPlayer · scheletro delle viste e dei dialog (da src/body.html). I testi del piano (intestazione, regole del trainer) li riempie la libreria all'avvio. -->
+<main id="home">
+  <div class="wrap">
+    <header class="masthead">
+      <span class="eyebrow" id="homeKicker"></span>
+      <h1>Cosa alleni oggi?</h1>
+      <p>Scegli la seduta: ti guido esercizio per esercizio, serie per serie, con timer, riposi e note del trainer.</p>
+    </header>
+    <div id="resume" class="resume" hidden></div>
+    <div id="choices" class="choices"></div>
+    <section class="rules">
+      <span class="eyebrow" id="rulesHead">Le regole del trainer</span>
+      <ul id="rulesList"></ul>
+      <p class="fine">Le spiegazioni degli esercizi sono indicazioni generali: se il trainer ti ha mostrato un'esecuzione diversa, vale la sua.</p>
+    </section>
+  </div>
+</main>
+
+<main id="preview" hidden>
+  <div class="wrap">
+    <button class="back" id="pvBack" type="button">← Cambia seduta</button>
+    <header class="pv-head">
+      <span class="eyebrow" id="pvPeriod"></span>
+      <h1 id="pvTitle"></h1>
+      <p id="pvFocus"></p>
+    </header>
+    <div class="stats" id="pvStats"></div>
+    <div class="plan" id="pvPlan"></div>
+    <div class="cta">
+      <button class="btn ghost" id="pvAudio" type="button">Audio</button>
+      <button class="btn" id="pvStart" type="button">Inizia</button>
+    </div>
+  </div>
+</main>
+
+<div id="player" hidden data-kind="gate">
+  <div class="topbar">
+    <div class="wrap">
+      <div class="line">
+        <button class="icon-btn" id="btnExit" type="button" aria-label="Esci dall'allenamento">✕</button>
+        <div class="where" id="where"></div>
+        <button class="icon-btn" id="btnAudio" type="button" aria-label="Audio e tempi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12"/></svg></button>
+        <button class="icon-btn" id="btnList" type="button">Scaletta</button>
+      </div>
+      <div class="track" id="track" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="wrap stage" id="stage"></div>
+  <div class="bar">
+    <div class="wrap">
+      <button class="nav" id="btnPrev" type="button" aria-label="Passo precedente">‹</button>
+      <button class="btn" id="btnMain" type="button">Inizia</button>
+      <button class="nav" id="btnNext" type="button" aria-label="Passo successivo">›</button>
+    </div>
+  </div>
+</div>
+
+<main id="done" hidden>
+  <div class="wrap">
+    <span class="eyebrow" id="doneKicker"></span>
+    <h1 class="done-mark">Seduta <em>completata</em></h1>
+    <div class="stats" id="doneStats"></div>
+    <p id="doneMsg" style="color:var(--ink-2)"></p>
+    <div class="cta"><button class="btn" id="doneHome" type="button">Torna alla scelta</button></div>
+  </div>
+</main>
+
+<dialog id="dlgList"><div class="dlg">
+  <header><h3>Scaletta</h3><button class="icon-btn" type="button" data-close>Chiudi</button></header>
+  <div id="listBody"></div>
+</div></dialog>
+
+<dialog id="dlgAudio"><div class="dlg">
+  <header><h3>Audio e tempi</h3><button class="icon-btn" type="button" data-close>Chiudi</button></header>
+  <div class="set-row"><div>Bip<small>Conto alla rovescia 3-2-1 e cambio fase</small></div>
+    <div class="seg" data-set="beep"><button type="button" data-v="1">Sì</button><button type="button" data-v="0">No</button></div></div>
+  <div class="set-row"><div>Voce<small>Annuncia esercizio, serie e riposi</small></div>
+    <div class="seg" data-set="voice"><button type="button" data-v="1">Sì</button><button type="button" data-v="0">No</button></div></div>
+  <div class="set-row"><div>Preparazione<small>Secondi per metterti in posizione prima di un esercizio a tempo</small></div>
+    <div class="seg" data-set="prep"><button type="button" data-v="5">5</button><button type="button" data-v="10">10</button><button type="button" data-v="15">15</button></div></div>
+  <p class="fine">Su iPhone i bip si sentono solo con la suoneria attiva o con le cuffie. Tieni lo schermo acceso: a telefono bloccato o a pagina chiusa il timer continua a contare, ma non può suonare; quando torni riprende dal punto giusto.</p>
+</div></dialog>
+
+<dialog id="dlgExit"><div class="dlg">
+  <header><h3>Esci dalla seduta?</h3></header>
+  <p style="color:var(--ink-2)">Il punto in cui sei arrivato resta salvato su questo telefono: puoi riprendere dalla schermata iniziale.</p>
+  <div class="row"><button class="btn ghost" type="button" data-close>Continua</button><button class="btn" id="exitYes" type="button" style="--phase:var(--ink);--on-phase:var(--bg)">Esci</button></div>
+</div></dialog>
+<script>
+/* WorkoutPlayer · utilità pure: formattazione e accesso al DOM. Da src/app1.js:19-26.
+   Ogni file della libreria si registra sull'oggetto globale WorkoutPlayer; il punto d'ingresso è lib/index.js. */
+(function (WP) {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const fmt = sec => { sec = Math.max(0, Math.round(sec)); const m = Math.floor(sec / 60), s = sec % 60; return m + ":" + String(s).padStart(2, "0"); };
+  const fmtKg = v => String(v).replace(".", ",");
+  const durText = sec => (sec >= 60 ? (sec % 60 ? fmt(sec) + " min" : sec / 60 + " min") : sec + " s");
+  WP.modules = WP.modules || {};
+  WP.util = { $, esc, fmt, fmtKg, durText };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · motore: i passi di una seduta.
+   - defineApi: l'API che lo script di composizione riceve (versione e costruttori dei passi). È una funzione autonoma
+     perché la libreria la esegue sia nella pagina sia, come testo, nel Worker isolato dove gira lo script (lib/engine/isolate.js).
+   - acceptSteps: il controllo dei passi che lo script restituisce, prima di usarli (regole in lib/API-v0.md).
+   - stime ricavate dalla sequenza: durata prevista, serie e blocchi. Da src/app1.js:17, 45-78.
+
+   Un passo è un oggetto semplice:
+     { type: "gate", pi }                               inizio di una fase (ci si ferma, si legge, si parte)
+     { type: "prep" | "work" | "rest", pi, ii, set, sets, round }
+     { type: "free", pi }  oppure  { type: "free", pi, ii, set, sets, round }
+   pi = indice della fase, ii = indice della voce nella fase, set/sets = serie corrente e totale, round = giro (0 fuori dai giri).
+   "free" è il passo libero: la libreria mostra ciò che dicono i dati (voce o fase intera) e un cronometro in avanti. */
+(function (WP) {
+  "use strict";
+
+  function defineApi(WP) {
+    "use strict";
+    WP.API_VERSION = "v0";
+    function check(type, o, keys) {
+      keys.forEach(function (k) {
+        if (!Number.isInteger(o[k]) || o[k] < 0) throw new TypeError("passo " + type + ": '" + k + "' deve essere un intero >= 0");
+      });
+    }
+    var ITEM_KEYS = ["pi", "ii", "set", "sets", "round"];
+    function gate(o) { o = o || {}; check("gate", o, ["pi"]); return { type: "gate", pi: o.pi }; }
+    function itemStep(type) {
+      return function (o) { o = o || {}; check(type, o, ITEM_KEYS); return { type: type, pi: o.pi, ii: o.ii, set: o.set, sets: o.sets, round: o.round }; };
+    }
+    var prep = itemStep("prep"), work = itemStep("work"), rest = itemStep("rest"), freeItem = itemStep("free");
+    function free(o) {
+      o = o || {};
+      if (o.ii != null) return freeItem(o);
+      check("free", o, ["pi"]); return { type: "free", pi: o.pi };
+    }
+    WP.steps = Object.freeze({ gate: gate, prep: prep, work: work, rest: rest, free: free });
+    WP.api = function () { return Object.freeze({ version: WP.API_VERSION, steps: WP.steps }); };
+  }
+  defineApi(WP);
+  WP.defineApi = defineApi;
+  WP.SUPPORTED_APIS = ["v0"];
+
+  const REP_SET_SEC = 40; // stima di una serie da 10 ripetizioni, solo per la durata prevista
+  const GATE_SEC = 45;    // cambio postazione
+  const posInt = v => Number.isInteger(v) && v > 0;
+
+  // una voce che la libreria sa guidare da sola: a tempo con durata, o a ripetizioni con un numero di ripetizioni
+  const isGuidedItem = it => !!it && ((it.mode === "timed" && typeof it.dur === "number" && it.dur > 0) ||
+    (it.mode === "reps" && typeof it.reps === "number" && it.reps > 0));
+
+  /* Controlla i passi restituiti dallo script: { idSeduta: [passo, ...] } per ogni seduta del piano.
+     Restituisce { steps, problems }: steps ricostruiti con i costruttori (solo i campi noti), problems = motivi di rifiuto.
+     Un solo problema basta a rifiutare tutto: il piano passa al rendering di riserva. */
+  function acceptSteps(plan, raw) {
+    const problems = [], steps = {};
+    const bad = (where, why) => { if (problems.length < 20) problems.push(where + ": " + why); };
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { steps: null, problems: ["il risultato non è un oggetto { idSeduta: [passi] }"] };
+    Object.keys(raw).forEach(k => { if (!plan.workouts[k]) bad(k, "seduta che non esiste nei dati"); });
+    Object.keys(plan.workouts).forEach(k => {
+      const w = plan.workouts[k], list = raw[k];
+      if (!Array.isArray(list) || !list.length) { bad(k, "mancano i passi della seduta"); return; }
+      steps[k] = list.map((s, i) => {
+        const at = k + "[" + i + "]";
+        if (!s || typeof s !== "object") { bad(at, "non è un passo"); return null; }
+        const ph = w.phases[s.pi];
+        if (!Number.isInteger(s.pi) || !ph) { bad(at, "pi fuori dalle fasi"); return null; }
+        if (s.type === "gate" || (s.type === "free" && s.ii == null)) return s.type === "gate" ? WP.steps.gate({ pi: s.pi }) : WP.steps.free({ pi: s.pi });
+        if (!["prep", "work", "rest", "free"].includes(s.type)) { bad(at, "tipo sconosciuto '" + s.type + "'"); return null; }
+        const it = ph.items[s.ii];
+        if (!Number.isInteger(s.ii) || !it) { bad(at, "ii fuori dalle voci della fase"); return null; }
+        if (!posInt(s.sets) || !posInt(s.set) || s.set > s.sets) { bad(at, "serie non valida (" + s.set + " di " + s.sets + ")"); return null; }
+        if (posInt(it.sets) && s.sets !== it.sets) { bad(at, "sets = " + s.sets + " ma i dati dicono " + it.sets); return null; }
+        if (!Number.isInteger(s.round) || s.round < 0 || s.round > (posInt(ph.rounds) ? ph.rounds : 0)) { bad(at, "giro " + s.round + " fuori da phase.rounds"); return null; }
+        if ((s.type === "work" && !isGuidedItem(it)) || (s.type === "prep" && !(it.mode === "timed" && isGuidedItem(it)))) { bad(at, s.type + " su una voce che i dati non permettono di guidare: usa free"); return null; }
+        if (s.type === "rest" && !(typeof it.rest === "number" && it.rest > 0)) { bad(at, "riposo su una voce senza rest > 0 nei dati"); return null; }
+        return WP.steps[s.type]({ pi: s.pi, ii: s.ii, set: s.set, sets: s.sets, round: s.round });
+      });
+    });
+    return problems.length ? { steps: null, problems } : { steps, problems };
+  }
+
+  // passo libero: stima dai soli numeri che i dati hanno (una serie senza durata vale REP_SET_SEC)
+  function freeSeconds(ph, it) {
+    const one = i => (i.mode === "timed" && typeof i.dur === "number" && i.dur > 0 ? i.dur : REP_SET_SEC);
+    if (it) return one(it);
+    const count = v => (posInt(v) ? v : 1);
+    return count(ph.rounds) * ph.items.reduce((s, i) => s + count(i.sets) * (one(i) + (i.rest > 0 ? i.rest : 0)), 0);
+  }
+
+  function estimateMinutes(w, steps, prepSec) {
+    let sec = 0;
+    steps.forEach(st => {
+      const it = st.ii != null ? w.phases[st.pi].items[st.ii] : null;
+      if (st.type === "prep") sec += prepSec;
+      else if (st.type === "rest") sec += it.rest;
+      else if (st.type === "work") sec += it.mode === "timed" ? it.dur : REP_SET_SEC;
+      else if (st.type === "free") sec += freeSeconds(w.phases[st.pi], it);
+      else sec += GATE_SEC; // cambio postazione
+    });
+    return Math.round(sec / 60 / 5) * 5 || 5;
+  }
+  const countSets = steps => steps.filter(s => s.type === "work" || s.type === "free").length;
+
+  WP.isGuidedItem = isGuidedItem;
+  WP.acceptSteps = acceptSteps;
+  WP.estimateMinutes = estimateMinutes;
+  WP.countSets = countSets;
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · rendering di riserva: la sequenza dei passi dai soli dati del piano, senza script di composizione.
+   È il paracadute quando lo script manca o non supera le verifiche, e il termine di confronto dello script.
+
+   Cosa sa guidare:
+   - fasi a serie ("sets", o senza flow) e continue ("continuous"): voce per voce, serie per serie, nell'ordine dei dati;
+   - voce a tempo (mode "timed" con dur > 0): preparazione (salvo subito dopo un riposo, o fra blocchi della stessa
+     fase continua) + lavoro a tempo; voce a ripetizioni (mode "reps" con reps numerico > 0): lavoro a ripetizioni;
+   - riposo dopo ogni serie se rest > 0, salvo l'ultima serie con noRestAfterLast; niente riposo prima di una nuova
+     fase o della fine (lì c'è comunque una sosta);
+   - lati (sides) e carichi come nei dati: li mostrano i componenti.
+   Cosa rende come passo libero (type "free"):
+   - una fase con un flow diverso da "sets"/"continuous" (circuito, o costrutto sconosciuto): un solo passo libero con
+     l'intera fase (voci e numeri come nei dati), dopo il suo ingresso;
+   - una voce che non sa guidare (mode sconosciuto, durata o ripetizioni mancanti o non numeriche): un passo libero
+     per serie, seguito dal riposo se i dati lo danno. */
+(function (WP) {
+  "use strict";
+  const GUIDED_FLOWS = ["sets", "continuous"];
+
+  WP.fallbackSteps = function (w) {
+    const { gate, prep, work, rest, free } = WP.steps;
+    const steps = [];
+    w.phases.forEach((ph, pi) => {
+      steps.push(gate({ pi }));
+      const flow = ph.flow || "sets";
+      if (!GUIDED_FLOWS.includes(flow)) { steps.push(free({ pi })); return; }
+      ph.items.forEach((it, ii) => {
+        const sets = Number.isInteger(it.sets) && it.sets > 0 ? it.sets : 1;
+        for (let set = 1; set <= sets; set++) {
+          const at = { pi, ii, set, sets, round: 0 };
+          const prev = steps[steps.length - 1];
+          if (!WP.isGuidedItem(it)) steps.push(free(at));
+          else {
+            if (it.mode === "timed" && prev.type !== "rest" && !(flow === "continuous" && ii > 0)) steps.push(prep(at));
+            steps.push(work(at));
+          }
+          if (it.rest > 0 && !(it.noRestAfterLast && set === sets)) steps.push(rest(at));
+        }
+      });
+      if (steps[steps.length - 1].type === "rest") steps.pop();
+    });
+    return steps;
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · motore: lo script di composizione gira isolato (T0 passo 5a).
+
+   Pagina ospite ── iframe sandbox="allow-scripts" (origine opaca: niente memoria, cookie, accesso all'ospite)
+                    CSP: default-src 'none'; script-src 'sha256-<solo il runner>'; worker-src blob:
+                    └── Worker da blob con: API dei passi + script del piano. Il Worker eredita origine opaca e CSP
+                        (niente rete, niente eval), non ha DOM né location (non può navigare) e si termina allo scadere.
+   L'ospite manda al runner il testo del Worker e il piano (postMessage); il runner risponde con { ok, steps | error }.
+   L'ospite non esegue mai il testo dello script. Wake Lock, audio e voce restano dell'ospite.
+   Perché un Worker e non lo script direttamente nell'iframe: nell'iframe uno script ostile può navigare il proprio
+   riquadro verso un indirizzo qualsiasi portandosi dietro i dati (prova in T0-passo5a.md), e un ciclo infinito
+   blocca il riquadro; nel Worker nessuna delle due cose è possibile e il ciclo si interrompe con terminate(). */
+(function (WP) {
+  "use strict";
+
+  // Runner dell'iframe: l'unico script ammesso dalla CSP (per hash). Crea il Worker, lo ferma allo scadere, risponde una volta.
+  function runner() {
+    "use strict";
+    var done = false;
+    function reply(msg) { if (!done) { done = true; parent.postMessage(msg, "*"); } }
+    addEventListener("message", function (e) {
+      if (e.source !== parent || done || !e.data || e.data.type !== "compose") return;
+      var d = e.data, w;
+      try { w = new Worker(URL.createObjectURL(new Blob([d.worker], { type: "text/javascript" }))); }
+      catch (err) { reply({ type: "result", ok: false, error: "Worker non disponibile: " + err.message }); return; }
+      var timer = setTimeout(function () { w.terminate(); reply({ type: "result", ok: false, error: "tempo scaduto (" + d.timeoutMs + " ms)" }); }, d.timeoutMs);
+      w.onmessage = function (ev) {
+        clearTimeout(timer); w.terminate();
+        var r = ev.data || {};
+        reply({ type: "result", ok: r.ok === true, steps: r.steps, error: r.error });
+      };
+      w.onerror = function (ev) { ev.preventDefault(); clearTimeout(timer); w.terminate(); reply({ type: "result", ok: false, error: "errore dello script: " + ev.message }); };
+      w.postMessage({ plan: d.plan });
+    });
+    parent.postMessage({ type: "ready" }, "*");
+  }
+  // Coda del Worker: chiama compose(plan, api) all'arrivo del piano e restituisce i passi (o l'errore).
+  function workerMain() {
+    "use strict";
+    self.onmessage = function (e) {
+      var out;
+      try { out = { ok: true, steps: compose(e.data.plan, WorkoutPlayer.api()) }; }
+      catch (err) { out = { ok: false, error: "errore dello script: " + (err && err.message ? err.message : String(err)) }; }
+      try { self.postMessage(out); } catch (err) { self.postMessage({ ok: false, error: "passi non trasferibili: " + err.message }); }
+    };
+  }
+
+  const RUNNER = "(" + runner.toString() + ")();";
+  // hash SHA-256 (base64) di RUNNER: lo verifica tests/parita.test.js, che stampa quello giusto se il runner cambia
+  const RUNNER_SHA256 = "dXMZB0lQ+D5V8wYzodaahB4bPEmtytIubWcVUnJSBoo=";
+  const CSP = "default-src 'none'; script-src 'sha256-" + RUNNER_SHA256 + "'; worker-src blob:";
+  const workerSource = composeSource => "var WorkoutPlayer = {};\n(" + WP.defineApi.toString() + ")(WorkoutPlayer);\n" +
+    composeSource + "\n;(" + workerMain.toString() + ")();\n";
+
+  /* Esegue lo script isolato. Risolve sempre (mai rifiuta): { ok: true, steps } oppure { ok: false, error }.
+     timeoutMs vale per l'esecuzione nel Worker; l'ospite aspetta al massimo timeoutMs + 3 s anche se il riquadro non risponde. */
+  function composeIsolated(plan, composeSource, timeoutMs) {
+    timeoutMs = timeoutMs || 2000;
+    return new Promise(resolve => {
+      const frame = document.createElement("iframe");
+      frame.setAttribute("sandbox", "allow-scripts");
+      frame.hidden = true; frame.title = "Script del piano";
+      frame.srcdoc = '<meta http-equiv="Content-Security-Policy" content="' + CSP + '"><script>' + RUNNER + "</" + "script>";
+      let settled = false;
+      const finish = res => {
+        if (settled) return;
+        settled = true; clearTimeout(backstop); window.removeEventListener("message", onMessage); frame.remove(); resolve(res);
+      };
+      const onMessage = e => {
+        if (e.source !== frame.contentWindow || !e.data) return;
+        if (e.data.type === "ready") frame.contentWindow.postMessage({ type: "compose", worker: workerSource(composeSource), plan, timeoutMs }, "*");
+        else if (e.data.type === "result") finish(e.data.ok ? { ok: true, steps: e.data.steps } : { ok: false, error: String(e.data.error || "errore sconosciuto") });
+      };
+      window.addEventListener("message", onMessage);
+      const backstop = setTimeout(() => finish({ ok: false, error: "il riquadro isolato non ha risposto" }), timeoutMs + 3000);
+      document.body.appendChild(frame);
+    });
+  }
+
+  WP.isolation = { CSP, RUNNER, RUNNER_SHA256, workerSource };
+  WP.composeIsolated = composeIsolated;
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · motore: memoria locale (solo comodità su questo dispositivo). Da src/app1.js:1-14.
+   La chiave viene dal piano (R.storageKey). */
+(function (WP) {
+  "use strict";
+  WP.modules.store = function (R) {
+    const KEY = R.storageKey;
+    const store = (() => {
+      let data = { settings: { beep: 1, voice: 1, prep: 10 }, kg: {}, last: {}, age: null, session: null };
+      try {
+        const raw = JSON.parse(localStorage.getItem(KEY) || "null");
+        if (raw && typeof raw === "object") data = Object.assign(data, raw, { settings: Object.assign(data.settings, raw.settings || {}) });
+      } catch (e) { /* storage non disponibile: si lavora in memoria */ }
+      return {
+        get: () => data,
+        save() { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) { /* ignora */ } }
+      };
+    })();
+    return { store, S: store.get() };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · motore: testi ricavati dai dati (carichi, riepiloghi, etichette di serie e lato, battiti obiettivo).
+   Servono sia ai componenti sia alla voce. Da src/app1.js:24-42 e src/app2.js:10-18. */
+(function (WP) {
+  "use strict";
+  WP.modules.texts = function (R) {
+    const { fmtKg, durText } = WP.util;
+    const S = R.S, EX = R.EX;
+    const kgOf = item => (typeof item.kg === "number" ? (S.kg[item.ex] != null ? S.kg[item.ex] : item.kg) : item.kg);
+    const kgText = item => { const k = kgOf(item); return k == null ? "Corpo libero" : k === "BW" ? "Peso corporeo" : fmtKg(k) + " kg"; };
+    // voce che la libreria non sa guidare (passo libero): i numeri che i dati hanno, così come sono
+    const rawSummary = it => [
+      it.sets != null ? it.sets + " serie" : "",
+      it.reps != null ? it.reps + " ripetizioni" : "",
+      it.dur != null ? (typeof it.dur === "number" ? durText(it.dur) : String(it.dur)) : "",
+      it.kg != null ? kgText(it) : "",
+      it.label || "", it.text || ""
+    ].filter(Boolean).join(" · ") || "come da scheda";
+    const itemSummary = (it, phase) => {
+      if (!WP.isGuidedItem(it)) return rawSummary(it);
+      if (it.mode === "reps") return it.sets + " × " + it.reps + " · " + kgText(it);
+      const rounds = phase && phase.flow === "circuit" ? phase.rounds : it.sets;
+      return (rounds > 1 ? rounds + " × " : "") + durText(it.dur) + (it.label && /^RPE/.test(it.label) ? " · " + it.label : "");
+    };
+
+    // righe di riepilogo di una fase: i blocchi uguali in sequenza (tapis roulant) diventano una riga sola
+    function phaseRows(ph) {
+      const its = ph.items;
+      if (ph.flow === "continuous" && its.length > 1 && its.every(i => i.ex === its[0].ex)) {
+        const rpe = its.map(i => (i.label || "").replace("RPE ", "")).filter(Boolean);
+        return [[EX[its[0].ex].name, its.length + " × " + durText(its[0].dur) + (rpe.length ? " · RPE " + rpe[0] + " → " + rpe[rpe.length - 1] : "")]];
+      }
+      return its.map(i => [EX[i.ex].name, itemSummary(i, ph)]);
+    }
+
+    const setLabel = st => {
+      const it = R.itemOf(st), ph = R.phaseOf(st);
+      if (ph.flow === "circuit") return "Giro " + st.round + " di " + ph.rounds;
+      if (ph.flow === "continuous") return ph.items.length > 1 ? "Blocco " + (st.ii + 1) + " di " + ph.items.length : "";
+      let s = "Serie " + st.set + " di " + st.sets;
+      if (it.sides) s += " · " + it.sides[(st.set - 1) % it.sides.length];
+      return s;
+    };
+    // fasi con hr: obiettivo al 90% della FC max stimata (220 - età)
+    const bpm = () => (S.age ? Math.round(0.9 * (220 - S.age)) : null);
+
+    return { kgOf, kgText, itemSummary, phaseRows, setLabel, bpm };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · motore: bip, voce, vibrazione. Da src/app1.js:80-117.
+   La voce usa la lingua del piano (R.plan.lang, per esempio "it-IT"). */
+(function (WP) {
+  "use strict";
+  WP.modules.audio = function (R) {
+    const S = R.S;
+    const lang = R.plan.lang || "it-IT", langRe = new RegExp("^" + lang.slice(0, 2), "i");
+    let actx = null;
+    function unlockAudio() {
+      try {
+        if (!actx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) actx = new AC(); }
+        if (actx && actx.state === "suspended") actx.resume();
+      } catch (e) { /* audio non disponibile */ }
+    }
+    function tone(freq, ms, when, gain) {
+      if (!S.settings.beep || !actx) return;
+      try {
+        const t0 = actx.currentTime + (when || 0), o = actx.createOscillator(), g = actx.createGain();
+        o.type = "square"; o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(gain || 0.25, t0 + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000);
+        o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0 + ms / 1000 + 0.05);
+      } catch (e) { /* ignora */ }
+    }
+    const sfx = {
+      tick: () => tone(740, 140),
+      go: () => { tone(1175, 520); buzz([220]); },
+      rest: () => { tone(880, 180); tone(587, 380, 0.2); buzz([120, 80, 120]); },
+      done: () => { tone(784, 160); tone(988, 160, 0.18); tone(1319, 520, 0.36); buzz([150, 80, 150, 80, 300]); }
+    };
+    function buzz(p) { try { if (S.settings.beep && navigator.vibrate) navigator.vibrate(p); } catch (e) { /* ignora */ } }
+    function say(text) {
+      if (!S.settings.voice) return;
+      try {
+        const synth = window.speechSynthesis; if (!synth) return;
+        synth.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = lang; u.rate = 1.02;
+        const v = synth.getVoices().find(x => langRe.test(x.lang)); if (v) u.voice = v;
+        synth.speak(u);
+      } catch (e) { /* voce non disponibile */ }
+    }
+    const hush = () => { try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) { /* ignora */ } };
+    return { unlockAudio, tone, sfx, buzz, say, hush };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · motore: schermo sempre acceso durante la seduta (Wake Lock). Da src/app1.js:119-126. */
+(function (WP) {
+  "use strict";
+  WP.modules.wakelock = function () {
+    let wake = null;
+    async function keepAwake(on) {
+      try {
+        if (on && navigator.wakeLock && document.visibilityState === "visible") wake = await navigator.wakeLock.request("screen");
+        if (!on && wake) { await wake.release(); wake = null; }
+      } catch (e) { /* non consentito: pazienza */ }
+    }
+    return { keepAwake };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · motore: stato della seduta, timer su orari, pausa e ritocchi, persistenza, annunci, fine e uscita.
+   Da src/app2.js:1-23, 67-158 e src/app3.js:91-95. Il disegno sta nei componenti (lib/ui/): il motore li chiama
+   attraverso il runtime R (R.render, R.paintClock, R.paintElapsed, R.mountPlayer, R.renderDone, R.renderHome, R.show).
+
+   Timer con scadenza persistita (AC-V3-3, T0 passo 5c). Diverso dall'artifact, che salvava solo seduta, indice e orari:
+   - ogni cambio (passo, pausa, ±15 s) salva anche la scadenza (endsAt), la pausa e il residuo, e se la seduta è stata
+     lasciata con "Esci" (left) oppure interrotta (ricarica, scheda chiusa, telefono spento);
+   - alla riapertura una seduta interrotta riprende da sola nel player sull'orologio: timer in corso con il residuo giusto,
+     in pausa con lo stesso residuo, oppure, se è scaduto a pagina chiusa, passo successivo pronto (fermo) con l'avviso
+     "Riposo finito da N"; mai più di un passo avanti. Una seduta lasciata con "Esci" resta come nell'artifact: riquadro
+     "Seduta in corso" in home e ripresa in pausa;
+   - a pagina nascosta (telefono bloccato, altra scheda) il timer non avanza di passo e non suona; al ritorno vale la regola
+     della riapertura. Con la pagina chiusa non c'è codice in esecuzione: niente suoni né notifiche. */
+(function (WP) {
+  "use strict";
+  WP.modules.session = function (R) {
+    const S = R.S, store = R.store, EX = R.EX;
+    const { fmtKg, durText } = WP.util;
+    let ticker = null;
+    const AWAY_MS = 2000; // scaduto da più di così: il passo è finito mentre la pagina era nascosta o ferma
+    R.W = null; R.STEPS = []; R.cur = null;
+    // R.cur = { wid, idx, startedAt, stepAt, endsAt, remaining, total, paused, lastSec }
+
+    const phaseOf = st => R.W.phases[st.pi];
+    const itemOf = st => (st.ii != null ? R.W.phases[st.pi].items[st.ii] : null);
+    const nextWork = from => {
+      for (let i = from + 1; i < R.STEPS.length; i++) { const t = R.STEPS[i].type; if (t === "work" || t === "gate" || t === "free") return R.STEPS[i]; }
+      return null;
+    };
+    const estimateMinutes = w => WP.estimateMinutes(w, R.buildSteps(w), S.settings.prep);
+    const countSets = w => WP.countSets(R.buildSteps(w));
+
+    function persist(left) {
+      const cur = R.cur;
+      S.session = cur ? {
+        wid: cur.wid, idx: cur.idx, startedAt: cur.startedAt, savedAt: Date.now(),
+        seq: R.mode, left: !!left, stepAt: cur.stepAt,
+        timer: cur.endsAt == null ? null : { endsAt: cur.endsAt, total: cur.total, paused: !!cur.paused, remaining: cur.paused ? cur.remaining : null }
+      } : null;
+      store.save();
+    }
+    // la seduta salvata si può riprendere con questa sequenza (le sedute salvate dall'artifact non hanno seq: sono dello script)
+    const resumable = ses => !!ses && !!R.WORKOUTS[ses.wid] && Date.now() - ses.savedAt < 6 * 36e5 && (ses.seq || "script") === R.mode;
+
+    function begin(id, startedAt) {
+      R.W = R.WORKOUTS[id]; R.STEPS = R.buildSteps(R.W);
+      R.cur = { wid: id, idx: 0, startedAt: startedAt || Date.now() };
+      R.mountPlayer(); R.keepAwake(true);
+      clearInterval(ticker); ticker = setInterval(tick, 200);
+    }
+    function startWorkout(id, idx, startedAt) {
+      begin(id, startedAt);
+      enter(Math.min(idx || 0, R.STEPS.length - 1), { resumed: idx > 0 });
+    }
+
+    // seduta interrotta senza "Esci": si rientra nel player sull'orologio (AC-V3-3)
+    function resumeInterrupted() {
+      const ses = S.session;
+      if (!resumable(ses) || ses.left !== false) return false;
+      begin(ses.wid, ses.startedAt);
+      const idx = Math.min(ses.idx, R.STEPS.length - 1), t = ses.timer;
+      if (t && !t.paused && t.endsAt <= Date.now()) awayExpired(idx, t.endsAt);
+      else enter(idx, { restore: ses });
+      return true;
+    }
+    // passo a tempo scaduto mentre la pagina era chiusa o nascosta: passo successivo pronto, fermo, con l'avviso
+    function awayExpired(idx, endsAt) {
+      const st = R.STEPS[idx], sec = Math.max(1, Math.floor((Date.now() - endsAt) / 1000));
+      const notice = (st.type === "rest" ? "Riposo finito" : st.type === "prep" ? "Preparazione finita" : "Esercizio finito") +
+        " da " + (sec < 60 ? sec + " s" : Math.floor(sec / 60) + " min");
+      if (idx + 1 >= R.STEPS.length) return finish();
+      enter(idx + 1, { resumed: true, notice });
+    }
+
+    function enter(idx, opt) {
+      opt = opt || {};
+      const STEPS = R.STEPS, cur = R.cur;
+      if (idx >= STEPS.length) return finish();
+      idx = Math.max(0, idx);
+      const st = STEPS[idx], it = itemOf(st);
+      if (st.type === "prep" && !S.settings.prep) return enter(idx + (opt.back ? -1 : 1), opt);
+      cur.idx = idx; cur.stepAt = Date.now(); cur.paused = false; cur.lastSec = null; cur.endsAt = null; cur.total = 0;
+      const secs = st.type === "prep" ? S.settings.prep : st.type === "rest" ? it.rest : st.type === "work" && it.mode === "timed" ? it.dur : 0;
+      if (secs) {
+        cur.total = secs * 1000; cur.endsAt = Date.now() + cur.total;
+        if (opt.resumed) { cur.paused = true; cur.remaining = cur.total; }
+      }
+      const t = opt.restore && opt.restore.timer;
+      if (t && cur.endsAt != null) { // ripresa sull'orologio: stessa scadenza, oppure stessa pausa con lo stesso residuo
+        cur.total = t.total;
+        if (t.paused) { cur.paused = true; cur.remaining = t.remaining; } else { cur.paused = false; cur.endsAt = t.endsAt; }
+      } else if (opt.restore && cur.endsAt == null && opt.restore.stepAt) cur.stepAt = opt.restore.stepAt;
+      cur.notice = opt.notice || null;
+      persist(); R.render(); R.scrollTop();
+      if (opt.resumed || opt.restore) return;
+      announce(st, it, opt);
+    }
+
+    function announce(st, it, opt) {
+      const ex = it ? EX[it.ex] : null, setLabel = R.setLabel, say = R.say, sfx = R.sfx;
+      if (st.type === "prep") say("Preparati. " + ex.it + ". " + (setLabel(st) ? setLabel(st) + ". " : "") + durText(it.dur).replace(" s", " secondi").replace("min", "minuti") + ".");
+      else if (st.type === "work") {
+        if (it.mode === "timed") { sfx.go(); say("Via! " + (it.label && /^RPE/.test(it.label) ? ex.it + ", " + it.label.replace("RPE", "R P E") + "." : "")); }
+        else { if (opt.auto) sfx.go(); say(ex.it + ". " + setLabel(st) + ". " + it.reps + " ripetizioni" + (typeof R.kgOf(it) === "number" ? ", " + fmtKg(R.kgOf(it)) + " chili." : ".")); }
+      } else if (st.type === "rest") {
+        sfx.rest(); const n = nextWork(R.cur.idx), ni = n && itemOf(n);
+        say("Riposo, " + it.rest + " secondi." + (ni ? " Poi: " + EX[ni.ex].it + (ni === it ? ", " + setLabel(n).split(" · ").join(", ") : "") + "." : ""));
+      } else if (st.type === "free") {
+        if (opt.auto) sfx.go();
+        say("Segui la scheda. " + (it ? ex.it + (setLabel(st) ? ". " + setLabel(st) : "") : phaseOf(st).title) + ".");
+      }
+    }
+
+    function remainingMs() { const cur = R.cur; return cur.endsAt == null ? 0 : cur.paused ? cur.remaining : cur.endsAt - Date.now(); }
+
+    function tick() {
+      const cur = R.cur;
+      if (!cur || R.playerHidden() || R.pageHidden()) return; // a pagina nascosta niente passi avanti né suoni
+      const st = R.STEPS[cur.idx];
+      if (cur.endsAt == null) { // serie a ripetizioni, passo libero o cambio fase: cronometro in avanti
+        R.paintElapsed((Date.now() - cur.stepAt) / 1000);
+        return;
+      }
+      const ms = remainingMs(), sec = Math.ceil(ms / 1000);
+      if (!cur.paused && ms <= 0) return ms < -AWAY_MS ? awayExpired(cur.idx, cur.endsAt) : enter(cur.idx + 1, { auto: true });
+      if (sec !== cur.lastSec) {
+        if (!cur.paused && cur.lastSec != null) {
+          if (sec <= 3 && sec >= 1) R.sfx.tick();
+          if (st.type === "work" && cur.total >= 3e5 && sec % 300 === 0 && sec > 0) R.say("Mancano " + sec / 60 + " minuti.");
+          if (st.type === "work" && cur.total >= 9e4 && sec === 30) R.say("Ultimi 30 secondi.");
+          if (st.type === "rest" && cur.total >= 45e3 && sec === 10) R.say("Dieci secondi.");
+        }
+        cur.lastSec = sec; R.paintClock(ms);
+      }
+    }
+
+    function togglePause() {
+      const cur = R.cur;
+      if (cur.endsAt == null) return;
+      if (cur.paused) { cur.endsAt = Date.now() + cur.remaining; cur.paused = false; R.unlockAudio(); }
+      else { cur.remaining = remainingMs(); cur.paused = true; R.hush(); }
+      persist(); R.render();
+    }
+    function adjust(delta) {
+      const cur = R.cur;
+      if (cur.endsAt == null) return;
+      if (cur.paused) cur.remaining = Math.max(1000, cur.remaining + delta * 1000);
+      else cur.endsAt = Math.max(Date.now() + 1000, cur.endsAt + delta * 1000);
+      cur.total = Math.max(cur.total, remainingMs()); cur.lastSec = null;
+      persist();
+    }
+
+    function finish() {
+      const W = R.W;
+      const mins = Math.max(1, Math.round((Date.now() - R.cur.startedAt) / 6e4));
+      S.last[W.id] = Date.now(); R.cur = null; persist();
+      clearInterval(ticker); R.keepAwake(false);
+      R.sfx.done(); R.say("Seduta completata. Ottimo lavoro.");
+      R.renderDone(mins);
+    }
+
+    function leave() {
+      clearInterval(ticker); R.keepAwake(false); R.hush();
+      if (R.cur) persist(true);
+      R.cur = null; R.renderHome(); R.show("home");
+    }
+
+    return { phaseOf, itemOf, nextWork, estimateMinutes, countSets, persist, resumable, startWorkout, resumeInterrupted, enter, announce, remainingMs, tick, togglePause, adjust, finish, leave };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · componenti: le viste dello scheletro (lib/shell.html) e i testi del piano che vi entrano.
+   Da src/app2.js:5-6 e dai testi fissi di src/body.html (intestazione e regole del trainer, ora nei dati del piano). */
+(function (WP) {
+  "use strict";
+  WP.modules.shell = function (R) {
+    const { $, esc } = WP.util;
+    const views = ["home", "preview", "player", "done"];
+    function show(id) { views.forEach(v => { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
+    const scrollTop = () => window.scrollTo(0, 0);
+    const playerHidden = () => $("player").hidden;
+    const pageHidden = () => document.visibilityState === "hidden";
+    function fillShell() {
+      const rules = R.plan.rules || [];
+      $("homeKicker").textContent = R.plan.kicker || "";
+      $("rulesList").innerHTML = rules.map(r => "<li>" + esc(r) + "</li>").join("");
+      $("rulesHead").hidden = $("rulesList").hidden = !rules.length;
+    }
+    return { show, scrollTop, playerHidden, pageHidden, fillShell };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · componente: home (scelta della seduta con "ultima volta", ripresa della seduta in corso).
+   Da src/app2.js:25-51. Lettera o icona di ogni seduta dai dati (workout.letter, workout.icon). */
+(function (WP) {
+  "use strict";
+  const ICONS = {
+    run: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="30" cy="8" r="4"/><path d="M14 22l8-6 7 3 4 7 7 2M22 16l-3 12 8 6-2 10M19 28l-5 8-8 1"/></svg>'
+  };
+  WP.modules.home = function (R) {
+    const { $, esc } = WP.util;
+    const S = R.S, EX = R.EX, WORKOUTS = R.WORKOUTS;
+    function lastText(id) {
+      const t = S.last[id]; if (!t) return "Mai fatto finora";
+      const days = Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(t).setHours(0, 0, 0, 0)) / 864e5);
+      return "Ultima volta: " + (days <= 0 ? "oggi" : days === 1 ? "ieri" : days + " giorni fa");
+    }
+    function renderHome() {
+      $("choices").innerHTML = Object.keys(WORKOUTS).map(id => {
+        const w = WORKOUTS[id];
+        return '<button class="choice" type="button" data-w="' + esc(id) + '">' +
+          '<span class="letter">' + (w.icon && ICONS[w.icon] ? ICONS[w.icon] : esc(w.letter || "")) + "</span>" +
+          '<span><strong class="t">' + esc(w.title) + '</strong><span class="focus">' + esc(w.focus) + "</span>" +
+          '<span class="meta">circa ' + R.estimateMinutes(w) + " min · " + esc(lastText(id)) + "</span></span>" +
+          '<span class="go" aria-hidden="true">›</span></button>';
+      }).join("");
+      const ses = S.session, box = $("resume");
+      if (R.resumable(ses)) {
+        const w = WORKOUTS[ses.wid], steps = R.buildSteps(w), st = steps[Math.min(ses.idx, steps.length - 1)];
+        const it = st.ii != null ? w.phases[st.pi].items[st.ii] : null;
+        box.hidden = false;
+        box.innerHTML = "<div><strong>Seduta in corso · " + esc(w.title) + "</strong><span>" + esc(w.phases[st.pi].title + (it ? " · " + EX[it.ex].name : "")) +
+          '</span></div><div class="row"><button type="button" id="resNo">Scarta</button><button type="button" class="solid" id="resYes">Riprendi</button></div>';
+        $("resYes").onclick = () => { R.unlockAudio(); R.startWorkout(ses.wid, ses.idx, ses.startedAt); };
+        $("resNo").onclick = () => { S.session = null; R.store.save(); renderHome(); };
+      } else box.hidden = true;
+    }
+    return { lastText, renderHome };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · componente: anteprima della seduta (periodo, durata prevista, fasi, serie, scaletta per fase).
+   Da src/app1.js:42 e src/app2.js:53-64. Il periodo si legge da workout.periodLabel + workout.period. */
+(function (WP) {
+  "use strict";
+  WP.modules.preview = function (R) {
+    const { $, esc } = WP.util;
+    const rowsHTML = ph => R.phaseRows(ph).map(r => '<div class="row"><span>' + esc(r[0]) + "</span><span>" + esc(r[1]) + "</span></div>").join("");
+    function renderPreview(id) {
+      const w = R.WORKOUTS[id];
+      $("pvPeriod").textContent = [w.periodLabel, w.period].filter(Boolean).join(" ");
+      $("pvTitle").textContent = w.title; $("pvFocus").textContent = w.focus;
+      $("pvStats").innerHTML = "<div><b>~" + R.estimateMinutes(w) + "′</b><span>durata prevista</span></div><div><b>" + w.phases.length +
+        "</b><span>fasi</span></div><div><b>" + R.countSets(w) + "</b><span>serie e blocchi</span></div>";
+      $("pvPlan").innerHTML = w.phases.map(ph => "<section><h3>" + esc(ph.title) + (ph.optional ? " · facoltativo" : "") + "</h3>" +
+        rowsHTML(ph) + "</section>").join("");
+      $("pvStart").onclick = () => { R.unlockAudio(); R.startWorkout(id, 0, Date.now()); };
+      R.show("preview");
+    }
+    return { rowsHTML, renderPreview };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · componente: il player (barra in alto, avanzamento per fase, disegno del passo corrente).
+   Passi: ingresso di fase (gate), preparazione, lavoro a tempo con quadrante, lavoro a ripetizioni con "Serie completata",
+   riposo con "Tra poco", passo libero (free). Da src/app2.js:127-134 e src/app3.js:1-73.
+   Dai dati: nota di giro dei circuiti (phase.roundNote), obiettivo dei battiti nelle fasi con hr.
+   Avviso "Mentre eri via" quando un passo a tempo è finito a pagina chiusa o nascosta (R.cur.notice, AC-V3-3). */
+(function (WP) {
+  "use strict";
+  const CIRC = 2 * Math.PI * 135;
+  WP.modules.player = function (R) {
+    const { $, esc, fmt, fmtKg, durText } = WP.util;
+    const S = R.S, EX = R.EX, IMG = R.IMG;
+
+    function dialHTML(kind, it) {
+      const ring = '<svg viewBox="0 0 300 300" aria-hidden="true"><circle class="bg" cx="150" cy="150" r="135"/><circle class="fg" id="ring" cx="150" cy="150" r="135" stroke-dasharray="' + CIRC + '" stroke-dashoffset="0"/></svg>';
+      if (kind === "reps") return '<div class="dial">' + ring + '<div class="mid"><span class="big num">' + it.reps + '</span><span class="sub">ripetizioni</span><span class="sub2" id="elapsed">0:00</span></div></div>';
+      if (kind === "free") return '<div class="dial">' + ring + '<div class="mid"><span class="big num" id="elapsed">0:00</span><span class="sub">tempo trascorso</span></div></div>';
+      return '<div class="dial">' + ring + '<div class="mid"><span class="big num" id="big" role="timer"></span><span class="sub">' + (R.cur.paused ? "in pausa" : kind) + "</span></div></div>";
+    }
+    const adjustHTML = () => '<div class="adjust"><button type="button" data-adj="-15">−15 s</button><button type="button" data-act="pause">' + (R.cur.paused ? "Riprendi" : "Pausa") + '</button><button type="button" data-adj="15">+15 s</button></div>';
+    const noteHTML = t => (t ? '<div class="note"><span class="eyebrow">Nota del trainer</span>' + esc(t) + "</div>" : "");
+    function chipsHTML(it, st, withRest) {
+      const setLabel = R.setLabel;
+      let h = '<div class="chips">';
+      if (setLabel(st)) { const p = setLabel(st).split(" · "); h += '<div class="chip"><span>' + esc(p[0].split(" ")[0]) + "</span><b>" + esc(p[0].replace(/^\S+\s/, "").replace(" di ", "/")) + "</b></div>"; if (p[1]) h += '<div class="chip"><span>Lato</span><b>' + esc(p[1].replace("Lato ", "")) + "</b></div>"; }
+      if (it.mode === "reps") {
+        h += '<div class="chip"><span>Ripetizioni</span><b>' + it.reps + "</b></div>";
+        if (typeof it.kg === "number") {
+          const changed = S.kg[it.ex] != null && S.kg[it.ex] !== it.kg;
+          h += '<div class="chip kg"><span>Carico</span><div class="kgrow"><button type="button" data-kg="-1" data-ex="' + it.ex + '" aria-label="Diminuisci il carico">−</button><b>' + fmtKg(R.kgOf(it)) + ' kg</b><button type="button" data-kg="1" data-ex="' + it.ex + '" aria-label="Aumenta il carico">+</button></div>' +
+            (changed ? "<small>in scheda " + fmtKg(it.kg) + " kg</small>" : "") + "</div>";
+        } else h += '<div class="chip"><span>Carico</span><b>' + (it.kg === "BW" ? "Corpo" : "Libero") + "</b></div>";
+      } else {
+        h += '<div class="chip"><span>Durata</span><b>' + esc(durText(it.dur)) + "</b></div>";
+        if (it.label && /^RPE/.test(it.label)) h += '<div class="chip"><span>Sforzo</span><b>' + esc(it.label) + "</b></div>";
+        if (R.phaseOf(st).hr) h += '<div class="chip"><span>Obiettivo</span><b>' + (R.bpm() ? "≈ " + R.bpm() + " bpm" : "90% FC max") + "</b></div>";
+      }
+      if (withRest && it.rest) h += '<div class="chip"><span>Recupero</span><b>' + esc(durText(it.rest)) + "</b></div>";
+      return h + "</div>";
+    }
+    function exerciseHTML(it, full) {
+      const ex = EX[it.ex], src = IMG[ex.img || it.ex];
+      return (it.cue ? '<p class="gear">' + esc(it.label + " = " + it.cue) + "</p>" : "") + noteHTML(it.note) +
+        (src ? '<div class="figure"><img alt="Illustrazione: ' + esc(ex.it) + '" src="' + src + '" width="600" height="300"></div>' : "") +
+        (full ? '<div class="how"><span class="eyebrow">Come si esegue</span><ol>' + ex.how.map(s => "<li>" + esc(s) + "</li>").join("") + '</ol><p class="gear">Attrezzi: ' + esc(ex.gear) + "</p></div>" : "");
+    }
+    const titleHTML = (h, p) => '<div class="title"><h2>' + esc(h) + "</h2>" + (p ? "<p>" + esc(p) + "</p>" : "") + "</div>";
+    const phaseNotesHTML = ph => (ph.notes.length ? '<div class="note"><span class="eyebrow">Note del trainer</span>' + ph.notes.map(esc).join("<br>") + "</div>" : "");
+    const circuitText = ph => (ph.flow === "circuit" ? ph.rounds + " giri, senza pause tra un esercizio e l'altro" : "");
+
+    function render() {
+      const W = R.W, STEPS = R.STEPS, cur = R.cur, setLabel = R.setLabel;
+      const st = STEPS[cur.idx], ph = R.phaseOf(st), it = R.itemOf(st), ex = it ? EX[it.ex] : null, P = $("player");
+      P.dataset.kind = st.type; P.classList.toggle("paused", !!cur.paused);
+      $("where").innerHTML = (W.letter ? esc(W.letter) + " · " : "") + "<b>" + esc(ph.title) + "</b>";
+      [...$("track").children].forEach((seg, pi) => {
+        const mine = STEPS.map((s, i) => (s.pi === pi ? i : -1)).filter(i => i >= 0);
+        seg.firstChild.style.width = Math.round(100 * mine.filter(i => i < cur.idx).length / mine.length) + "%";
+      });
+      $("btnPrev").disabled = cur.idx === 0;
+      let h = "", main = "Avanti";
+      if (st.type === "gate") {
+        main = cur.idx === 0 ? "Inizia" : "Inizia la fase";
+        const gear = [...new Set(ph.items.map(i => EX[i.ex].gear))];
+        h = '<span class="state">Fase ' + (st.pi + 1) + " di " + W.phases.length + (ph.optional ? " · facoltativa" : "") + "</span>" + titleHTML(ph.title, circuitText(ph)) +
+          phaseNotesHTML(ph) +
+          (ph.hr ? '<div class="hr"><label for="age">La tua età</label><input id="age" type="number" inputmode="numeric" min="10" max="99" value="' + (S.age || "") + '"><output id="ageOut" for="age"></output></div>' : "") +
+          '<div class="gate-ex">' + R.rowsHTML(ph) + "</div>" +
+          '<p class="gear">Ti serve: ' + esc(gear.join(" — ")) + "</p>";
+      } else if (st.type === "prep") {
+        main = "Via subito";
+        h = '<span class="state">Preparati</span>' + titleHTML(ex.name, ex.it + (setLabel(st) ? " · " + setLabel(st) : "")) + dialHTML("mettiti in posizione") + adjustHTML() +
+          (st.round > 1 && st.ii === 0 && ph.roundNote ? noteHTML("Giro " + st.round + ": " + ph.roundNote) : "") + chipsHTML(it, st, true) + exerciseHTML(it, true);
+      } else if (st.type === "work") {
+        const timed = it.mode === "timed";
+        main = timed ? "Fatto, avanti" : "Serie completata";
+        h = '<span class="state">' + (timed ? "Lavoro" : "Tocca a te") + "</span>" + titleHTML(ex.name, ex.it) +
+          (timed ? dialHTML("al termine suona", it) + adjustHTML() : dialHTML("reps", it)) + chipsHTML(it, st, true) + exerciseHTML(it, true);
+      } else if (st.type === "free") {
+        // passo libero: ciò che la sequenza non sa guidare, mostrato così come sta nei dati, con un cronometro in avanti
+        main = "Fatto, avanti";
+        h = '<span class="state">Segui la scheda</span>' + (it
+          ? titleHTML(ex.name, ex.it + (setLabel(st) ? " · " + setLabel(st) : "")) + dialHTML("free") +
+            '<div class="note"><span class="eyebrow">Dalla scheda</span>' + esc(R.itemSummary(it, ph)) + "</div>" + exerciseHTML(it, true)
+          : titleHTML(ph.title, circuitText(ph)) + dialHTML("free") + phaseNotesHTML(ph) + '<div class="gate-ex">' + R.rowsHTML(ph) + "</div>" +
+            ph.items.map(i => '<div class="nextup">' + titleHTML(EX[i.ex].name, EX[i.ex].it) + exerciseHTML(i, false) + "</div>").join(""));
+      } else {
+        main = "Salta il riposo";
+        const n = R.nextWork(cur.idx), ni = n && R.itemOf(n), same = ni === it;
+        h = '<span class="state">Riposo</span>' + titleHTML("Recupera", it.restCue || "Respira a fondo, bevi un sorso, sciogli le spalle.") + dialHTML("poi si riparte") + adjustHTML() +
+          (ni && n.type !== "free" ? '<div class="nextup"><span class="eyebrow">Tra poco</span>' + titleHTML(EX[ni.ex].name, EX[ni.ex].it) + chipsHTML(ni, n, false) + exerciseHTML(ni, !same) + "</div>"
+              : n ? '<div class="nextup"><span class="eyebrow">Tra poco</span>' + titleHTML(ni ? EX[ni.ex].name : R.phaseOf(n).title, n.type === "free" ? "Segui la scheda" : "Nuova fase") + "</div>" : "");
+      }
+      const away = cur.notice ? '<div class="note"><span class="eyebrow">Mentre eri via</span>' + esc(cur.notice) + "</div>" : "";
+      $("stage").innerHTML = away + h; $("btnMain").textContent = main;
+      if (cur.endsAt != null) { cur.lastSec = Math.ceil(R.remainingMs() / 1000); paintClock(R.remainingMs()); }
+      paintAge();
+    }
+    function paintAge() { const o = $("ageOut"); if (o) o.textContent = R.bpm() ? "90% FC max ≈ " + R.bpm() + " bpm" : "per stimare i battiti obiettivo"; }
+
+    function paintClock(ms) {
+      const big = $("big"); if (!big) return;
+      const sec = Math.ceil(Math.max(0, ms) / 1000);
+      big.textContent = sec >= 60 ? fmt(sec) : String(sec);
+      big.classList.toggle("long", sec >= 600);
+      const ring = $("ring"); if (ring) ring.style.strokeDashoffset = String(CIRC * (1 - Math.max(0, Math.min(1, ms / R.cur.total))));
+    }
+    function paintElapsed(sec) { const el = $("elapsed"); if (el) el.textContent = fmt(sec); }
+
+    function mountPlayer() {
+      $("track").innerHTML = R.W.phases.map((ph, pi) => '<i style="flex:' + R.STEPS.filter(s => s.pi === pi).length + '"><b></b></i>').join("");
+      R.show("player");
+    }
+
+    return { render, paintAge, paintClock, paintElapsed, mountPlayer };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · componente: scaletta (tutte le voci della seduta, fatte / in corso, salto a una voce). Da src/app3.js:75-83.
+   Una voce senza passi propri (fase resa come un solo passo libero) punta ai passi della sua fase. */
+(function (WP) {
+  "use strict";
+  WP.modules.list = function (R) {
+    const { $, esc } = WP.util;
+    const EX = R.EX;
+    const indexes = pred => R.STEPS.map((s, i) => (pred(s) ? i : -1)).filter(i => i >= 0);
+    function renderList() {
+      const STEPS = R.STEPS, cur = R.cur;
+      $("listBody").innerHTML = R.W.phases.map((ph, pi) => '<div class="sl-phase">' + esc(ph.title) + "</div>" + ph.items.map((it, ii) => {
+        let idxs = indexes(s => s.pi === pi && s.ii === ii);
+        if (!idxs.length) idxs = indexes(s => s.pi === pi && s.type !== "gate");
+        const now = idxs.includes(cur.idx), done = !now && idxs[idxs.length - 1] < cur.idx;
+        const target = ph.flow === "circuit" && STEPS[cur.idx].pi === pi ? (idxs.find(i => STEPS[i].round === (STEPS[cur.idx].round || 1)) ?? idxs[0]) : idxs[0];
+        return '<button type="button" class="sl-item' + (now ? " now" : done ? " done" : "") + '" data-jump="' + target + '"><span>' + esc(EX[it.ex].name) + "</span><span>" + esc(R.itemSummary(it, ph)) + "</span></button>";
+      }).join("")).join("");
+    }
+    return { renderList };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · componente: dialog (scaletta, audio e tempi, uscita) e stato dei selettori delle impostazioni.
+   Da src/app3.js:86-90. Il contenuto dei dialog sta in lib/shell.html. */
+(function (WP) {
+  "use strict";
+  WP.modules.dialogs = function (R) {
+    const openDlg = d => { try { d.showModal(); } catch (e) { d.setAttribute("open", ""); } };
+    const closeDlg = d => { try { d.close(); } catch (e) { d.removeAttribute("open"); } };
+    function paintSettings() {
+      document.querySelectorAll(".seg").forEach(seg => [...seg.children].forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.v) === Number(R.S.settings[seg.dataset.set])))));
+    }
+    return { openDlg, closeDlg, paintSettings };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · componente: schermata finale (tempo totale, serie e blocchi, messaggio di chiusura della seduta).
+   Da src/app2.js:154-157. Il messaggio viene dai dati (workout.doneMsg). */
+(function (WP) {
+  "use strict";
+  WP.modules.done = function (R) {
+    const { $ } = WP.util;
+    function renderDone(mins) {
+      const W = R.W;
+      $("doneKicker").textContent = W.title + " · " + W.focus;
+      $("doneStats").innerHTML = "<div><b>" + mins + "′</b><span>tempo totale</span></div><div><b>" + R.countSets(W) + "</b><span>serie e blocchi</span></div>";
+      $("doneMsg").textContent = W.doneMsg || "";
+      R.show("done");
+    }
+    return { renderDone };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · componenti: eventi dell'interfaccia (tocchi, impostazioni, carico, salti, età, visibilità).
+   Da src/app3.js:97-132. Il passo del carico per esercizio viene dai dati (plan.kgStep, 1 kg se manca). */
+(function (WP) {
+  "use strict";
+  WP.modules.events = function (R) {
+    const { $ } = WP.util;
+    const S = R.S, KG_STEP = R.plan.kgStep || {};
+    function wireEvents() {
+      document.addEventListener("click", e => {
+        const t = e.target.closest("button"); if (!t) return;
+        if (t.dataset.w) return R.renderPreview(t.dataset.w);
+        if (t.hasAttribute("data-close")) return R.closeDlg(t.closest("dialog"));
+        if (t.parentElement.classList.contains("seg")) {
+          S.settings[t.parentElement.dataset.set] = Number(t.dataset.v); R.store.save(); R.paintSettings();
+          if (t.parentElement.dataset.set === "beep" && S.settings.beep) { R.unlockAudio(); R.sfx.tick(); }
+          if (t.parentElement.dataset.set === "voice") { if (S.settings.voice) R.say("Voce attiva."); else R.hush(); }
+          return;
+        }
+        if (!R.cur) return;
+        R.unlockAudio();
+        if (t.dataset.adj) { R.adjust(Number(t.dataset.adj)); R.paintClock(R.remainingMs()); return; }
+        if (t.dataset.act === "pause") return R.togglePause();
+        if (t.dataset.kg) {
+          const exId = t.dataset.ex, item = R.W.phases.flatMap(p => p.items).find(i => i.ex === exId);
+          S.kg[exId] = Math.max(0, Math.round((R.kgOf(item) + Number(t.dataset.kg) * (KG_STEP[exId] || 1)) * 100) / 100);
+          R.store.save(); return R.render();
+        }
+        if (t.dataset.jump) { R.closeDlg($("dlgList")); return R.enter(Number(t.dataset.jump)); }
+      });
+      $("stage").addEventListener("input", e => {
+        if (e.target.id !== "age") return;
+        const v = parseInt(e.target.value, 10); S.age = v >= 10 && v <= 99 ? v : null; R.store.save(); R.paintAge();
+      });
+      $("pvBack").onclick = () => { R.renderHome(); R.show("home"); };
+      $("pvAudio").onclick = $("btnAudio").onclick = () => { R.paintSettings(); R.openDlg($("dlgAudio")); };
+      $("btnList").onclick = () => { R.renderList(); R.openDlg($("dlgList")); };
+      $("btnExit").onclick = () => R.openDlg($("dlgExit"));
+      $("exitYes").onclick = () => { R.closeDlg($("dlgExit")); R.leave(); };
+      $("btnMain").onclick = () => { R.unlockAudio(); R.enter(R.cur.idx + 1); };
+      $("btnNext").onclick = () => R.enter(R.cur.idx + 1);
+      $("btnPrev").onclick = () => R.enter(R.cur.idx - 1, { back: true });
+      $("doneHome").onclick = () => { R.renderHome(); R.show("home"); };
+      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && R.cur) { R.keepAwake(true); R.tick(); } });
+      try { window.speechSynthesis && window.speechSynthesis.getVoices(); } catch (e) { /* ignora */ }
+    }
+    return { wireEvents };
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+/* WorkoutPlayer · punto d'ingresso della libreria (API v0: lib/API-v0.md).
+
+   await WorkoutPlayer.start({ plan, images, composeSource, timeoutMs })
+       esegue lo script del piano isolato (lib/engine/isolate.js), controlla i passi e monta il player nella pagina
+       (lo scheletro lib/shell.html deve esserci). Senza composeSource, o se lo script fallisce, scade o restituisce
+       passi non validi, la sequenza la dà il rendering di riserva dai soli dati. Segna <html data-player="script|riserva">.
+   WorkoutPlayer.create({ plan, images, compose | steps })
+       costruisce il runtime senza toccare il DOM (test, verificatore). compose = funzione eseguita qui, senza isolamento:
+       solo per codice fidato (test); steps = passi già calcolati.
+
+   plan    = dati del piano (plans/<piano>/plan.json)
+   images  = { nome: URL o data URI } (plans/<piano>/images/)
+   script  = function compose(plan, api) { return { idSeduta: [passi] } } (plans/<piano>/compose.js)
+
+   Il runtime R tiene lo stato della seduta (R.W, R.STEPS, R.cur) e le funzioni di motore (lib/engine/) e componenti
+   (lib/ui/), che si chiamano fra loro attraverso R. */
+(function (WP) {
+  "use strict";
+  const MODULES = ["store", "texts", "audio", "wakelock", "session", "shell", "home", "preview", "player", "list", "dialogs", "done", "events"];
+  const copy = v => JSON.parse(JSON.stringify(v));
+
+  WP.create = function (opts) {
+    const plan = opts.plan;
+    let raw = opts.steps || null, reason = opts.fallbackReason || null;
+    if (plan.api && !WP.SUPPORTED_APIS.includes(plan.api)) { raw = null; reason = "API " + plan.api + " non supportata"; }
+    else if (!raw && typeof opts.compose === "function") {
+      try { raw = opts.compose(copy(plan), WP.api()); } catch (e) { reason = "errore dello script: " + e.message; }
+    }
+    let steps = null;
+    if (raw) {
+      const res = WP.acceptSteps(plan, raw);
+      if (res.problems.length) reason = "passi rifiutati: " + res.problems.slice(0, 3).join("; "); else steps = res.steps;
+    }
+    const keyOf = new Map(Object.keys(plan.workouts).map(k => [plan.workouts[k], k]));
+    const R = {
+      plan, EX: plan.exercises, WORKOUTS: plan.workouts, IMG: opts.images || {},
+      mode: steps ? "script" : "riserva", fallbackReason: steps ? null : reason,
+      buildSteps: steps ? (w => steps[keyOf.get(w)]) : WP.fallbackSteps,
+      // una sola memoria per piano: la seduta salvata dice con quale sequenza (script o riserva) è stata salvata
+      storageKey: plan.storageKey || "workoutplayer-" + plan.id
+    };
+    MODULES.forEach(name => Object.assign(R, WP.modules[name](R)));
+    return R;
+  };
+
+  WP.start = async function (opts) {
+    let steps = null, reason = null;
+    if (opts.composeSource) {
+      const res = await WP.composeIsolated(opts.plan, opts.composeSource, opts.timeoutMs);
+      if (res.ok) steps = res.steps; else reason = res.error;
+    }
+    const R = WP.create({ plan: opts.plan, images: opts.images, steps, fallbackReason: reason });
+    document.documentElement.dataset.player = R.mode;
+    if (R.fallbackReason) console.warn("WorkoutPlayer: rendering di riserva (" + R.fallbackReason + ")");
+    R.fillShell(); R.wireEvents(); R.renderHome(); R.show("home");
+    R.resumeInterrupted();
+    return R;
+  };
+})(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
+WorkoutPlayer.start({ plan: {"id":"demo","api":"v0","title":"Scheda di esempio","lang":"it-IT","storageKey":"scheda-demo-prova","kicker":"Scheda di esempio · settembre","rules":["Nel riscaldamento aumenta l'intensità in modo progressivo: almeno 10 minuti.","RPE è la scala dello sforzo percepito, da 1 a 10.","Il giorno in cui alleni le gambe evita la corsa.","Una volta alla settimana, una seduta di sola aerobica."],"kgStep":{"cablechest":1.25,"reversefly":1.25,"latpull":5,"pulley":5,"rdl":2.5,"legext":5,"rearfly":1,"latraise":1,"straightarm":2.5,"pushdown":2.5,"curl":1},"exercises":{"treadmill":{"name":"Treadmill","it":"Tapis roulant","gear":"Tapis roulant","how":["Parti camminando e alza velocità o pendenza a ogni blocco: lo sforzo deve crescere in modo graduale.","Busto alto, sguardo avanti, braccia che oscillano libere: non appoggiarti ai corrimano.","Regolati sulla scala RPE (sforzo percepito da 1 a 10), non sulla velocità del display."]},"catcow":{"name":"Cat Cow Mobility","it":"Gatto-mucca","gear":"Tappetino","how":["In quadrupedia: mani sotto le spalle, ginocchia sotto le anche.","Espirando spingi il pavimento e incurva la schiena verso l'alto, mento al petto.","Inspirando lascia scendere l'ombelico, apri il petto e porta lo sguardo avanti.","Muoviti lento e fermati 1 secondo nel punto di massimo allungamento di ogni fase."]},"trxfly":{"name":"TRX Fly Mobility","it":"Aperture al TRX","gear":"TRX","how":["Dai le spalle all'ancoraggio, una maniglia per mano, braccia tese davanti al petto.","Fai un passo avanti e apri le braccia in fuori lasciando che il petto si allunghi.","Gomiti morbidi, spalle lontane dalle orecchie, addome attivo per non inarcare la zona lombare.","Fermati 1 secondo in apertura, poi richiudi le braccia e torna in piedi. Alterna la gamba che avanza."]},"lateral":{"name":"Lateral Trunk Flexion Mobility","it":"Flessioni laterali del busto","gear":"Corpo libero","how":["In piedi, piedi uniti o alla larghezza del bacino, braccia sopra la testa con le mani intrecciate.","Inclina il busto di lato senza ruotare e senza portare il bacino avanti o indietro.","Allunga tutto il fianco, fermati 1 secondo, torna al centro e cambia lato.","A ogni giro cerca un po' più di ampiezza."]},"flexext":{"name":"Flex-Extension Chain Mobility","it":"Flesso-estensione delle catene","gear":"Tappetino","how":["Parti seduto sui talloni con le mani a terra davanti a te.","Spingi sulle mani, stendi le gambe e sali con il bacino verso l'alto: V rovesciata, talloni che cercano il pavimento.","Spingi il petto verso le cosce, fermati 1 secondo in allungamento.","Piega le ginocchia e torna a sederti sui talloni, poi ripeti in modo fluido."]},"bbcross":{"name":"Bb cross extension","it":"Estensioni incrociate","gear":"Tappetino","how":["A terra a pancia in giù, braccia e gambe aperte a X.","Solleva insieme un braccio e la gamba opposta allungando la diagonale, come se qualcuno ti tirasse da mano e piede.","Fermati un istante in alto, scendi con controllo e passa all'altra diagonale.","Collo lungo e sguardo a terra, glutei attivi: il movimento parte dalla schiena, non dallo slancio."]},"crosssit":{"name":"Cross-Sit","it":"Crunch incrociato","gear":"Tappetino","how":["Supino, braccia e gambe aperte a X.","Solleva una gamba tesa e porta la mano opposta verso il piede, staccando spalla e scapola da terra.","Espira mentre sali, scendi con controllo e alterna la diagonale.","La zona lombare resta a contatto con il pavimento per tutto il minuto."]},"cablechest":{"name":"Standing Cable Chest Press","it":"Spinte ai cavi in piedi","gear":"Cavi · carrucola 22","how":["Carrucole all'altezza 22. Dai le spalle alla macchina, un passo avanti, piedi sfalsati, busto appena inclinato.","Parti con le maniglie ai lati del petto, gomiti larghi sotto la linea delle spalle.","Spingi avanti fino a stendere quasi del tutto le braccia, avvicinando le mani.","Torna indietro lento lasciando aprire bene il petto: l'esecuzione deve essere ampia."]},"trxchest":{"name":"TRX Chest Press","it":"Piegamenti al TRX","gear":"TRX","how":["Dai le spalle all'ancoraggio, maniglie in mano a braccia tese, corpo inclinato in avanti e rigido come in un plank.","Piega i gomiti e scendi con il petto tra le mani: gomiti a circa 45° dal busto.","Spingi e torna a braccia tese senza perdere l'allineamento testa-bacino-talloni.","Più sposti i piedi indietro, più è duro: scegli un'inclinazione che ti faccia chiudere bene le 10 ripetizioni."]},"reversefly":{"name":"Standing cable reverse flyes","it":"Aperture inverse ai cavi","gear":"Cavi incrociati","how":["In piedi davanti ai cavi, afferra il cavo di destra con la mano sinistra e viceversa: braccia tese davanti a te.","Apri le braccia in fuori e indietro fino alla linea delle spalle, pollici rivolti dietro.","Stringi le scapole un istante, poi torna lento senza farti tirare dal peso.","Carico leggero e niente slancio del busto: devono lavorare i deltoidi posteriori."]},"situp":{"name":"Sit-up","it":"Sit-up","gear":"Tappetino · piedi vincolati","how":["Supino, ginocchia piegate, piedi bloccati sotto un appoggio. Mani dietro la nuca, gomiti larghi.","Espirando sali con il busto fino a sederti, srotolando la schiena dal pavimento.","Scendi lento, una vertebra alla volta.","Le mani appoggiano soltanto: non tirare il collo."]},"latpull":{"name":"Lat Pulldown","it":"Lat machine","gear":"Lat machine","how":["Presa prona (palmi avanti), poco più larga delle spalle. Blocca le cosce sotto i cuscinetti.","Petto alto, busto appena inclinato indietro: tira la barra verso la parte alta del petto.","Guida con i gomiti verso il basso e abbassa le scapole, senza dondolare.","Risali controllando fino ad avere le braccia quasi distese."]},"pulley":{"name":"Seated Pulley Row","it":"Pulley basso","gear":"Pulley","how":["Seduto, piedi sugli appoggi, ginocchia morbide, schiena dritta.","Tira l'impugnatura verso l'ombelico con i gomiti vicini al corpo.","Stringi le scapole a fine tirata, poi stendi le braccia lento.","Il busto resta quasi fermo: non aiutarti oscillando avanti e indietro."]},"plank":{"name":"Plank","it":"Plank","gear":"Tappetino","how":["Avambracci a terra, gomiti sotto le spalle, corpo in linea da testa a talloni.","Addome e glutei attivi, non far cadere il bacino.","Durante la tenuta alterna: rotazioni del bacino (retroversione e ritorno in neutro)…","…e movimento delle scapole (lasciale avvicinare, poi spingi il pavimento per allontanarle)."]},"sideplank":{"name":"Side Plank","it":"Plank laterale","gear":"Tappetino","how":["Sul fianco, gomito sotto la spalla, piedi sovrapposti.","Solleva il bacino fino ad avere il corpo in linea retta.","Non far ruotare il bacino in avanti e non lasciarlo scendere.","4 serie in tutto: 2 per lato, alternando."]},"rdl":{"name":"Romanian Deadlift","it":"Stacco rumeno","gear":"Bilanciere","how":["In piedi, bilanciere davanti alle cosce, piedi alla larghezza del bacino, ginocchia appena sbloccate.","Porta il bacino indietro e fai scorrere il bilanciere lungo le cosce fin sotto le ginocchia.","Mantieni le curve naturali della schiena: petto aperto, niente gobba, sguardo un paio di metri avanti.","Quando senti tirare i femorali, risali spingendo il bacino avanti e stringendo i glutei."]},"legext":{"name":"Leg Extension","it":"Leg extension","gear":"Leg extension · sedile 3 · rullo 2","how":["Regola la macchina: sedile 3, rullo 2. Ginocchia allineate al perno, rullo sopra le caviglie.","Schiena appoggiata, mani sulle maniglie.","Stendi le gambe fino quasi alla completa estensione e contrai un istante i quadricipiti.","Scendi in 2-3 secondi senza far sbattere il pacco pesi."]},"rearfly":{"name":"Incline Rear Fly","it":"Aperture posteriori su panca","gear":"Panca a 0° · manubri","how":["Panca a 0 gradi. Sdraiati a pancia in giù, manubri leggeri con le braccia che pendono verso il pavimento.","Apri le braccia in fuori fino alla linea delle spalle, gomiti appena morbidi, pollici rivolti in alto.","Stringi le scapole un istante e scendi lento.","Collo in linea, niente slancio: il carico è volutamente basso."]},"latraise":{"name":"Seated Db Lateral Raise","it":"Alzate laterali da seduto","gear":"Panca · manubri","how":["Seduto con la schiena dritta, manubri lungo i fianchi.","Alza le braccia di lato con i gomiti appena piegati, guidando il movimento con i gomiti.","Spalle basse, lontane dalle orecchie; nessuno slancio del busto.","Scendi in 2-3 secondi. Per l'ampiezza dell'arco segui quella che ti ha mostrato il trainer."]},"straightarm":{"name":"Straight Arm Pulldown","it":"Pulldown a braccia tese","gear":"Cavo alto · corda","how":["Cavo alto con la corda. Un passo indietro, busto appena inclinato avanti, braccia tese verso l'alto.","Con i gomiti quasi bloccati porta la corda in un arco fino alle cosce.","Senti lavorare i dorsali, non i tricipiti; addome attivo.","Risali lento fin sopra la linea delle spalle."]},"pushdown":{"name":"Pushdown","it":"Spinte in basso per tricipiti","gear":"Cavo alto · corda","how":["Cavo alto con la corda, gomiti incollati ai fianchi.","Stendi le braccia verso il basso e a fine corsa apri leggermente la corda in fuori.","Si muovono solo gli avambracci: spalle e busto restano fermi.","Risali fin poco sopra i 90° di gomito, controllando."]},"curl":{"name":"Incline Seated Db Curl","it":"Curl su panca inclinata","gear":"Panca inclinata · manubri","how":["Panca inclinata a circa 45-60°. Schiena e testa appoggiate, braccia che pendono verticali.","Fletti i gomiti portando i manubri verso le spalle, palmi rivolti in alto.","I gomiti restano indietro, fermi: non farli avanzare.","Scendi lento fino alla completa distensione per sfruttare l'allungamento del bicipite."]},"steady":{"name":"Ciclica continua","it":"Camminata / corsa continua","gear":"Tapis roulant o percorso all'aperto","how":["30 minuti senza fermarti, alternando camminata veloce e corsa.","Scegli un ritmo che riesci a tenere fino alla fine: respiro impegnato ma regolare.","Se il fiato si spezza, torna alla camminata veloce per un minuto e poi riparti.","Tieni qualcosa da parte: alla fine ti aspettano le 4 serie di HIIT."]},"hiit":{"name":"HIIT","it":"Corsa al 90% della FC max","gear":"Tapis roulant o percorso all'aperto","how":["2 minuti di corsa sostenuta, fino a raggiungere circa il 90% della tua frequenza cardiaca massima.","Alza la velocità nei primi 20-30 secondi e poi tienila: non partire in sprint.","Falcata corta e frequente, spalle rilassate, espirazione piena.","Se hai un cardiofrequenzimetro, controlla i battiti nell'ultimo minuto."]},"cooldown":{"name":"Defaticamento","it":"Camminata di recupero","gear":"Tapis roulant o percorso all'aperto","how":["Cammina a passo tranquillo e lascia scendere i battiti.","Respira a fondo dal naso, espira lungo dalla bocca.","Questo blocco non è in scheda: è un consiglio per chiudere bene dopo l'HIIT. Puoi saltarlo."]}},"workouts":{"A":{"id":"A","title":"Allenamento A","focus":"Petto · Dorso · Addome","period":"dal 10/09/26 al 18/10/26","phases":[{"id":"aerobica","title":"Aerobica","kicker":"Riscaldamento","notes":["Aumenta progressivamente l'intensità: durata minima 10 minuti.","RPE è la scala di autovalutazione dello sforzo percepito.","Il giorno in cui alleni le gambe evita la corsa.","Evita in ogni caso uno sforzo aerobico eccessivo."],"flow":"continuous","items":[{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 4","cue":"sforzo moderato: parli senza problemi","note":null},{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 5","cue":"un po' impegnativo: parli a frasi intere","note":null},{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 6","cue":"impegnativo: respiro profondo, frasi brevi","note":null},{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 7","cue":"intenso: parli a fatica","note":null},{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 7","cue":"intenso: parli a fatica","note":"Blocco aggiunto per arrivare ai 10 minuti minimi chiesti dal trainer. Mantieni lo sforzo del blocco precedente."}]},{"id":"mobilita","title":"Circuito mobilità funzionale","kicker":"Mobilità","notes":["Completa 3 giri di circuito aumentando a ogni giro l'ampiezza di movimento."],"flow":"circuit","rounds":3,"items":[{"ex":"catcow","mode":"timed","dur":30,"rest":0,"sets":1,"note":"Stop in stretching di 1 secondo."},{"ex":"trxfly","mode":"timed","dur":30,"rest":0,"sets":1,"note":"Stop in stretching di 1 secondo."},{"ex":"lateral","mode":"timed","dur":30,"rest":0,"sets":1,"note":"Stop in stretching di 1 secondo."},{"ex":"flexext","mode":"timed","dur":30,"rest":0,"sets":1,"note":"Stop in stretching di 1 secondo."}],"roundNote":"cerca più ampiezza di movimento rispetto al giro precedente."},{"id":"core","title":"Core","kicker":"Core","notes":[],"flow":"sets","items":[{"ex":"bbcross","mode":"timed","sets":4,"dur":60,"rest":60},{"ex":"crosssit","mode":"timed","sets":4,"dur":60,"rest":60}]},{"id":"muscolare","title":"Allenamento muscolare","kicker":"Forza","notes":[],"flow":"sets","items":[{"ex":"cablechest","mode":"reps","sets":2,"reps":10,"kg":7.5,"rest":60,"note":"In piedi, carrucola 22. Esecuzione ampia."},{"ex":"trxchest","mode":"reps","sets":2,"reps":10,"kg":null,"rest":60},{"ex":"reversefly","mode":"reps","sets":4,"reps":10,"kg":1.25,"rest":60,"note":"Pollici rivolti dietro."},{"ex":"situp","mode":"reps","sets":4,"reps":10,"kg":"BW","rest":60,"note":"Vincola i piedi. Mani dietro la nuca."},{"ex":"latpull","mode":"reps","sets":2,"reps":10,"kg":30,"rest":60,"note":"Presa prona."},{"ex":"pulley","mode":"reps","sets":2,"reps":10,"kg":20,"rest":60}]}],"letter":"A","periodLabel":"Valida","doneMsg":"Bevi e segnati i carichi che ti sono sembrati leggeri: la prossima volta puoi ritoccarli dal contatore dei kg."},"B":{"id":"B","title":"Allenamento B","focus":"Gambe · Spalle · Braccia","period":"dal 15/09/26 al 18/10/26","phases":[{"id":"aerobica","title":"Aerobica","kicker":"Riscaldamento","notes":["Aumenta progressivamente l'intensità: durata minima 10 minuti.","RPE è la scala di autovalutazione dello sforzo percepito.","Il giorno in cui alleni le gambe evita la corsa.","Evita in ogni caso uno sforzo aerobico eccessivo.","Oggi è il giorno delle gambe: alza la pendenza invece di correre."],"flow":"continuous","items":[{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 4","cue":"sforzo moderato: parli senza problemi","note":"Oggi alleni le gambe: cammina in salita, evita la corsa."},{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 5","cue":"un po' impegnativo: parli a frasi intere","note":"Oggi alleni le gambe: cammina in salita, evita la corsa."},{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 6","cue":"impegnativo: respiro profondo, frasi brevi","note":"Oggi alleni le gambe: cammina in salita, evita la corsa."},{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 7","cue":"intenso: parli a fatica","note":"Oggi alleni le gambe: cammina in salita, evita la corsa."},{"ex":"treadmill","mode":"timed","dur":120,"rest":0,"sets":1,"label":"RPE 7","cue":"intenso: parli a fatica","note":"Blocco aggiunto per arrivare ai 10 minuti minimi chiesti dal trainer. Mantieni lo sforzo del blocco precedente."}]},{"id":"mobilita","title":"Circuito mobilità funzionale","kicker":"Mobilità","notes":["Completa 3 giri di circuito aumentando a ogni giro l'ampiezza di movimento."],"flow":"circuit","rounds":3,"items":[{"ex":"catcow","mode":"timed","dur":30,"rest":0,"sets":1,"note":"Stop in stretching di 1 secondo."},{"ex":"trxfly","mode":"timed","dur":30,"rest":0,"sets":1,"note":"Stop in stretching di 1 secondo."},{"ex":"lateral","mode":"timed","dur":30,"rest":0,"sets":1,"note":"Stop in stretching di 1 secondo."},{"ex":"flexext","mode":"timed","dur":30,"rest":0,"sets":1,"note":"Stop in stretching di 1 secondo."}],"roundNote":"cerca più ampiezza di movimento rispetto al giro precedente."},{"id":"core","title":"Core","kicker":"Core","notes":[],"flow":"sets","items":[{"ex":"plank","mode":"timed","sets":4,"dur":45,"rest":60,"note":"Alterna rotazione del bacino e movimento delle scapole."},{"ex":"sideplank","mode":"timed","sets":4,"dur":30,"rest":30,"note":"2 serie per lato.","sides":["Lato sinistro","Lato destro"]}]},{"id":"muscolare","title":"Allenamento muscolare","kicker":"Forza","notes":[],"flow":"sets","items":[{"ex":"rdl","mode":"reps","sets":4,"reps":10,"kg":30,"rest":60,"note":"Attenzione a mantenere le curve della schiena."},{"ex":"legext","mode":"reps","sets":4,"reps":10,"kg":40,"rest":60,"note":"Sedile 3, rullo 2."},{"ex":"rearfly","mode":"reps","sets":4,"reps":10,"kg":1,"rest":60,"note":"Pollici rivolti in alto. Panca a 0 gradi."},{"ex":"latraise","mode":"reps","sets":4,"reps":10,"kg":4,"rest":60},{"ex":"straightarm","mode":"reps","sets":2,"reps":10,"kg":10,"rest":90,"note":"Con corda."},{"ex":"pushdown","mode":"reps","sets":2,"reps":10,"kg":12.5,"rest":60,"note":"Con corda."},{"ex":"curl","mode":"reps","sets":4,"reps":10,"kg":8,"rest":60}]}],"letter":"B","periodLabel":"Valida","doneMsg":"Bevi e segnati i carichi che ti sono sembrati leggeri: la prossima volta puoi ritoccarli dal contatore dei kg."},"C":{"id":"C","title":"Sola aerobica","focus":"30 min continui + HIIT 4 × 2 min","period":"una volta alla settimana","phases":[{"id":"continua","title":"Ciclica continua","kicker":"Aerobica","flow":"continuous","notes":["Allenamento di sola aerobica ad alto costo energetico, consigliato una volta alla settimana.","30 minuti di ciclica continua camminata/corsa, poi HIIT finale."],"items":[{"ex":"steady","mode":"timed","sets":1,"dur":1800,"rest":0,"label":"30 minuti"}]},{"id":"hiit","title":"HIIT finale","kicker":"HIIT","flow":"sets","hr":true,"notes":["4 serie da 2 minuti di corsa raggiungendo il 90% della FC max, intervallate da 2 minuti di recupero."],"items":[{"ex":"hiit","mode":"timed","sets":4,"dur":120,"rest":120,"label":"90% FC max","restCue":"Cammina, non fermarti: lascia scendere i battiti.","noRestAfterLast":true}]},{"id":"defaticamento","title":"Defaticamento","kicker":"Extra","flow":"continuous","optional":true,"notes":["Non è in scheda: 3 minuti di camminata per chiudere. Puoi saltarlo."],"items":[{"ex":"cooldown","mode":"timed","sets":1,"dur":180,"rest":0,"label":"Facoltativo"}]}],"icon":"run","periodLabel":"Consigliata","doneMsg":"Bevi, cammina ancora un paio di minuti e lascia scendere i battiti."}}}, images: {}, composeSource: "/* Script di composizione del piano \"demo\" (prova di domanda: dati e logica generici, nessun nome di persona). API v0 della libreria WorkoutPlayer, lib/API-v0.md.\n   Contratto: compose(plan, api) → { idSeduta: [passi] }. È buildSteps dell'artifact (src/app1.js:45-65) riscritto\n   contro l'API: usa solo i dati ricevuti e api.steps.gate/prep/work/rest; gira isolato (lib/engine/isolate.js).\n   Rispetto al rendering di riserva aggiunge il circuito a giri (flow \"circuit\"): 3 giri × 4 esercizi, ciascuno\n   con la sua preparazione, invece di un unico passo libero. */\nfunction compose(plan, api) {\n  \"use strict\";\n  const { gate, prep, work, rest } = api.steps;\n\n  function buildSteps(w) {\n    const steps = [];\n    w.phases.forEach((ph, pi) => {\n      steps.push(gate({ pi }));\n      const add = (ii, set, sets, round) => {\n        const item = ph.items[ii];\n        const prev = steps[steps.length - 1];\n        const at = { pi, ii, set, sets, round };\n        if (item.mode === \"timed\" && prev.type !== \"rest\" && !(ph.flow === \"continuous\" && ii > 0)) steps.push(prep(at));\n        steps.push(work(at));\n        if (item.rest > 0 && !(item.noRestAfterLast && set === sets)) steps.push(rest(at));\n      };\n      if (ph.flow === \"circuit\") {\n        for (let r = 1; r <= ph.rounds; r++) ph.items.forEach((_, ii) => add(ii, 1, 1, r));\n      } else {\n        ph.items.forEach((it, ii) => { for (let s = 1; s <= it.sets; s++) add(ii, s, it.sets, 0); });\n      }\n      // niente riposo a timer prima di una nuova fase o della fine: lì ci si ferma comunque\n      if (steps[steps.length - 1].type === \"rest\") steps.pop();\n    });\n    return steps;\n  }\n\n  const out = {};\n  Object.keys(plan.workouts).forEach(id => { out[id] = buildSteps(plan.workouts[id]); });\n  return out;\n}\n" });
+</script>
+</body></html>
