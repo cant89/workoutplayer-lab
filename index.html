@@ -6,6 +6,10 @@
 <title>WorkoutPlayer — turn your training plan into a guided workout</title>
 <meta name="description" content="Upload your trainer's plan: it becomes a guided workout with timer, sets, rest and notes. Try the live player.">
 <meta name="robots" content="noindex, nofollow">
+<!-- Icona: la stessa della PWA (app/icons, disegnata da app/icone.py); SVG per i browser che lo supportano, PNG per gli altri e per iOS. -->
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <!-- Pagina in 5 lingue (IT EN FR ES DE): vedi il dizionario DICT più sotto e README.md per come aggiungerne una. -->
 <link rel="alternate" hreflang="it" href="?lang=it">
 <link rel="alternate" hreflang="en" href="?lang=en">
@@ -62,6 +66,10 @@
   .top { border-bottom: 1px solid var(--line); }
   .top-row { padding-block: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .brand { font: 700 20px/1 var(--display); text-transform: uppercase; letter-spacing: .01em; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; }
+  /* Icona dell'app accanto al nome: stesso disegno di icons/favicon.svg; nel tema scuro un filo di bordo la stacca dal fondo. */
+  .brand-mark { width: 28px; height: 28px; flex: none; display: block; border-radius: 6px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .brand-mark { box-shadow: 0 0 0 1px var(--line); } }
   .top-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .langs { display: flex; gap: 4px; }
   .langs button {
@@ -205,7 +213,7 @@
 
 <div class="top">
   <div class="wrap top-row">
-    <span class="brand">WorkoutPlayer</span>
+    <span class="brand"><svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><rect width="100" height="100" rx="22" fill="#0E1113"/><path d="M50 20.25A29.75 29.75 0 1 1 20.25 50" fill="none" stroke="#FF6B2C" stroke-width="8.5"/><path d="M41.2 34V66L69.2 50Z" fill="#F0F3EE"/></svg>WorkoutPlayer</span>
     <div class="top-right">
       <span class="eyebrow" data-i18n="topEyebrow"></span>
       <nav class="langs" id="langNav">
