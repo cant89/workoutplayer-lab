@@ -18,11 +18,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
 <script>
-  /* LISTA D'ATTESA — unico punto da cambiare prima di pubblicare la pagina.
-     Sostituisci con il link del modulo vero (Tally, Google Form o simili): il pulsante e il link di riserva lo leggono da qui. */
-  const WAITLIST_URL = "https://tally.so/r/jaNPLR";
-  /* RACCOLTA SCHEDE — sezione "Mandaci la tua scheda" (#manda-scheda).
-     Sostituisci con il link del modulo Tally di raccolta schede (es. "https://tally.so/r/XXXX"): finché resta vuota, la sezione non compare. */
+  /* RACCOLTA SCHEDE — sezione "Accesso anticipato" (#manda-scheda), unico modulo della pagina (raccoglie scheda ed email).
+     Link del modulo Tally (es. "https://tally.so/r/XXXX"). Se la svuoti la sezione sparisce e il pulsante del hero non porta più a niente. */
   const UPLOAD_FORM_URL = "https://tally.so/r/RGpLpd";
 </script>
 <style>
@@ -99,11 +96,11 @@
   .btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
 
   /* ---------- Flusso "file → player" (< 900 px): documenti → freccia verticale, poi il telefono sotto ---------- */
-  .flow-mobile { margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
-  .flow-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; flex: 0 0 auto; }
-  .flow-docs { display: flex; gap: 10px; }
-  .doc-icon { width: 60px; height: 78px; display: block; overflow: visible; }
-  .flow-arrow { width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; }
+  .flow-mobile { margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 40px; }
+  .flow-stage { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 0 0 auto; }
+  .flow-docs { display: flex; gap: 12px; }
+  .doc-icon { width: 72px; height: 93px; display: block; overflow: visible; }
+  .flow-arrow { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
   .flow-arrow svg { width: 100%; height: 100%; overflow: visible; transform: rotate(90deg); }
   .flow-dot { opacity: .55; }
   @media (prefers-reduced-motion: no-preference) {
@@ -112,19 +109,21 @@
     .flow-dot-3 { animation: flowPulse 1.4s ease-in-out infinite .36s; }
   }
   @keyframes flowPulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
-  .step { display: flex; align-items: center; gap: 8px; max-width: 260px; }
-  .step-n { font: 700 26px/1 var(--display); color: var(--work); }
-  .step-label { font: 600 13.5px/1.25 var(--body); color: var(--ink-2); text-align: left; }
+  /* Ogni tappa: numero grande sopra, didascalia sotto (stesso schema a ogni larghezza) */
+  .step { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 300px; text-align: center; }
+  .step-n { font: 700 52px/0.8 var(--display); color: var(--work); }
+  .step-label { font: 600 17px/1.3 var(--body); color: var(--ink); }
 
-  /* ---------- I tre passi con icona (≥ 900 px), colonna sinistra ---------- */
+  /* ---------- I tre passi con icona (≥ 900 px): tre colonne nella colonna sinistra ---------- */
   .steps-desktop { display: none; }
-  .step-row { display: flex; align-items: center; gap: 16px; padding-block: 11px; }
-  .step-icon { width: 40px; height: 40px; flex: 0 0 auto; display: block; overflow: visible; }
-  .step-row .step-n { font: 700 15px/1 var(--display); color: var(--work); margin-right: 4px; }
-  .step-row .step-label { font: 600 15.5px/1.35 var(--body); color: var(--ink-2); }
+  .step-row { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+  .step-row > span { display: flex; flex-direction: column; gap: 10px; }
+  .step-icon { width: 80px; height: 80px; flex: 0 0 auto; display: block; overflow: visible; }
+  .step-row .step-n { font: 700 64px/0.8 var(--display); color: var(--work); }
+  .step-row .step-label { font: 600 17px/1.3 var(--body); color: var(--ink); }
 
   /* ---------- Telefono con la demo dal vivo ---------- */
-  .phone-block { margin-top: 22px; display: flex; justify-content: center; }
+  .phone-block { margin-top: 40px; display: flex; justify-content: center; }
   .phone-col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .phone {
     width: min(360px, 100%); background: var(--ink); border-radius: 40px; padding: 12px; position: relative;
@@ -151,7 +150,7 @@
     }
     .hero-head { grid-column: 1; grid-row: 1; text-align: left; max-width: none; margin-inline: 0; }
     .flow-mobile { display: none; }
-    .steps-desktop { display: flex; flex-direction: column; grid-column: 1; grid-row: 2; margin-top: 30px; }
+    .steps-desktop { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 28px; grid-column: 1; grid-row: 2; margin-top: 36px; }
     .hero-foot { grid-column: 1; grid-row: 3; text-align: left; max-width: 480px; margin: 30px 0 0; }
     .hero-foot .fine-print { text-align: left; }
     .cta-row { justify-content: flex-start; }
@@ -178,7 +177,7 @@
   .aud p { color: var(--ink-2); font-size: 15.5px; max-width: 60ch; }
   .aud .case { color: var(--ink-3); font-size: 14px; margin-top: 6px; }
 
-  /* ---------- Mandaci la tua scheda (compare solo se UPLOAD_FORM_URL è impostata) ---------- */
+  /* ---------- Accesso anticipato, #manda-scheda (compare solo se UPLOAD_FORM_URL è impostata) ---------- */
   .upload { padding-block: 0 56px; }
   .upload h2 {
     font: 700 clamp(28px, 4vw, 40px)/1.02 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 8px;
@@ -192,23 +191,6 @@
   .upload-embed { max-width: 520px; margin-top: 12px; background: #181D20; border: 1px solid #2E373B; border-radius: 12px; padding: 8px 12px 0; }
   .upload-embed iframe { display: block; max-width: 100%; }
   .upload-fallback { color: var(--ink-3); font-size: 14px; margin-top: 12px; }
-
-  /* ---------- Lista d'attesa ---------- */
-  .waitlist { background: var(--ink); color: var(--bg); }
-  .waitlist .eyebrow { color: var(--ink-3); }
-  :root:not([data-theme="light"]) .waitlist { background: var(--surface); color: var(--ink); }
-  .waitlist h2 {
-    font: 700 clamp(28px, 4vw, 40px)/1.05 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 8px;
-    max-width: 24ch;
-  }
-  .waitlist-note { color: var(--ink-3); font-size: 15px; margin: 8px 0 16px; }
-  :root:not([data-theme="light"]) .waitlist-note { color: var(--ink-2); }
-  .waitlist-embed { max-width: 520px; background: var(--bg); color: var(--ink); border-radius: 12px; padding: 8px 12px 0; }
-  :root:not([data-theme="light"]) .waitlist-embed { background: var(--card, var(--bg)); }
-  .waitlist-embed iframe { display: block; max-width: 100%; }
-  .waitlist-fallback { color: var(--ink-3); font-size: 14px; margin-top: 12px; }
-  .waitlist-fallback a { color: inherit; }
-  :root:not([data-theme="light"]) .waitlist-fallback { color: var(--ink-2); }
 
   /* ---------- Piè di pagina ---------- */
   footer { border-top: 1px solid var(--line); }
@@ -349,7 +331,7 @@
         <span data-i18n="priceDesc"></span>
       </div>
       <div class="cta-row">
-        <a class="btn" href="#lista-attesa" data-i18n="ctaWaitlist"></a>
+        <a class="btn" href="#manda-scheda" data-i18n="ctaUpload"></a>
         <a class="btn ghost" data-demo-link href="demo-it.html" target="_blank" rel="noopener" data-i18n="ctaFullscreen"></a>
       </div>
     </div>
@@ -405,15 +387,15 @@
     <p class="upload-body" data-i18n="uploadBody"></p>
     <p class="upload-warn" data-i18n="uploadWarn"></p>
     <div class="upload-embed">
-      <iframe loading="lazy" width="100%" height="400" frameborder="0" marginheight="0" marginwidth="0" data-i18n-title="uploadFrameTitle" title="Mandaci la tua scheda"></iframe>
+      <iframe loading="lazy" width="100%" height="400" frameborder="0" marginheight="0" marginwidth="0" data-i18n-title="uploadFrameTitle" title="Accesso anticipato"></iframe>
     </div>
     <p class="upload-fallback">
       <span data-i18n="uploadFallbackPre"></span>
       <a data-upload-link target="_blank" rel="noopener" data-i18n="uploadFallbackLink"></a>.
     </p>
     <script>
-      /* Si accende solo con un link Tally in UPLOAD_FORM_URL (in testa alla pagina). Gira prima del caricatore Tally della lista
-         d'attesa, qui sotto: quando quello chiama Tally.loadEmbeds(), l'iframe ha già data-tally-src e viene incorporato anche lui. */
+      /* Si accende solo con un link Tally in UPLOAD_FORM_URL (in testa alla pagina). Gira prima del caricatore Tally qui sotto:
+         quando quello chiama Tally.loadEmbeds(), l'iframe ha già data-tally-src e viene incorporato. */
       (function () {
         var m = /^https:\/\/(?:www\.)?tally\.so\/(?:r|embed)\/([\w-]+)/.exec(String(UPLOAD_FORM_URL).trim());
         if (!m) return;
@@ -423,21 +405,6 @@
         sec.hidden = false;
       })();
     </script>
-  </div>
-</section>
-
-<section class="waitlist" id="lista-attesa">
-  <div class="wrap">
-    <span class="eyebrow" data-i18n="waitlistEyebrow"></span>
-    <h2 data-i18n="waitlistTitle"></h2>
-    <p class="waitlist-note" data-i18n="waitlistNote"></p>
-    <div class="waitlist-embed">
-      <iframe data-tally-src="https://tally.so/embed/jaNPLR?alignLeft=1&amp;hideTitle=1&amp;transparentBackground=1&amp;dynamicHeight=1" loading="lazy" width="100%" height="180" frameborder="0" marginheight="0" marginwidth="0" title="Lista d'attesa WorkoutPlayer"></iframe>
-    </div>
-    <p class="waitlist-fallback">
-      <span data-i18n="waitlistFallbackPre"></span>
-      <a href="https://tally.so/r/jaNPLR" target="_blank" rel="noopener" data-waitlist data-i18n="waitlistFallbackLink"></a>.
-    </p>
     <script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){e.src=e.dataset.tallySrc})};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s)}</script>
   </div>
 </section>
@@ -475,7 +442,7 @@
       step3: "Ti alleni con il player",
       priceValue: "4,99 €",
       priceDesc: "IVA inclusa, per scheda caricata. Un caricamento = un piano, nessun abbonamento.",
-      ctaWaitlist: "Iscriviti alla lista d'attesa",
+      ctaUpload: "Accesso anticipato",
       ctaFullscreen: "Apri la demo a schermo intero ↗",
       phoneCaptionEyebrow: "Demo dal vivo · scheda di esempio, nessun dato reale",
       phoneCaptionLink: "Aprilo a schermo intero ↗",
@@ -493,22 +460,17 @@
       aud4Title: "Osteopati",
       aud4Body: "Gli esercizi di mantenimento assegnati in seduta diventano un allenamento guidato da fare a casa.",
       aud4Case: "Paghi tu, lo invii al paziente: stessa logica, stesso player.",
-      uploadEyebrow: "Accesso anticipato",
-      uploadTitle: "Mandaci la tua scheda",
-      uploadBody: "Ogni scheda è diversa: PDF del trainer, foto del foglio in palestra, Excel, note sul telefono. Più schede vere vediamo, più WorkoutPlayer le capisce tutte. Carica la tua, anche una foto va bene: la usiamo solo per provare e migliorare la conversione, e sarai tra i primi a provare WorkoutPlayer, con la tua scheda già pronta, quando apriremo l'anteprima.",
-      uploadWarn: "Prima di caricarla copri o cancella nomi e dati personali (tuoi, del trainer, di clienti). Massimo 10 MB per file.",
+      uploadEyebrow: "In arrivo",
+      uploadTitle: "Accesso anticipato",
+      uploadBody: "Iscriviti per avere accesso anticipato alla beta.",
+      uploadWarn: "Prima di caricare la scheda copri o cancella nomi e dati personali (tuoi, del trainer, di clienti). Massimo 10 MB per file.",
       uploadFrameTitle: "Modulo per mandarci la tua scheda",
       uploadFallbackPre: "Se il modulo non si carica,",
       uploadFallbackLink: "aprilo qui",
-      waitlistEyebrow: "In arrivo",
-      waitlistTitle: "Vuoi essere avvisato quando è pronto?",
-      waitlistNote: "Nessun account: solo la tua email.",
-      waitlistFallbackPre: "Se il modulo non compare,",
-      waitlistFallbackLink: "aprilo in una nuova scheda",
       privacyTitle: "Informativa privacy",
-      privacyCollect: "Cosa raccogliamo: l'indirizzo email che lasci nel modulo della lista d'attesa e, se ce la mandi, la tua scheda (file o foto) con l'email che lasci nel modulo per caricarla. I moduli sono su Tally, un servizio di terzi, non nostro.",
-      privacyPurpose: "A cosa servono: l'email, ad avvisarti quando WorkoutPlayer è pronto e, se ci hai mandato la scheda, quando puoi provarlo; la scheda, solo a provare e migliorare la conversione da scheda a workout. Per provare la conversione la scheda passa da un servizio AI di terzi (Anthropic), che non la usa per addestrare i suoi modelli. Email e scheda non le pubblichiamo, non le cediamo a nessuno e non le usiamo per altro.",
-      privacyDeletePre: "Cancelliamo la scheda quando non ci serve più, o prima se ce lo chiedi. Vuoi uscire dalla lista o far cancellare la tua scheda? Scrivi a",
+      privacyCollect: "Cosa raccogliamo: la tua scheda (file o foto) e l'email che lasci nel modulo per mandarcela. Il modulo è su Tally, un servizio di terzi, non nostro.",
+      privacyPurpose: "A cosa servono: l'email, ad avvisarti quando puoi provare WorkoutPlayer; la scheda, solo a provare e migliorare la conversione da scheda a workout. Per provare la conversione la scheda passa da un servizio AI di terzi (Anthropic), che non la usa per addestrare i suoi modelli. Email e scheda non le pubblichiamo, non le cediamo a nessuno e non le usiamo per altro.",
+      privacyDeletePre: "Cancelliamo tutto quando non ci serve più, o prima se ce lo chiedi. Vuoi far cancellare scheda ed email? Scrivi a",
       daSapereTitle: "Da sapere",
       disclaimerAI: "I workout di questa pagina sono generati dall'intelligenza artificiale a partire dalla scheda del tuo trainer: non sostituiscono il parere di un professionista della salute.",
       disclaimerDemo: "La scheda mostrata nella demo qui sopra è di esempio: nessun nome, nessun dato reale.",
@@ -527,7 +489,7 @@
       step3: "Train with the player",
       priceValue: "€4.99",
       priceDesc: "VAT included, per plan you upload. One upload = one plan, no subscription.",
-      ctaWaitlist: "Join the waitlist",
+      ctaUpload: "Early access",
       ctaFullscreen: "Open the demo full-screen ↗",
       phoneCaptionEyebrow: "Live demo · sample plan, no real data",
       phoneCaptionLink: "Open it full-screen ↗",
@@ -545,22 +507,17 @@
       aud4Title: "Osteopaths",
       aud4Body: "The maintenance exercises you give in a session become a guided workout to do at home.",
       aud4Case: "You pay, you send it to your patient: same logic, same player.",
-      uploadEyebrow: "Early access",
-      uploadTitle: "Send us your plan",
-      uploadBody: "Every plan is different: a trainer's PDF, a photo of the sheet at the gym, an Excel file, notes on your phone. The more real plans we see, the better WorkoutPlayer gets at understanding them all. Upload yours — a photo works too: we only use it to test and improve the conversion, and you'll be among the first to try WorkoutPlayer, with your plan already set up, when we open the preview.",
-      uploadWarn: "Before you upload it, cover or delete names and personal details (yours, your trainer's, clients'). Max 10 MB per file.",
+      uploadEyebrow: "Coming soon",
+      uploadTitle: "Early access",
+      uploadBody: "Sign up for early access to the beta.",
+      uploadWarn: "Before you upload your plan, cover or delete names and personal details (yours, your trainer's, clients'). Max 10 MB per file.",
       uploadFrameTitle: "Form to send us your plan",
       uploadFallbackPre: "If the form doesn't load,",
       uploadFallbackLink: "open it here",
-      waitlistEyebrow: "Coming soon",
-      waitlistTitle: "Want to be notified when it's ready?",
-      waitlistNote: "No account: just your email.",
-      waitlistFallbackPre: "If the form doesn't show up,",
-      waitlistFallbackLink: "open it in a new tab",
       privacyTitle: "Privacy notice",
-      privacyCollect: "What we collect: the email address you leave in the waitlist form and, if you send it to us, your plan (file or photo) with the email you leave in the upload form. The forms run on Tally, a third-party service, not ours.",
-      privacyPurpose: "What we use them for: your email, to let you know when WorkoutPlayer is ready and, if you sent us your plan, when you can try it; your plan, only to test and improve the conversion from plan to workout. To test the conversion, your plan goes through a third-party AI service (Anthropic), which doesn't use it to train its models. We don't publish your email or your plan, we don't share them with anyone and we don't use them for anything else.",
-      privacyDeletePre: "We delete your plan once we no longer need it, or sooner if you ask. Want off the list, or your plan deleted? Email",
+      privacyCollect: "What we collect: your plan (file or photo) and the email you leave in the form you send it with. The form runs on Tally, a third-party service, not ours.",
+      privacyPurpose: "What we use them for: your email, to let you know when you can try WorkoutPlayer; your plan, only to test and improve the conversion from plan to workout. To test the conversion, your plan goes through a third-party AI service (Anthropic), which doesn't use it to train its models. We don't publish your email or your plan, we don't share them with anyone and we don't use them for anything else.",
+      privacyDeletePre: "We delete everything once we no longer need it, or sooner if you ask. Want your plan and email deleted? Email",
       daSapereTitle: "Good to know",
       disclaimerAI: "The workouts on this page are generated by AI from your trainer's plan: they don't replace advice from a health professional.",
       disclaimerDemo: "The plan shown in the demo above is a sample: no names, no real data.",
@@ -579,7 +536,7 @@
       step3: "Tu t'entraînes avec le player",
       priceValue: "4,99 €",
       priceDesc: "TVA incluse, par programme chargé. Un envoi = un programme, sans abonnement.",
-      ctaWaitlist: "Rejoindre la liste d'attente",
+      ctaUpload: "Accès anticipé",
       ctaFullscreen: "Ouvrir la démo en plein écran ↗",
       phoneCaptionEyebrow: "Démo en direct · programme d'exemple, aucune donnée réelle",
       phoneCaptionLink: "Ouvrir en plein écran ↗",
@@ -597,22 +554,17 @@
       aud4Title: "Ostéopathes",
       aud4Body: "Les exercices d'entretien donnés en séance deviennent une séance guidée à faire à la maison.",
       aud4Case: "Tu payes, tu l'envoies à ton patient : même logique, même player.",
-      uploadEyebrow: "Accès anticipé",
-      uploadTitle: "Envoie-nous ton programme",
-      uploadBody: "Chaque programme est différent : PDF du coach, photo de la feuille à la salle, Excel, notes sur ton téléphone. Plus on voit de vrais programmes, mieux WorkoutPlayer les comprend tous. Charge le tien, même une photo, ça marche : on s'en sert seulement pour tester et améliorer la conversion, et tu feras partie des premières personnes à essayer WorkoutPlayer, avec ton programme déjà prêt, quand on ouvrira l'avant-première.",
-      uploadWarn: "Avant de le charger, cache ou efface les noms et les données personnelles (les tiennes, celles du coach, de clients). 10 Mo maximum par fichier.",
+      uploadEyebrow: "Bientôt",
+      uploadTitle: "Accès anticipé",
+      uploadBody: "Inscris-toi pour un accès anticipé à la bêta.",
+      uploadWarn: "Avant de charger ton programme, cache ou efface les noms et les données personnelles (les tiennes, celles du coach, de clients). 10 Mo maximum par fichier.",
       uploadFrameTitle: "Formulaire pour nous envoyer ton programme",
       uploadFallbackPre: "Si le formulaire ne se charge pas,",
       uploadFallbackLink: "ouvre-le ici",
-      waitlistEyebrow: "Bientôt disponible",
-      waitlistTitle: "Tu veux être prévenu·e quand c'est prêt ?",
-      waitlistNote: "Sans compte : juste ton email.",
-      waitlistFallbackPre: "Si le formulaire ne s'affiche pas,",
-      waitlistFallbackLink: "ouvre-le dans un nouvel onglet",
       privacyTitle: "Confidentialité",
-      privacyCollect: "Ce qu'on récolte : l'email que tu laisses dans le formulaire de liste d'attente et, si tu nous l'envoies, ton programme (fichier ou photo) avec l'email que tu laisses dans le formulaire d'envoi. Les formulaires sont sur Tally, un service tiers, pas le nôtre.",
-      privacyPurpose: "À quoi ça sert : l'email, à te prévenir quand WorkoutPlayer est prêt et, si tu nous as envoyé ton programme, quand tu peux l'essayer ; le programme, seulement à tester et améliorer la conversion du programme en séance. Pour tester la conversion, ton programme passe par un service d'IA tiers (Anthropic), qui ne s'en sert pas pour entraîner ses modèles. Ton email et ton programme, on ne les publie pas, on ne les partage avec personne et on ne s'en sert pour rien d'autre.",
-      privacyDeletePre: "On supprime ton programme quand on n'en a plus besoin, ou avant si tu le demandes. Tu veux être retiré·e de la liste ou faire supprimer ton programme ? Écris à",
+      privacyCollect: "Ce qu'on récolte : ton programme (fichier ou photo) et l'email que tu laisses dans le formulaire pour nous l'envoyer. Le formulaire est sur Tally, un service tiers, pas le nôtre.",
+      privacyPurpose: "À quoi ça sert : l'email, à te prévenir quand tu peux essayer WorkoutPlayer ; le programme, seulement à tester et améliorer la conversion du programme en séance. Pour tester la conversion, ton programme passe par un service d'IA tiers (Anthropic), qui ne s'en sert pas pour entraîner ses modèles. Ton email et ton programme, on ne les publie pas, on ne les partage avec personne et on ne s'en sert pour rien d'autre.",
+      privacyDeletePre: "On supprime tout quand on n'en a plus besoin, ou avant si tu le demandes. Tu veux faire supprimer ton programme et ton email ? Écris à",
       daSapereTitle: "À savoir",
       disclaimerAI: "Les séances de cette page sont générées par IA à partir du programme de ton coach : elles ne remplacent pas l'avis d'un professionnel de santé.",
       disclaimerDemo: "Le programme montré dans la démo ci-dessus est un exemple : aucun nom, aucune donnée réelle.",
@@ -631,7 +583,7 @@
       step3: "Entrenas con el player",
       priceValue: "4,99 €",
       priceDesc: "IVA incluido, por rutina subida. Una subida = un plan, sin suscripción.",
-      ctaWaitlist: "Apuntarme a la lista de espera",
+      ctaUpload: "Acceso anticipado",
       ctaFullscreen: "Abrir la demo a pantalla completa ↗",
       phoneCaptionEyebrow: "Demo en directo · rutina de ejemplo, sin datos reales",
       phoneCaptionLink: "Ábrela a pantalla completa ↗",
@@ -649,22 +601,17 @@
       aud4Title: "Osteópatas",
       aud4Body: "Los ejercicios de mantenimiento que das en consulta se convierten en un entreno guiado para hacer en casa.",
       aud4Case: "Pagas tú, se lo envías al paciente: misma lógica, mismo player.",
-      uploadEyebrow: "Acceso anticipado",
-      uploadTitle: "Mándanos tu rutina",
-      uploadBody: "Cada rutina es distinta: el PDF del entrenador, una foto de la hoja en el gimnasio, un Excel, notas en el móvil. Cuantas más rutinas reales veamos, más fácil le será a WorkoutPlayer entenderlas todas. Sube la tuya, aunque sea una foto: solo la usamos para probar y mejorar la conversión, y estarás entre los primeros en probar WorkoutPlayer, con tu rutina ya lista, cuando abramos la versión preliminar.",
-      uploadWarn: "Antes de subirla, tapa o borra nombres y datos personales (tuyos, del entrenador, de clientes). Máximo 10 MB por archivo.",
+      uploadEyebrow: "Muy pronto",
+      uploadTitle: "Acceso anticipado",
+      uploadBody: "Apúntate para tener acceso anticipado a la beta.",
+      uploadWarn: "Antes de subir tu rutina, tapa o borra nombres y datos personales (tuyos, del entrenador, de clientes). Máximo 10 MB por archivo.",
       uploadFrameTitle: "Formulario para mandarnos tu rutina",
       uploadFallbackPre: "Si el formulario no carga,",
       uploadFallbackLink: "ábrelo aquí",
-      waitlistEyebrow: "Muy pronto",
-      waitlistTitle: "¿Quieres que te avisemos cuando esté listo?",
-      waitlistNote: "Sin cuenta: solo tu email.",
-      waitlistFallbackPre: "Si el formulario no aparece,",
-      waitlistFallbackLink: "ábrelo en una pestaña nueva",
       privacyTitle: "Privacidad",
-      privacyCollect: "Qué recogemos: el email que dejas en el formulario de la lista de espera y, si nos la mandas, tu rutina (archivo o foto) con el email que dejas en el formulario para subirla. Los formularios están en Tally, un servicio de terceros, no nuestro.",
-      privacyPurpose: "Para qué sirven: el email, para avisarte cuando WorkoutPlayer esté listo y, si nos mandaste tu rutina, cuando puedas probarlo; la rutina, solo para probar y mejorar la conversión de rutina a entreno. Para probar la conversión, tu rutina pasa por un servicio de IA de terceros (Anthropic), que no la usa para entrenar sus modelos. Tu email y tu rutina no los publicamos, no los compartimos con nadie y no los usamos para nada más.",
-      privacyDeletePre: "Borramos tu rutina cuando ya no nos hace falta, o antes si nos lo pides. ¿Quieres salir de la lista o que borremos tu rutina? Escribe a",
+      privacyCollect: "Qué recogemos: tu rutina (archivo o foto) y el email que dejas en el formulario para mandárnosla. El formulario está en Tally, un servicio de terceros, no nuestro.",
+      privacyPurpose: "Para qué sirven: el email, para avisarte cuando puedas probar WorkoutPlayer; la rutina, solo para probar y mejorar la conversión de rutina a entreno. Para probar la conversión, tu rutina pasa por un servicio de IA de terceros (Anthropic), que no la usa para entrenar sus modelos. Tu email y tu rutina no los publicamos, no los compartimos con nadie y no los usamos para nada más.",
+      privacyDeletePre: "Lo borramos todo cuando ya no nos hace falta, o antes si nos lo pides. ¿Quieres que borremos tu rutina y tu email? Escribe a",
       daSapereTitle: "Para que lo sepas",
       disclaimerAI: "Los entrenos de esta página los genera una IA a partir de la rutina de tu entrenador: no sustituyen el consejo de un profesional de la salud.",
       disclaimerDemo: "La rutina que se ve en la demo de arriba es de ejemplo: ningún nombre, ningún dato real.",
@@ -683,7 +630,7 @@
       step3: "Mit dem Player trainieren",
       priceValue: "4,99 €",
       priceDesc: "Inkl. MwSt., pro hochgeladenem Plan. Ein Upload = ein Plan, kein Abo.",
-      ctaWaitlist: "Auf die Warteliste",
+      ctaUpload: "Vorab-Zugang",
       ctaFullscreen: "Demo im Vollbild öffnen ↗",
       phoneCaptionEyebrow: "Live-Demo · Beispielplan, keine echten Daten",
       phoneCaptionLink: "Im Vollbild öffnen ↗",
@@ -701,22 +648,17 @@
       aud4Title: "Osteopathen",
       aud4Body: "Die Übungen, die du in der Sitzung mitgibst, werden zu einem geführten Workout für zu Hause.",
       aud4Case: "Du zahlst, du schickst ihn an deinen Patienten: gleiche Logik, gleicher Player.",
-      uploadEyebrow: "Vorab-Zugang",
-      uploadTitle: "Schick uns deinen Plan",
-      uploadBody: "Jeder Plan ist anders: PDF vom Trainer, Foto vom Zettel im Gym, Excel-Datei, Notizen auf dem Handy. Je mehr echte Pläne wir sehen, desto besser versteht WorkoutPlayer sie alle. Lade deinen hoch, auch ein Foto reicht: Wir nutzen ihn nur, um die Umwandlung zu testen und zu verbessern, und sobald wir die Vorabversion freischalten, gehörst du zu den Ersten, die WorkoutPlayer ausprobieren — mit deinem Plan schon startklar.",
+      uploadEyebrow: "Bald verfügbar",
+      uploadTitle: "Vorab-Zugang",
+      uploadBody: "Melde dich an und bekomm Vorab-Zugang zur Beta.",
       uploadWarn: "Deck vor dem Hochladen Namen und persönliche Daten ab oder lösch sie (deine, die deines Trainers, die von Kunden). Maximal 10 MB pro Datei.",
       uploadFrameTitle: "Formular, um uns deinen Plan zu schicken",
       uploadFallbackPre: "Falls das Formular nicht lädt,",
       uploadFallbackLink: "öffne es hier",
-      waitlistEyebrow: "Demnächst",
-      waitlistTitle: "Möchtest du benachrichtigt werden, wenn es so weit ist?",
-      waitlistNote: "Kein Konto nötig: nur deine E-Mail.",
-      waitlistFallbackPre: "Falls das Formular nicht erscheint,",
-      waitlistFallbackLink: "öffne es in einem neuen Tab",
       privacyTitle: "Datenschutz",
-      privacyCollect: "Was wir erfassen: die E-Mail-Adresse, die du im Wartelisten-Formular angibst, und, falls du ihn uns schickst, deinen Plan (Datei oder Foto) mit der E-Mail-Adresse, die du im Upload-Formular angibst. Die Formulare laufen über Tally, einen Dienst eines Drittanbieters, nicht unseren.",
-      privacyPurpose: "Wofür: deine E-Mail, um dich zu informieren, wenn WorkoutPlayer bereit ist und, falls du uns deinen Plan geschickt hast, wenn du es ausprobieren kannst; dein Plan nur, um die Umwandlung vom Plan ins Workout zu testen und zu verbessern. Zum Testen der Umwandlung läuft dein Plan über einen KI-Dienst eines Drittanbieters (Anthropic), der ihn nicht zum Trainieren seiner Modelle nutzt. Wir veröffentlichen weder deine E-Mail noch deinen Plan, geben sie an niemanden weiter und nutzen sie für nichts anderes.",
-      privacyDeletePre: "Deinen Plan löschen wir, sobald wir ihn nicht mehr brauchen, oder früher, wenn du uns darum bittest. Von der Liste runter oder Plan löschen lassen? Schreib an",
+      privacyCollect: "Was wir erfassen: deinen Plan (Datei oder Foto) und die E-Mail-Adresse, die du im Formular angibst, mit dem du ihn uns schickst. Das Formular läuft über Tally, einen Dienst eines Drittanbieters, nicht unseren.",
+      privacyPurpose: "Wofür: deine E-Mail, um dir Bescheid zu geben, wenn du WorkoutPlayer ausprobieren kannst; dein Plan nur, um die Umwandlung vom Plan ins Workout zu testen und zu verbessern. Zum Testen der Umwandlung läuft dein Plan über einen KI-Dienst eines Drittanbieters (Anthropic), der ihn nicht zum Trainieren seiner Modelle nutzt. Wir veröffentlichen weder deine E-Mail noch deinen Plan, geben sie an niemanden weiter und nutzen sie für nichts anderes.",
+      privacyDeletePre: "Wir löschen alles, sobald wir es nicht mehr brauchen, oder früher, wenn du uns darum bittest. Plan und E-Mail löschen lassen? Schreib an",
       daSapereTitle: "Gut zu wissen",
       disclaimerAI: "Die Workouts auf dieser Seite werden von einer KI aus dem Plan deines Trainers erstellt: Sie ersetzen nicht den Rat einer Fachperson für Gesundheit.",
       disclaimerDemo: "Der in der Demo oben gezeigte Plan ist ein Beispiel: kein Name, keine echten Daten.",
@@ -750,10 +692,6 @@
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  function applyWaitlistHref() {
-    document.querySelectorAll("[data-waitlist]").forEach(function (el) { el.href = WAITLIST_URL; });
-  }
-
   function render(lang) {
     var dict = DICT[lang] || DICT[DEFAULT_LANG];
     var fallback = DICT[DEFAULT_LANG];
@@ -779,7 +717,6 @@
         b.setAttribute("aria-current", b.getAttribute("data-lang") === lang ? "true" : "false");
       });
     }
-    applyWaitlistHref();
     var demoFile = "demo-" + lang + ".html";
     document.querySelectorAll("[data-demo-src]").forEach(function (el) { el.src = demoFile; });
     document.querySelectorAll("[data-demo-link]").forEach(function (el) { el.href = demoFile; });
