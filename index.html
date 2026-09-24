@@ -25,6 +25,10 @@
   /* RACCOLTA SCHEDE — sezione "Accesso anticipato" (#manda-scheda), unico modulo della pagina (raccoglie scheda ed email).
      Link del modulo Tally (es. "https://tally.so/r/XXXX"). Se la svuoti la sezione sparisce e il pulsante del hero non porta più a niente. */
   const UPLOAD_FORM_URL = "https://tally.so/r/RGpLpd";
+  /* STATISTICHE — Google Analytics 4, solo con il consenso di chi visita (banner in basso, «Preferenze cookie» nel piè di pagina).
+     ID di misurazione GA4 (es. "G-XXXXXXXXXX"). Se la lasci vuota non si carica nulla: niente banner, niente link, niente
+     paragrafo sulle statistiche nell'informativa. */
+  const GA_MEASUREMENT_ID = "G-2W2RCPCYP4";
 </script>
 <style>
   /* ---------- Token e temi: copia di lib/tokens.css (fonte del design system del player) ---------- */
@@ -313,6 +317,25 @@
   .legal p { color: var(--ink-2); font-size: 14px; line-height: 1.55; }
   .legal p + p { margin-top: 8px; }
   @media (max-width: 640px) { .legal { grid-template-columns: 1fr; } }
+  .linklike { background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+
+  /* ---------- Banner delle statistiche: in basso, non modale, compare solo dopo il primo scorrimento o il primo tocco.
+     «Rifiuta» e «Accetta» hanno lo stesso aspetto: nessuno dei due è messo in evidenza. ---------- */
+  .consent {
+    position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 50; max-width: 720px; margin-inline: auto;
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 10px 28px -10px rgba(0,0,0,.4);
+  }
+  .consent[hidden] { display: none; }
+  .consent-text { flex: 1 1 auto; min-width: 0; font-size: 13px; line-height: 1.25; color: var(--ink-2); }
+  .consent-text a { color: var(--ink); text-underline-offset: 2px; }
+  .consent-actions { flex: none; display: flex; gap: 8px; }
+  .consent-btn {
+    min-height: 40px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--ink-3); background: transparent; color: var(--ink);
+    font: 600 13.5px/1 var(--display); letter-spacing: .03em; text-transform: uppercase;
+  }
+  .consent-btn:hover { background: var(--surface-2); }
 </style>
 </head>
 <body>
@@ -523,11 +546,13 @@
 
 <footer>
   <div class="wrap legal">
-    <div>
+    <div id="privacy">
       <h3 data-i18n="privacyTitle"></h3>
       <p data-i18n="privacyCollect"></p>
       <p data-i18n="privacyPurpose"></p>
       <p><span data-i18n="privacyDeletePre"></span> <a href="mailto:blinko@pec.it">blinko@pec.it</a>.</p>
+      <p data-i18n="privacyAnalytics" data-ga-only hidden></p>
+      <p data-ga-only hidden><button type="button" class="linklike" id="consentPrefs" data-i18n="consentPrefs"></button></p>
     </div>
     <div>
       <h3 data-i18n="daSapereTitle"></h3>
@@ -536,6 +561,14 @@
     </div>
   </div>
 </footer>
+
+<div class="consent" id="consent" role="region" data-i18n-aria="consentLabel" hidden>
+  <p class="consent-text"><span data-i18n="consentText"></span> <a href="#privacy" data-i18n="consentMore"></a></p>
+  <div class="consent-actions">
+    <button type="button" class="consent-btn" data-consent="denied" data-i18n="consentReject"></button>
+    <button type="button" class="consent-btn" data-consent="granted" data-i18n="consentAccept"></button>
+  </div>
+</div>
 
 <script>
   /* ---------- Dizionario delle traduzioni (IT · EN · FR · ES · DE) ----------
@@ -587,6 +620,13 @@
       privacyCollect: "Cosa raccogliamo: la tua scheda (file o foto) e l'email che lasci nel modulo per mandarcela. Il modulo è su Tally, un servizio di terzi, non nostro.",
       privacyPurpose: "A cosa servono: l'email, ad avvisarti quando puoi provare WorkoutPlayer; la scheda, solo a provare e migliorare la conversione da scheda a workout. Per provare la conversione la scheda passa da un servizio AI di terzi (Anthropic), che non la usa per addestrare i suoi modelli. Email e scheda non le pubblichiamo, non le cediamo a nessuno e non le usiamo per altro.",
       privacyDeletePre: "Cancelliamo tutto quando non ci serve più, o prima se ce lo chiedi. Vuoi far cancellare scheda ed email? Scrivi a",
+      consentLabel: "Statistiche",
+      consentText: "Usiamo Google Analytics solo se accetti.",
+      consentMore: "Informativa",
+      consentReject: "Rifiuta",
+      consentAccept: "Accetta",
+      consentPrefs: "Preferenze cookie",
+      privacyAnalytics: "Statistiche: usiamo Google Analytics 4 solo se lo accetti, per contare visite e clic in forma aggregata. Salva i cookie _ga e {ga4} per al massimo 13 mesi. Niente pubblicità né profilazione. Google può trattare i dati negli Stati Uniti, nel quadro dell'EU-US Data Privacy Framework. Puoi cambiare idea quando vuoi da «Preferenze cookie», qui sotto.",
       daSapereTitle: "Da sapere",
       disclaimerAI: "I workout di questa pagina sono generati dall'intelligenza artificiale a partire dalla scheda del tuo trainer: non sostituiscono il parere di un professionista della salute.",
       disclaimerDemo: "La scheda mostrata nella demo qui sopra è di esempio: nessun nome, nessun dato reale.",
@@ -638,6 +678,13 @@
       privacyCollect: "What we collect: your plan (file or photo) and the email you leave in the form you send it with. The form runs on Tally, a third-party service, not ours.",
       privacyPurpose: "What we use them for: your email, to let you know when you can try WorkoutPlayer; your plan, only to test and improve the conversion from plan to workout. To test the conversion, your plan goes through a third-party AI service (Anthropic), which doesn't use it to train its models. We don't publish your email or your plan, we don't share them with anyone and we don't use them for anything else.",
       privacyDeletePre: "We delete everything once we no longer need it, or sooner if you ask. Want your plan and email deleted? Email",
+      consentLabel: "Analytics",
+      consentText: "We use Google Analytics only if you accept.",
+      consentMore: "Privacy",
+      consentReject: "Decline",
+      consentAccept: "Accept",
+      consentPrefs: "Cookie preferences",
+      privacyAnalytics: "Analytics: we use Google Analytics 4 only if you accept, to count visits and clicks in aggregate. It sets the cookies _ga and {ga4} for 13 months at most. No advertising, no profiling. Google may process the data in the United States, under the EU-US Data Privacy Framework. You can change your mind at any time from “Cookie preferences” below.",
       daSapereTitle: "Good to know",
       disclaimerAI: "The workouts on this page are generated by AI from your trainer's plan: they don't replace advice from a health professional.",
       disclaimerDemo: "The plan shown in the demo above is a sample: no names, no real data.",
@@ -689,6 +736,13 @@
       privacyCollect: "Ce qu'on récolte : ton programme (fichier ou photo) et l'email que tu laisses dans le formulaire pour nous l'envoyer. Le formulaire est sur Tally, un service tiers, pas le nôtre.",
       privacyPurpose: "À quoi ça sert : l'email, à te prévenir quand tu peux essayer WorkoutPlayer ; le programme, seulement à tester et améliorer la conversion du programme en séance. Pour tester la conversion, ton programme passe par un service d'IA tiers (Anthropic), qui ne s'en sert pas pour entraîner ses modèles. Ton email et ton programme, on ne les publie pas, on ne les partage avec personne et on ne s'en sert pour rien d'autre.",
       privacyDeletePre: "On supprime tout quand on n'en a plus besoin, ou avant si tu le demandes. Tu veux faire supprimer ton programme et ton email ? Écris à",
+      consentLabel: "Statistiques",
+      consentText: "Google Analytics seulement si tu acceptes.",
+      consentMore: "Détails",
+      consentReject: "Refuser",
+      consentAccept: "Accepter",
+      consentPrefs: "Préférences cookies",
+      privacyAnalytics: "Statistiques : on utilise Google Analytics 4 seulement si tu l'acceptes, pour compter les visites et les clics de façon agrégée. Il dépose les cookies _ga et {ga4} pour 13 mois au plus. Pas de publicité, pas de profilage. Google peut traiter les données aux États-Unis, dans le cadre de l'EU-US Data Privacy Framework. Tu peux changer d'avis quand tu veux depuis « Préférences cookies », juste en dessous.",
       daSapereTitle: "À savoir",
       disclaimerAI: "Les séances de cette page sont générées par IA à partir du programme de ton coach : elles ne remplacent pas l'avis d'un professionnel de santé.",
       disclaimerDemo: "Le programme montré dans la démo ci-dessus est un exemple : aucun nom, aucune donnée réelle.",
@@ -740,6 +794,13 @@
       privacyCollect: "Qué recogemos: tu rutina (archivo o foto) y el email que dejas en el formulario para mandárnosla. El formulario está en Tally, un servicio de terceros, no nuestro.",
       privacyPurpose: "Para qué sirven: el email, para avisarte cuando puedas probar WorkoutPlayer; la rutina, solo para probar y mejorar la conversión de rutina a entreno. Para probar la conversión, tu rutina pasa por un servicio de IA de terceros (Anthropic), que no la usa para entrenar sus modelos. Tu email y tu rutina no los publicamos, no los compartimos con nadie y no los usamos para nada más.",
       privacyDeletePre: "Lo borramos todo cuando ya no nos hace falta, o antes si nos lo pides. ¿Quieres que borremos tu rutina y tu email? Escribe a",
+      consentLabel: "Estadísticas",
+      consentText: "Usamos Google Analytics solo si aceptas.",
+      consentMore: "Privacidad",
+      consentReject: "Rechazar",
+      consentAccept: "Aceptar",
+      consentPrefs: "Preferencias de cookies",
+      privacyAnalytics: "Estadísticas: usamos Google Analytics 4 solo si lo aceptas, para contar visitas y clics de forma agregada. Guarda las cookies _ga y {ga4} durante 13 meses como máximo. Nada de publicidad ni de perfiles. Google puede tratar los datos en Estados Unidos, dentro del EU-US Data Privacy Framework. Puedes cambiar de opinión cuando quieras desde «Preferencias de cookies», aquí debajo.",
       daSapereTitle: "Para que lo sepas",
       disclaimerAI: "Los entrenos de esta página los genera una IA a partir de la rutina de tu entrenador: no sustituyen el consejo de un profesional de la salud.",
       disclaimerDemo: "La rutina que se ve en la demo de arriba es de ejemplo: ningún nombre, ningún dato real.",
@@ -791,6 +852,13 @@
       privacyCollect: "Was wir erfassen: deinen Plan (Datei oder Foto) und die E-Mail-Adresse, die du im Formular angibst, mit dem du ihn uns schickst. Das Formular läuft über Tally, einen Dienst eines Drittanbieters, nicht unseren.",
       privacyPurpose: "Wofür: deine E-Mail, um dir Bescheid zu geben, wenn du WorkoutPlayer ausprobieren kannst; dein Plan nur, um die Umwandlung vom Plan ins Workout zu testen und zu verbessern. Zum Testen der Umwandlung läuft dein Plan über einen KI-Dienst eines Drittanbieters (Anthropic), der ihn nicht zum Trainieren seiner Modelle nutzt. Wir veröffentlichen weder deine E-Mail noch deinen Plan, geben sie an niemanden weiter und nutzen sie für nichts anderes.",
       privacyDeletePre: "Wir löschen alles, sobald wir es nicht mehr brauchen, oder früher, wenn du uns darum bittest. Plan und E-Mail löschen lassen? Schreib an",
+      consentLabel: "Statistik",
+      consentText: "Google Analytics nur, wenn du zustimmst.",
+      consentMore: "Details",
+      consentReject: "Ablehnen",
+      consentAccept: "Annehmen",
+      consentPrefs: "Cookie-Einstellungen",
+      privacyAnalytics: "Statistik: Wir nutzen Google Analytics 4 nur, wenn du zustimmst, um Besuche und Klicks zusammengefasst zu zählen. Dabei werden die Cookies _ga und {ga4} höchstens 13 Monate gespeichert. Keine Werbung, kein Profiling. Google kann die Daten in den USA verarbeiten, im Rahmen des EU-US Data Privacy Framework. Du kannst deine Entscheidung jederzeit unten unter „Cookie-Einstellungen“ ändern.",
       daSapereTitle: "Gut zu wissen",
       disclaimerAI: "Die Workouts auf dieser Seite werden von einer KI aus dem Plan deines Trainers erstellt: Sie ersetzen nicht den Rat einer Fachperson für Gesundheit.",
       disclaimerDemo: "Der in der Demo oben gezeigte Plan ist ein Beispiel: kein Name, keine echten Daten.",
@@ -835,12 +903,17 @@
       var key = el.getAttribute("data-i18n");
       var val = dict[key] != null ? dict[key] : fallback[key];
       if (val == null) return;
-      el.innerHTML = escapeHtml(val).split("\n").join("<br>");
+      el.innerHTML = escapeHtml(val.replace("{ga4}", GA.cookie())).split("\n").join("<br>");
     });
     document.querySelectorAll("[data-i18n-title]").forEach(function (el) {
       var key = el.getAttribute("data-i18n-title");
       var val = dict[key] != null ? dict[key] : fallback[key];
       if (val != null) el.title = val;
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n-aria");
+      var val = dict[key] != null ? dict[key] : fallback[key];
+      if (val != null) el.setAttribute("aria-label", val);
     });
     document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
       var key = el.getAttribute("data-i18n-alt");
@@ -866,6 +939,7 @@
     document.querySelectorAll("[data-demo-src]").forEach(function (el) { el.src = demoFile; });
     document.querySelectorAll("[data-demo-link]").forEach(function (el) { el.href = demoFile; });
     try { localStorage.setItem("wp-lang", lang); } catch (e) {}
+    GA.lang(lang);
     drawStepsArrow();
   }
 
@@ -940,6 +1014,130 @@
     arrow.classList.add("draw");
     addEventListener("scroll", revealStepsArrow, { passive: true });
     addEventListener("resize", revealStepsArrow);
+  })();
+
+  /* ---------- Statistiche: Google Analytics 4 solo con il consenso (modalità di consenso v2 «base») ----------
+     Senza GA_MEASUREMENT_ID (in testa alla pagina) non succede niente. Con l'ID:
+     - il consenso parte negato per tutto (analytics_storage, ad_storage, ad_user_data, ad_personalization) e gtag.js si carica
+       solo dopo «Accetta»: prima nessuna richiesta a Google. Niente Google Signals né personalizzazione degli annunci; cookie
+       di 13 mesi (390 giorni) che non si allungano a ogni visita;
+     - il banner compare al primo scorrimento oltre 160 px o al primo tocco su un pulsante o un link, mai al caricamento sopra
+       «Prenota»; «Preferenze cookie» nel piè di pagina lo riapre. La scelta vale 6 mesi (localStorage); ritirare il consenso
+       lo nega, spegne il tag e cancella i cookie _ga*;
+     - eventi: la pagina vista automatica e ogni evento portano page_lang (aggiornato se cambi lingua), cta_prenota, cta_demo (cta_position:
+       hero | demo), demo_interazione (primo tocco dentro la demo, una volta per pagina), iscrizione (il modulo Tally manda
+       «Tally.FormSubmitted» con postMessage: developers.tally.so/widgets/events). Nessun dato del modulo va a Google. */
+  var GA = (function () {
+    var id = String(GA_MEASUREMENT_ID || "").trim();
+    if (!/^G-[A-Z0-9]{4,}$/.test(id)) return { lang: function () {}, cookie: function () { return "_ga_…"; } };
+    var KEY = "wp-statistiche", SEI_MESI = 182 * 864e5;
+    var CONF = { allow_google_signals: false, allow_ad_personalization_signals: false, cookie_expires: 390 * 86400, cookie_update: false };
+    // page_lang va nella configurazione: GA4 lo manda con ogni evento (con «set» non arriva); si riconfigura se cambi lingua
+    function config(extra) { var c = {}, k; for (k in CONF) c[k] = CONF[k]; for (k in extra) c[k] = extra[k]; gtag("config", id, c); }
+    var on = false, loaded = false, lang = detectLang(), demoSent = false;
+    var banner = document.getElementById("consent");
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    gtag("consent", "default", { analytics_storage: "denied", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
+
+    function read() {
+      try {
+        var v = JSON.parse(localStorage.getItem(KEY));
+        return v && (v.s === "granted" || v.s === "denied") && Date.now() - v.t < SEI_MESI ? v.s : null;
+      } catch (e) { return null; }
+    }
+    function write(s) { try { localStorage.setItem(KEY, JSON.stringify({ s: s, t: Date.now() })); } catch (e) {} }
+    function clearCookies() {   // anche sui domini superiori, dove GA li mette con cookie_domain "auto"
+      document.cookie.split(";").forEach(function (c) {
+        var name = c.split("=")[0].trim(), parts = location.hostname.split(".");
+        if (!/^_ga/.test(name)) return;
+        for (var i = 0; i < parts.length; i++) document.cookie = name + "=; Max-Age=0; path=/; domain=" + parts.slice(i).join(".");
+        document.cookie = name + "=; Max-Age=0; path=/";
+      });
+    }
+    function grant() {
+      window["ga-disable-" + id] = false;
+      on = true;
+      gtag("consent", "update", { analytics_storage: "granted" });
+      if (loaded) return;
+      loaded = true;
+      gtag("js", new Date());
+      config({ page_lang: lang });
+      var s = document.createElement("script");
+      s.async = true;
+      s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(id);
+      document.head.appendChild(s);
+    }
+    function deny() {
+      if (on) gtag("consent", "update", { analytics_storage: "denied" });
+      on = false;
+      window["ga-disable-" + id] = true;
+      clearCookies();
+    }
+    function track(name, params) { if (on) gtag("event", name, params || {}); }
+    function show() {
+      if (!banner.hidden) return;
+      banner.hidden = false;
+      document.body.style.paddingBottom = banner.offsetHeight + 16 + "px";   // il fondo della pagina resta raggiungibile
+    }
+    function hide() { banner.hidden = true; document.body.style.paddingBottom = ""; }
+
+    document.querySelectorAll("[data-ga-only]").forEach(function (el) { el.hidden = false; });
+    banner.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-consent]");
+      if (!b) return;
+      write(b.getAttribute("data-consent"));
+      hide();
+      if (b.getAttribute("data-consent") === "granted") grant(); else deny();
+    });
+    document.getElementById("consentPrefs").addEventListener("click", function () {
+      show();
+      banner.querySelector("[data-consent]").focus();
+    });
+
+    var scelta = read();
+    if (scelta === "granted") grant();
+    else {
+      clearCookies();   // senza un consenso valido non restano cookie _ga*
+      if (scelta === null) {
+        var onScroll = function () { if (window.scrollY > 160) arm(); };
+        var onTap = function (e) { if (e.target.closest && e.target.closest("a, button") && !e.target.closest("#consent")) arm(); };
+        var arm = function () {
+          removeEventListener("scroll", onScroll);
+          document.removeEventListener("click", onTap, true);
+          show();
+        };
+        addEventListener("scroll", onScroll, { passive: true });
+        document.addEventListener("click", onTap, true);
+      }
+    }
+
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("a");
+      if (!a) return;
+      if (a.matches('.offer a[href="#manda-scheda"]')) track("cta_prenota");
+      else if (a.hasAttribute("data-demo-link")) track("cta_demo", { cta_position: a.closest(".offer") ? "hero" : "demo" });
+    });
+    var frame = document.querySelector(".demo iframe");
+    if (frame) frame.addEventListener("load", function () {   // la demo è della stessa origine: si ascolta il suo documento
+      try {
+        frame.contentDocument.addEventListener("pointerdown", function () {
+          if (on && !demoSent) { demoSent = true; track("demo_interazione"); }
+        }, true);
+      } catch (err) {}
+    });
+    addEventListener("message", function (e) {
+      if (e.origin !== "https://tally.so" || typeof e.data !== "string" || e.data.indexOf("Tally.FormSubmitted") === -1) return;
+      try { var m = JSON.parse(e.data); if (m && m.event && m.event !== "Tally.FormSubmitted") return; } catch (err) { return; }
+      track("iscrizione");
+    });
+
+    return {
+      // cambio di lingua: gli eventi dopo portano la lingua nuova; la pagina vista la conta GA da sé, perché l'indirizzo cambia
+      // (?lang=) e la misurazione avanzata conta i cambi di pagina della cronologia (vedi README)
+      lang: function (l) { if (l === lang) return; lang = l; if (on) config({ page_lang: l, send_page_view: false }); },
+      cookie: function () { return "_ga_" + id.slice(2); }
+    };
   })();
 
   render(detectLang());
