@@ -32,7 +32,7 @@
 /* WorkoutPlayer · stili dei componenti (home, anteprima, player, dialog, schermata finale). Da src/style.css:28-193;
    aggiunte: il colore del passo libero (#player[data-kind="free"]); per l'API v1 il blocco a cronometro
    (#player[data-kind="block"]), il contatore dei giri (.count), le righe di riepilogo
-   che vanno a capo (.row.long). */
+   che vanno a capo (.row.long); T2: voci lunghe della scaletta che vanno a capo (.sl-item.long). */
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
@@ -190,6 +190,7 @@ dialog::backdrop { background: rgba(0, 0, 0, .55); }
 .sl-item.done { color: var(--ink-3); text-decoration: line-through; text-decoration-thickness: 1px; }
 .sl-item.now { font-weight: 600; }
 .sl-item.now span:first-child::before { content: "▸ "; color: var(--work); }
+.sl-item.long span:last-child { white-space: normal; text-align: right; min-width: 0; overflow-wrap: anywhere; }
 .set-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .set-row small { display: block; color: var(--ink-3); font-size: 13.5px; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; flex: 0 0 auto; }
@@ -304,14 +305,24 @@ dialog::backdrop { background: rgba(0, 0, 0, .55); }
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const fmt = sec => { sec = Math.max(0, Math.round(sec)); const m = Math.floor(sec / 60), s = sec % 60; return m + ":" + String(s).padStart(2, "0"); };
   const fmtKg = (v, sep) => String(v).replace(".", sep == null ? "," : sep); // separatore dei decimali della lingua (T2)
-  const durText = sec => (sec >= 60 ? (sec % 60 ? fmt(sec) + " min" : sec / 60 + " min") : sec + " s");
+  const durOne = sec => (sec >= 60 ? (sec % 60 ? fmt(sec) + " min" : sec / 60 + " min") : sec + " s");
+  // T2: anche una durata a intervallo { min, max } ("30-45 s", "2-3 min", "45 s – 1:30 min")
+  const durText = sec => {
+    if (!sec || typeof sec !== "object") return durOne(sec);
+    const a = sec.min, b = sec.max;
+    if (b < 60) return a + "-" + b + " s";
+    if (a >= 60 && a % 60 === 0 && b % 60 === 0) return a / 60 + "-" + b / 60 + " min";
+    return durOne(a) + " – " + durOne(b);
+  };
   WP.modules = WP.modules || {};
   WP.util = { $, esc, fmt, fmtKg, durText };
 })(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
 /* WorkoutPlayer · lingue (T2). Cinque lingue dell'interfaccia: IT, EN, FR, ES, DE, un file per lingua in lib/lang/<codice>.js
    che registra le sue chiavi con WorkoutPlayer.i18n.add(codice, { chiave: testo }).
    Due lingue in gioco nello stesso momento:
-   - l'interfaccia, nella lingua scelta (opzione lang del player: l'app la prende dal browser o dalle impostazioni);
+   - l'interfaccia, nella lingua scelta (opzione lang del player); senza, nella lingua del piano se è una delle cinque. Dal T2
+     passo 9 (#61) l'app passa la lingua della scheda (o, se l'utente lo sceglie nelle impostazioni, la lingua dell'app): durante
+     l'allenamento il player non mescola più l'interfaccia in una lingua e i testi e la voce in un'altra;
    - la voce e i testi che la voce legge (etichette di serie, ripetizioni, durate), nella lingua del piano (plan.lang)
      se è una delle cinque; altrimenti niente voce: bip e testo, con l'avviso nelle impostazioni audio (AC-P4').
    I testi del piano (nomi, note, istruzioni) non si traducono: restano nella lingua della scheda.
@@ -357,9 +368,11 @@ WorkoutPlayer.i18n.add("it", {
   "aria.kgUp": "Aumenta il carico",
   "aria.repsDown": "Una ripetizione in meno",
   "aria.repsUp": "Una ripetizione in più",
+  "aria.scriptFrame": "Script del piano",
   "list.title": "Scaletta",
   "done.title": "Seduta <em>completata</em>",
   "done.home": "Torna alla scelta",
+  "done.lastRest": "In scheda, dopo {what}: recupero {rest}.",
   "btn.close": "Chiudi",
   "btn.yes": "Sì",
   "btn.no": "No",
@@ -402,8 +415,8 @@ WorkoutPlayer.i18n.add("it", {
   "btn.goNow": "Via subito",
   "btn.doneNext": "Fatto, avanti",
   "btn.setDone": "Serie completata",
-  "btn.doneDrop": "Fatto: scala il carico",
-  "btn.donePart": "Fatto: parte successiva",
+  "btn.doneDrop": "Scala il carico",
+  "btn.donePart": "Parte successiva",
   "btn.nextMinute": "Minuto successivo",
   "btn.nextInterval": "Intervallo successivo",
   "btn.finished": "Finito!",
@@ -431,6 +444,8 @@ WorkoutPlayer.i18n.add("it", {
   "dial.thenGo": "poi si riparte",
   "dial.nextInterval": "al prossimo intervallo",
   "dial.cap": "tempo limite {t}",
+  "dial.rangeMin": "almeno {t}",
+  "dial.rangeDone": "minimo fatto · puoi fermarti",
   "hold.hold": "tieni · ripetizione {n} di {of}",
   "hold.release": "rilascia · poi la {n}ª",
   "note.trainer": "Nota del trainer",
@@ -534,6 +549,7 @@ WorkoutPlayer.i18n.add("it", {
   "sets.inPlan": "in scheda {n} serie",
   "mark.confirmed": "{field}: {value}, confermato da te",
   "mark.corrected": "{field}: {value}, corretto da te (in scheda {original})",
+  "mark.unverified": "{field}: {value}, da verificare",
   "field.sets": "Serie",
   "field.reps": "Ripetizioni",
   "field.dur": "Durata",
@@ -578,11 +594,16 @@ WorkoutPlayer.i18n.add("it", {
   "app.bank.openPlan": "Apri il piano",
   "app.bank.openPreview": "Apri l'anteprima",
   "app.bank.loading": "Carico «{title}»…",
-  "app.bank.missing": "Il catalogo del banco non c'è. Sul Mac, dalla cartella del progetto: python3 app/catalogo_banco.py",
+  "app.bank.missing": "Il catalogo del banco non si trova su questo server.",
+  "app.bank.offline": "Il banco richiede la rete.",
   "app.settings.title": "Impostazioni",
-  "app.settings.lang": "Lingua dell'interfaccia",
-  "app.settings.langHint": "I piani restano nella lingua della scheda",
+  "app.settings.lang": "Lingua dell'app",
+  "app.settings.langHint": "Menu, elenco dei piani e revisione",
   "app.settings.langAuto": "Automatica ({lang})",
+  "app.settings.playerLang": "Lingua del player",
+  "app.settings.playerLangHint": "Pulsanti e scritte durante l'allenamento",
+  "app.settings.playerLangPlan": "Della scheda",
+  "app.settings.playerLangApp": "Dell'app",
   "app.settings.theme": "Tema",
   "app.settings.themeAuto": "Auto",
   "app.settings.themeLight": "Chiaro",
@@ -627,7 +648,12 @@ WorkoutPlayer.i18n.add("it", {
   "app.review.corrected": "Corretto da te: {value} (in scheda {original})",
   "app.review.tagConfirmed": "confermato da te",
   "app.review.tagCorrected": "corretto da te",
-  "app.review.noEffect": "Il player mostra questa voce così come è scritta nella scheda: il valore resta nella revisione.",
+  "app.review.noEffect": "Il player non ha un campo per questo valore (per esempio le serie dentro un blocco a intervalli, dove contano i giri della fase): la voce resta com'è scritta e il valore resta nella revisione.",
+  "app.review.lbNote": "Il carico resta in libbre come nella scheda; la conversione in kg è dell'app (1 lb = 0,4536 kg).",
+  "app.review.noEffect.sides": "Il player sa rendere un solo lato o i lati che la scheda nomina: con questo numero la voce resta com'è.",
+  "app.review.noEffect.dropOn": "Il player sa scalare il carico nell'ultima serie o in tutte: con questo numero la scalata resta com'è.",
+  "app.review.noEffect.durRange": "Servono un minimo e un massimo maggiori di zero.",
+  "app.review.noEffect.lb": "Il testo del carico non si trova nella voce: il valore resta nella revisione.",
   "app.why.disagree": "Le letture non coincidono: {values}",
   "app.why.unit": "Unità da confermare: nella scheda c'è «{written}»",
   "app.why.nosource": "Numero dedotto, senza una riga della scheda",
@@ -664,6 +690,8 @@ WorkoutPlayer.i18n.add("it", {
   "voice.secs": "{n} secondi",
   "voice.mins": "{n} minuti",
   "voice.min1": "1 minuto",
+  "voice.durRange": "da {min} a {max}",
+  "voice.minDone": "Minimo fatto. Puoi fermarti.",
   "voice.reps": "{n} ripetizioni",
   "voice.repsMax": "più ripetizioni che puoi",
   "voice.repsRange": "da {min} a {max} ripetizioni",
@@ -708,9 +736,11 @@ WorkoutPlayer.i18n.add("en", {
   "aria.kgUp": "Raise the weight",
   "aria.repsDown": "One rep fewer",
   "aria.repsUp": "One rep more",
-  "list.title": "Running order",
+  "aria.scriptFrame": "Plan script",
+  "list.title": "Exercise list",
   "done.title": "Session <em>complete</em>",
   "done.home": "Back to sessions",
+  "done.lastRest": "In your plan, after {what}: rest {rest}.",
   "btn.close": "Close",
   "btn.yes": "On",
   "btn.no": "Off",
@@ -719,7 +749,7 @@ WorkoutPlayer.i18n.add("en", {
   "audio.beepHint": "3-2-1 countdown and phase changes",
   "audio.voice": "Voice",
   "audio.voiceHint": "Announces exercise, set and rests",
-  "audio.prep": "Get-ready time",
+  "audio.prep": "Prep time",
   "audio.prepHint": "Seconds to get into position before a timed exercise",
   "audio.iosNote": "On iPhone, beeps only play with the ringer on or with headphones. Keep the screen on: with the phone locked or the page closed the timer keeps counting but can't make a sound; when you come back it picks up at the right point.",
   "audio.noVoice": "This device has no {lang} voice: you'll hear the beeps and read the text on screen.",
@@ -736,7 +766,7 @@ WorkoutPlayer.i18n.add("en", {
   "home.daysAgo": "{n} days ago",
   "home.about": "about {n} min",
   "resume.title": "Session in progress · {title}",
-  "resume.fallback": "The plan opened with the backup sequence: carry on from where you were.",
+  "resume.fallback": "The plan opened in backup mode: pick up where you left off.",
   "btn.discard": "Discard",
   "btn.resume": "Resume",
   "btn.pause": "Pause",
@@ -753,12 +783,12 @@ WorkoutPlayer.i18n.add("en", {
   "btn.goNow": "Go now",
   "btn.doneNext": "Done, next",
   "btn.setDone": "Set done",
-  "btn.doneDrop": "Done: drop the weight",
-  "btn.donePart": "Done: next part",
+  "btn.doneDrop": "Drop the weight",
+  "btn.donePart": "Next part",
   "btn.nextMinute": "Next minute",
   "btn.nextInterval": "Next interval",
   "btn.finished": "Finished!",
-  "btn.skipRest": "Skip the rest",
+  "btn.skipRest": "Skip rest",
   "btn.ready": "I'm ready",
   "gate.phase": "Phase {n} of {of}",
   "gate.optional": "optional",
@@ -768,7 +798,7 @@ WorkoutPlayer.i18n.add("en", {
   "state.yourTurn": "Your turn",
   "state.hold": "Hold",
   "state.dropLoad": "Drop the weight",
-  "state.noPause": "Straight on, no pause",
+  "state.noPause": "No rest, keep going",
   "state.followPlan": "Follow the plan",
   "state.rest": "Rest",
   "dial.reps": "reps",
@@ -779,9 +809,11 @@ WorkoutPlayer.i18n.add("en", {
   "dial.repsOrMore": "reps or more",
   "dial.getReady": "get into position",
   "dial.beepAtEnd": "beeps at the end",
-  "dial.thenGo": "then we go again",
-  "dial.nextInterval": "to the next interval",
+  "dial.thenGo": "then back to work",
+  "dial.nextInterval": "until the next interval",
   "dial.cap": "time cap {t}",
+  "dial.rangeMin": "at least {t}",
+  "dial.rangeDone": "minimum done · you can stop",
   "hold.hold": "hold · rep {n} of {of}",
   "hold.release": "release · then rep {n}",
   "note.trainer": "Trainer's note",
@@ -789,7 +821,7 @@ WorkoutPlayer.i18n.add("en", {
   "note.thisPart": "This part",
   "note.fromPlan": "From the plan",
   "note.away": "While you were away",
-  "note.fallback": "Backup sequence",
+  "note.fallback": "Backup mode",
   "round.note": "Round {n}: {note}",
   "rest.title": "Recover",
   "rest.cue": "Breathe deeply, take a sip, loosen your shoulders.",
@@ -797,7 +829,7 @@ WorkoutPlayer.i18n.add("en", {
   "rest.next": "Up next",
   "rest.newPhase": "New phase",
   "away.rest": "Rest ended {t} ago",
-  "away.prep": "Get-ready time ended {t} ago",
+  "away.prep": "Prep ended {t} ago",
   "away.block": "Block ended {t} ago",
   "away.work": "Exercise ended {t} ago",
   "count.label": "Rounds counted",
@@ -885,6 +917,7 @@ WorkoutPlayer.i18n.add("en", {
   "sets.inPlan": "plan says {n} sets",
   "mark.confirmed": "{field}: {value}, confirmed by you",
   "mark.corrected": "{field}: {value}, corrected by you (plan says {original})",
+  "mark.unverified": "{field}: {value}, still to check",
   "field.sets": "Sets",
   "field.reps": "Reps",
   "field.dur": "Duration",
@@ -917,7 +950,7 @@ WorkoutPlayer.i18n.add("en", {
   "app.status.ready": "Ready",
   "app.status.review": "To review: {n} values to confirm",
   "app.status.review.one": "To review: 1 value to confirm",
-  "app.status.confirm": "To review: confirm the review",
+  "app.status.confirm": "Ready to confirm",
   "app.bank.title": "Add from the test bench",
   "app.bank.eyebrow": "Testing only",
   "app.bank.lead": "Plans already generated on the test bench. As a plan: it opens in the player after you review the uncertain values. As a preview: the first 2 exercises playable, the rest locked.",
@@ -929,11 +962,16 @@ WorkoutPlayer.i18n.add("en", {
   "app.bank.openPlan": "Open the plan",
   "app.bank.openPreview": "Open the preview",
   "app.bank.loading": "Loading “{title}”…",
-  "app.bank.missing": "The test bench catalogue is missing. On the Mac, from the project folder: python3 app/catalogo_banco.py",
+  "app.bank.missing": "The test bench catalogue isn't on this server.",
+  "app.bank.offline": "The test bench needs a connection.",
   "app.settings.title": "Settings",
-  "app.settings.lang": "Interface language",
-  "app.settings.langHint": "Plans stay in the language of the original sheet",
+  "app.settings.lang": "App language",
+  "app.settings.langHint": "Menus, plan list and review",
   "app.settings.langAuto": "Automatic ({lang})",
+  "app.settings.playerLang": "Player language",
+  "app.settings.playerLangHint": "Buttons and labels during the workout",
+  "app.settings.playerLangPlan": "The plan's",
+  "app.settings.playerLangApp": "The app's",
   "app.settings.theme": "Theme",
   "app.settings.themeAuto": "Auto",
   "app.settings.themeLight": "Light",
@@ -947,7 +985,7 @@ WorkoutPlayer.i18n.add("en", {
   "app.review.lock": "Check {n} values the reading wasn't sure about. Until you confirm them, the plan won't open.",
   "app.review.lock.one": "Check the value the reading wasn't sure about. Until you confirm it, the plan won't open.",
   "app.review.lockConfirm": "You've checked every uncertain value: confirm the review to open the plan.",
-  "app.review.leadDone": "Review confirmed. Every value can still be corrected, with the one from the sheet always shown.",
+  "app.review.leadDone": "Review confirmed. Every value can still be fixed, and the sheet's value is always shown.",
   "app.review.leadNone": "No uncertain values: every number was read with confidence. You can still correct them.",
   "app.review.uncertainTitle": "Values to confirm ({n})",
   "app.review.noneUncertain": "Nothing to confirm.",
@@ -965,7 +1003,7 @@ WorkoutPlayer.i18n.add("en", {
   "app.review.cell": "cell {c}",
   "app.review.noSource": "No line in the document: the value was inferred.",
   "app.review.confirm": "Confirm: {value}",
-  "app.review.fix": "Correct",
+  "app.review.fix": "Fix",
   "app.review.change": "Change",
   "app.review.save": "Save",
   "app.review.cancel": "Cancel",
@@ -978,10 +1016,15 @@ WorkoutPlayer.i18n.add("en", {
   "app.review.corrected": "Corrected by you: {value} (sheet says {original})",
   "app.review.tagConfirmed": "confirmed by you",
   "app.review.tagCorrected": "corrected by you",
-  "app.review.noEffect": "The player shows this item exactly as written in the sheet: the value stays in the review.",
+  "app.review.noEffect": "The player has no field for this value (for example sets inside an interval block, where the rounds of the phase count): the item stays as written and the value stays in the review.",
+  "app.review.lbNote": "The weight stays in pounds, as in the sheet; the kg figure is the app's conversion (1 lb = 0.4536 kg).",
+  "app.review.noEffect.sides": "The player can show one side, or the sides the sheet names: with this number the item stays as it is.",
+  "app.review.noEffect.dropOn": "The player can drop the weight on the last set or on every set: with this number the drop set stays as it is.",
+  "app.review.noEffect.durRange": "Enter a minimum and a maximum above zero.",
+  "app.review.noEffect.lb": "The weight text isn't in the item: the value stays in the review.",
   "app.why.disagree": "The readings don't match: {values}",
   "app.why.unit": "Unit to confirm: the sheet says “{written}”",
-  "app.why.nosource": "Inferred number, with no line in the sheet",
+  "app.why.nosource": "Inferred: no line in the sheet says it",
   "app.why.other": "To confirm",
   "app.unit.seconds": "seconds",
   "app.unit.sets": "sets",
@@ -1015,6 +1058,8 @@ WorkoutPlayer.i18n.add("en", {
   "voice.secs": "{n} seconds",
   "voice.mins": "{n} minutes",
   "voice.min1": "1 minute",
+  "voice.durRange": "{min} to {max}",
+  "voice.minDone": "Minimum done. You can stop.",
   "voice.reps": "{n} reps",
   "voice.repsMax": "as many reps as you can",
   "voice.repsRange": "{min} to {max} reps",
@@ -1045,7 +1090,7 @@ WorkoutPlayer.i18n.add("fr", {
   "num.decimal": ",",
 
   /* ---- player: scheletro ---- */
-  "home.title": "Tu entraînes quoi aujourd'hui ?",
+  "home.title": "On travaille quoi aujourd'hui ?",
   "home.lead": "Choisis ta séance : je te guide exercice par exercice, série par série, avec minuteur, repos et notes du coach.",
   "home.rules": "Les règles du coach",
   "home.rulesNote": "Les explications des exercices sont des repères généraux : si ton coach t'a montré une autre exécution, c'est la sienne qui compte.",
@@ -1059,9 +1104,11 @@ WorkoutPlayer.i18n.add("fr", {
   "aria.kgUp": "Augmenter la charge",
   "aria.repsDown": "Une répétition de moins",
   "aria.repsUp": "Une répétition de plus",
+  "aria.scriptFrame": "Script du plan",
   "list.title": "Déroulé",
   "done.title": "Séance <em>terminée</em>",
   "done.home": "Retour aux séances",
+  "done.lastRest": "Dans le programme, après {what} : récupération {rest}.",
   "btn.close": "Fermer",
   "btn.yes": "Oui",
   "btn.no": "Non",
@@ -1088,7 +1135,7 @@ WorkoutPlayer.i18n.add("fr", {
   "home.about": "environ {n} min",
   "resume.title": "Séance en cours · {title}",
   "resume.fallback": "Le programme s'est ouvert avec la séquence de secours : reprends là où tu en étais.",
-  "btn.discard": "Abandonner",
+  "btn.discard": "Effacer",
   "btn.resume": "Reprendre",
   "btn.pause": "Pause",
   "stats.duration": "durée prévue",
@@ -1101,11 +1148,11 @@ WorkoutPlayer.i18n.add("fr", {
   "btn.next": "Suivant",
   "btn.start": "Commencer",
   "btn.startPhase": "Commencer la phase",
-  "btn.goNow": "Go tout de suite",
+  "btn.goNow": "C'est parti",
   "btn.doneNext": "Fait, suivant",
   "btn.setDone": "Série terminée",
-  "btn.doneDrop": "Fait : allège la charge",
-  "btn.donePart": "Fait : partie suivante",
+  "btn.doneDrop": "Allège la charge",
+  "btn.donePart": "Partie suivante",
   "btn.nextMinute": "Minute suivante",
   "btn.nextInterval": "Intervalle suivant",
   "btn.finished": "Terminé !",
@@ -1133,6 +1180,8 @@ WorkoutPlayer.i18n.add("fr", {
   "dial.thenGo": "puis on repart",
   "dial.nextInterval": "jusqu'au prochain intervalle",
   "dial.cap": "temps limite {t}",
+  "dial.rangeMin": "au moins {t}",
+  "dial.rangeDone": "minimum atteint · tu peux t'arrêter",
   "hold.hold": "tiens · répétition {n} sur {of}",
   "hold.release": "relâche · puis la {n}e",
   "note.trainer": "Note du coach",
@@ -1145,7 +1194,7 @@ WorkoutPlayer.i18n.add("fr", {
   "rest.title": "Récupère",
   "rest.cue": "Respire à fond, bois une gorgée, relâche les épaules.",
   "rest.fromPlan": "Récupération : {text}",
-  "rest.next": "Ensuite",
+  "rest.next": "À suivre",
   "rest.newPhase": "Nouvelle phase",
   "away.rest": "Repos terminé depuis {t}",
   "away.prep": "Préparation terminée depuis {t}",
@@ -1216,7 +1265,7 @@ WorkoutPlayer.i18n.add("fr", {
   "block.oneEach": "un exercice par intervalle, à tour de rôle",
   "block.allEach": "tous les exercices à chaque intervalle",
   "block.amrap": "AMRAP {d} : un maximum de tours",
-  "block.forTime": "Pour le temps",
+  "block.forTime": "For Time",
   "block.cap": "temps limite {d}",
   "block.intervalRounds": "{n} tours : {d} d'effort",
   "block.intervalRest": "{d} de repos",
@@ -1236,6 +1285,7 @@ WorkoutPlayer.i18n.add("fr", {
   "sets.inPlan": "programme : {n} séries",
   "mark.confirmed": "{field} : {value}, confirmé par toi",
   "mark.corrected": "{field} : {value}, corrigé par toi (programme : {original})",
+  "mark.unverified": "{field} : {value}, à vérifier",
   "field.sets": "Séries",
   "field.reps": "Répétitions",
   "field.dur": "Durée",
@@ -1268,7 +1318,7 @@ WorkoutPlayer.i18n.add("fr", {
   "app.status.ready": "Prêt",
   "app.status.review": "À vérifier : {n} valeurs à confirmer",
   "app.status.review.one": "À vérifier : 1 valeur à confirmer",
-  "app.status.confirm": "À vérifier : confirme la vérification",
+  "app.status.confirm": "Prêt à confirmer",
   "app.bank.title": "Ajouter depuis le banc d'essai",
   "app.bank.eyebrow": "Pour les tests uniquement",
   "app.bank.lead": "Plans déjà générés sur le banc d'essai. Comme plan : il s'ouvre dans le lecteur après la vérification des valeurs incertaines. Comme aperçu : les 2 premiers exercices jouables, le reste verrouillé.",
@@ -1280,11 +1330,16 @@ WorkoutPlayer.i18n.add("fr", {
   "app.bank.openPlan": "Ouvrir le plan",
   "app.bank.openPreview": "Ouvrir l'aperçu",
   "app.bank.loading": "Chargement de « {title} »…",
-  "app.bank.missing": "Le catalogue du banc d'essai manque. Sur le Mac, depuis le dossier du projet : python3 app/catalogo_banco.py",
+  "app.bank.missing": "Le catalogue du banc d'essai n'est pas sur ce serveur.",
+  "app.bank.offline": "Le banc d'essai a besoin d'une connexion.",
   "app.settings.title": "Réglages",
-  "app.settings.lang": "Langue de l'interface",
-  "app.settings.langHint": "Les plans restent dans la langue du programme d'origine",
+  "app.settings.lang": "Langue de l'app",
+  "app.settings.langHint": "Menus, liste des plans et vérification",
   "app.settings.langAuto": "Automatique ({lang})",
+  "app.settings.playerLang": "Langue du lecteur",
+  "app.settings.playerLangHint": "Boutons et textes pendant la séance",
+  "app.settings.playerLangPlan": "Du programme",
+  "app.settings.playerLangApp": "De l'app",
   "app.settings.theme": "Thème",
   "app.settings.themeAuto": "Auto",
   "app.settings.themeLight": "Clair",
@@ -1329,7 +1384,12 @@ WorkoutPlayer.i18n.add("fr", {
   "app.review.corrected": "Corrigé par toi : {value} (programme : {original})",
   "app.review.tagConfirmed": "confirmé par toi",
   "app.review.tagCorrected": "corrigé par toi",
-  "app.review.noEffect": "Le lecteur affiche cet exercice tel qu'il est écrit dans le programme : la valeur reste dans la vérification.",
+  "app.review.noEffect": "Le lecteur n'a pas de champ pour cette valeur (par exemple les séries dans un bloc par intervalles, où comptent les tours de la phase) : l'exercice reste tel qu'il est écrit et la valeur reste dans la vérification.",
+  "app.review.lbNote": "La charge reste en livres, comme dans le programme ; la valeur en kg est une conversion de l'app (1 lb = 0,4536 kg).",
+  "app.review.noEffect.sides": "Le lecteur sait afficher un seul côté, ou les côtés que le programme nomme : avec ce nombre, l'exercice reste tel quel.",
+  "app.review.noEffect.dropOn": "Le lecteur sait faire la dégressive sur la dernière série ou sur toutes : avec ce nombre, elle reste telle quelle.",
+  "app.review.noEffect.durRange": "Il faut un minimum et un maximum supérieurs à zéro.",
+  "app.review.noEffect.lb": "Le texte de la charge n'est pas dans l'exercice : la valeur reste dans la vérification.",
   "app.why.disagree": "Les lectures ne concordent pas : {values}",
   "app.why.unit": "Unité à confirmer : le programme indique « {written} »",
   "app.why.nosource": "Nombre déduit, sans ligne du programme",
@@ -1366,6 +1426,8 @@ WorkoutPlayer.i18n.add("fr", {
   "voice.secs": "{n} secondes",
   "voice.mins": "{n} minutes",
   "voice.min1": "1 minute",
+  "voice.durRange": "de {min} à {max}",
+  "voice.minDone": "Minimum atteint. Tu peux t'arrêter.",
   "voice.reps": "{n} répétitions",
   "voice.repsMax": "autant de répétitions que possible",
   "voice.repsRange": "de {min} à {max} répétitions",
@@ -1382,10 +1444,10 @@ WorkoutPlayer.i18n.add("fr", {
   "voice.dropTo": "à {kg} kilos",
   "voice.now": "Enchaîne : {what}.",
   "voice.amrap": "AMRAP {d}. Un maximum de tours. C'est parti !",
-  "voice.forTime": "Pour le temps. C'est parti !",
+  "voice.forTime": "For Time. C'est parti !",
   "voice.round": "Tour {n}.",
   "voice.minsLeft": "Encore {n} minutes.",
-  "voice.last30": "Dernières 30 secondes.",
+  "voice.last30": "30 dernières secondes.",
   "voice.ten": "Dix secondes.",
   "voice.done": "Séance terminée. Bravo.",
   "voice.on": "Voix activée."
@@ -1410,9 +1472,11 @@ WorkoutPlayer.i18n.add("es", {
   "aria.kgUp": "Subir el peso",
   "aria.repsDown": "Una repetición menos",
   "aria.repsUp": "Una repetición más",
-  "list.title": "Orden",
+  "aria.scriptFrame": "Script del plan",
+  "list.title": "Ejercicios",
   "done.title": "Sesión <em>completada</em>",
   "done.home": "Volver a las sesiones",
+  "done.lastRest": "En el plan, después de {what}: descanso {rest}.",
   "btn.close": "Cerrar",
   "btn.yes": "Sí",
   "btn.no": "No",
@@ -1452,11 +1516,11 @@ WorkoutPlayer.i18n.add("es", {
   "btn.next": "Siguiente",
   "btn.start": "Empezar",
   "btn.startPhase": "Empezar la fase",
-  "btn.goNow": "Ya",
+  "btn.goNow": "Empezar ya",
   "btn.doneNext": "Hecho, siguiente",
   "btn.setDone": "Serie completada",
-  "btn.doneDrop": "Hecho: baja el peso",
-  "btn.donePart": "Hecho: siguiente parte",
+  "btn.doneDrop": "Baja el peso",
+  "btn.donePart": "Siguiente parte",
   "btn.nextMinute": "Minuto siguiente",
   "btn.nextInterval": "Intervalo siguiente",
   "btn.finished": "¡Terminado!",
@@ -1484,6 +1548,8 @@ WorkoutPlayer.i18n.add("es", {
   "dial.thenGo": "luego seguimos",
   "dial.nextInterval": "hasta el próximo intervalo",
   "dial.cap": "tiempo límite {t}",
+  "dial.rangeMin": "al menos {t}",
+  "dial.rangeDone": "mínimo hecho · puedes parar",
   "hold.hold": "mantén · repetición {n} de {of}",
   "hold.release": "suelta · luego la {n}.ª",
   "note.trainer": "Nota del entrenador",
@@ -1519,7 +1585,7 @@ WorkoutPlayer.i18n.add("es", {
   "chip.block": "Bloque",
   "chip.minute": "Minuto",
   "chip.interval": "Intervalo",
-  "chip.drop": "Descarga",
+  "chip.drop": "Drop set",
   "chip.part": "Parte",
   "chip.side": "Lado",
   "chip.load": "Peso",
@@ -1529,8 +1595,8 @@ WorkoutPlayer.i18n.add("es", {
   "chip.target": "Objetivo",
   "chip.rest": "Descanso",
   "chip.work": "Trabajo",
-  "chip.hold": "Mantén",
-  "chip.release": "Suelta",
+  "chip.hold": "Mantener",
+  "chip.release": "Soltar",
   "chip.asWritten": "En la rutina",
   "kg.free": "Peso corporal",
   "kg.bw": "Peso corporal",
@@ -1545,7 +1611,7 @@ WorkoutPlayer.i18n.add("es", {
   "label.block": "Bloque {n} de {of}",
   "label.minute": "Minuto {n} de {of}",
   "label.interval": "Intervalo {n} de {of}",
-  "label.drop": "Descarga {n} de {of}",
+  "label.drop": "Drop set {n} de {of}",
   "label.part": "Parte {n} de {of}",
   "reps.max": "máx",
   "sum.sets": "{n} series",
@@ -1587,6 +1653,7 @@ WorkoutPlayer.i18n.add("es", {
   "sets.inPlan": "rutina: {n} series",
   "mark.confirmed": "{field}: {value}, confirmado por ti",
   "mark.corrected": "{field}: {value}, corregido por ti (rutina: {original})",
+  "mark.unverified": "{field}: {value}, por verificar",
   "field.sets": "Series",
   "field.reps": "Repeticiones",
   "field.dur": "Duración",
@@ -1600,7 +1667,7 @@ WorkoutPlayer.i18n.add("es", {
   "field.every": "Intervalo",
   "field.time": "Duración del bloque",
   "field.cap": "Tiempo límite",
-  "field.drops": "Descarga",
+  "field.drops": "Drop set",
   "field.parts": "Parte de la serie",
   "field.sides": "Lados",
 
@@ -1619,10 +1686,10 @@ WorkoutPlayer.i18n.add("es", {
   "app.status.ready": "Listo",
   "app.status.review": "Por revisar: {n} valores que confirmar",
   "app.status.review.one": "Por revisar: 1 valor que confirmar",
-  "app.status.confirm": "Por revisar: confirma la revisión",
+  "app.status.confirm": "Listo para confirmar",
   "app.bank.title": "Añadir desde el banco de pruebas",
   "app.bank.eyebrow": "Solo para pruebas",
-  "app.bank.lead": "Planes ya generados en el banco de pruebas. Como plan: se abre en el reproductor tras revisar los valores dudosos. Como vista previa: los 2 primeros ejercicios jugables y el resto bloqueado.",
+  "app.bank.lead": "Planes ya generados en el banco de pruebas. Como plan: se abre en el reproductor tras revisar los valores dudosos. Como vista previa: los 2 primeros ejercicios se pueden probar y el resto queda bloqueado.",
   "app.bank.meta": "{s} sesiones · {e} ejercicios",
   "app.bank.uncertain": "{n} valores dudosos",
   "app.bank.uncertain.one": "1 valor dudoso",
@@ -1631,11 +1698,16 @@ WorkoutPlayer.i18n.add("es", {
   "app.bank.openPlan": "Abrir el plan",
   "app.bank.openPreview": "Abrir la vista previa",
   "app.bank.loading": "Cargando «{title}»…",
-  "app.bank.missing": "Falta el catálogo del banco de pruebas. En el Mac, desde la carpeta del proyecto: python3 app/catalogo_banco.py",
+  "app.bank.missing": "El catálogo del banco de pruebas no está en este servidor.",
+  "app.bank.offline": "El banco de pruebas necesita conexión.",
   "app.settings.title": "Ajustes",
-  "app.settings.lang": "Idioma de la interfaz",
-  "app.settings.langHint": "Los planes siguen en el idioma de la rutina original",
+  "app.settings.lang": "Idioma de la app",
+  "app.settings.langHint": "Menús, lista de planes y revisión",
   "app.settings.langAuto": "Automático ({lang})",
+  "app.settings.playerLang": "Idioma del reproductor",
+  "app.settings.playerLangHint": "Botones y textos durante el entrenamiento",
+  "app.settings.playerLangPlan": "De la rutina",
+  "app.settings.playerLangApp": "De la app",
   "app.settings.theme": "Tema",
   "app.settings.themeAuto": "Auto",
   "app.settings.themeLight": "Claro",
@@ -1680,7 +1752,12 @@ WorkoutPlayer.i18n.add("es", {
   "app.review.corrected": "Corregido por ti: {value} (rutina: {original})",
   "app.review.tagConfirmed": "confirmado por ti",
   "app.review.tagCorrected": "corregido por ti",
-  "app.review.noEffect": "El reproductor muestra este ejercicio tal como está escrito en la rutina: el valor se queda en la revisión.",
+  "app.review.noEffect": "El reproductor no tiene un campo para este valor (por ejemplo las series dentro de un bloque por intervalos, donde cuentan las rondas de la fase): el ejercicio queda como está escrito y el valor se queda en la revisión.",
+  "app.review.lbNote": "El peso sigue en libras, como en la rutina; la cifra en kg es una conversión de la app (1 lb = 0,4536 kg).",
+  "app.review.noEffect.sides": "El reproductor sabe mostrar un solo lado, o los lados que nombra la rutina: con este número el ejercicio queda como está.",
+  "app.review.noEffect.dropOn": "El reproductor sabe hacer el drop set en la última serie o en todas: con este número queda como está.",
+  "app.review.noEffect.durRange": "Hacen falta un mínimo y un máximo mayores que cero.",
+  "app.review.noEffect.lb": "El texto del peso no está en el ejercicio: el valor se queda en la revisión.",
   "app.why.disagree": "Las lecturas no coinciden: {values}",
   "app.why.unit": "Unidad por confirmar: la rutina pone «{written}»",
   "app.why.nosource": "Número deducido, sin una línea de la rutina",
@@ -1694,17 +1771,17 @@ WorkoutPlayer.i18n.add("es", {
   "app.preview.eyebrow": "Vista previa",
   "app.preview.meta": "{s} sesiones · {e} ejercicios",
   "app.preview.fullTitle": "Leída entera",
-  "app.preview.full": "Los {tot} ejercicios los guiará el reproductor.",
+  "app.preview.full": "El reproductor guiará los {tot} ejercicios.",
   "app.preview.partialTitle": "Leída en parte",
   "app.preview.partial": "{n} de {tot} ejercicios saldrán como paso libre, para seguir en la rutina: {names}.",
   "app.preview.partial.one": "1 de {tot} ejercicios saldrá como paso libre, para seguir en la rutina: {names}.",
-  "app.preview.try": "Prueba los 2 primeros ejercicios",
-  "app.preview.unlock": "Desbloquea el plan · {price}",
+  "app.preview.try": "Probar los 2 primeros ejercicios",
+  "app.preview.unlock": "Desbloquear el plan · {price}",
   "app.price": "4,99 €",
   "app.preview.playable": "En la prueba",
   "app.preview.locked": "Números e instrucciones bloqueados",
   "app.preview.playerNote": "Estás probando los 2 primeros ejercicios de la primera sesión. El resto se desbloquea con el plan completo.",
-  "app.unlock.title": "Desbloquea el plan",
+  "app.unlock.title": "Desbloquear el plan",
   "app.unlock.lead": "El pago aún no está activo en esta versión de prueba: llega en la próxima etapa.",
   "app.unlock.back": "Volver a la vista previa",
   "app.error.title": "Algo ha fallado",
@@ -1717,6 +1794,8 @@ WorkoutPlayer.i18n.add("es", {
   "voice.secs": "{n} segundos",
   "voice.mins": "{n} minutos",
   "voice.min1": "1 minuto",
+  "voice.durRange": "de {min} a {max}",
+  "voice.minDone": "Mínimo hecho. Puedes parar.",
   "voice.reps": "{n} repeticiones",
   "voice.repsMax": "todas las repeticiones que puedas",
   "voice.repsRange": "de {min} a {max} repeticiones",
@@ -1748,7 +1827,7 @@ WorkoutPlayer.i18n.add("de", {
 
   /* ---- player: scheletro ---- */
   "home.title": "Was trainierst du heute?",
-  "home.lead": "Wähl eine Einheit: Ich führe dich Übung für Übung, Satz für Satz, mit Timer, Pausen und den Notizen deines Trainers.",
+  "home.lead": "Wähl eine Einheit: Ich führe dich Übung für Übung, Satz für Satz, mit Timer, Erholungsphasen und den Notizen deines Trainers.",
   "home.rules": "Die Regeln deines Trainers",
   "home.rulesNote": "Die Übungsbeschreibungen sind allgemeine Hinweise: Wenn dein Trainer dir eine andere Ausführung gezeigt hat, gilt seine.",
   "pv.back": "← Einheit wechseln",
@@ -1761,9 +1840,11 @@ WorkoutPlayer.i18n.add("de", {
   "aria.kgUp": "Gewicht erhöhen",
   "aria.repsDown": "Eine Wiederholung weniger",
   "aria.repsUp": "Eine Wiederholung mehr",
+  "aria.scriptFrame": "Skript des Plans",
   "list.title": "Ablauf",
   "done.title": "Einheit <em>geschafft</em>",
   "done.home": "Zurück zur Auswahl",
+  "done.lastRest": "Laut Plan nach {what}: Erholung {rest}.",
   "btn.close": "Schließen",
   "btn.yes": "An",
   "btn.no": "Aus",
@@ -1771,7 +1852,7 @@ WorkoutPlayer.i18n.add("de", {
   "audio.beep": "Pieptöne",
   "audio.beepHint": "Countdown 3-2-1 und Phasenwechsel",
   "audio.voice": "Stimme",
-  "audio.voiceHint": "Sagt Übung, Satz und Pausen an",
+  "audio.voiceHint": "Sagt Übung, Satz und Erholung an",
   "audio.prep": "Vorbereitung",
   "audio.prepHint": "Sekunden, um vor einer Zeitübung in Position zu gehen",
   "audio.iosNote": "Auf dem iPhone sind die Pieptöne nur mit eingeschaltetem Klingelton oder mit Kopfhörern zu hören. Lass den Bildschirm an: Bei gesperrtem Handy oder geschlossener Seite zählt der Timer weiter, kann aber keinen Ton abspielen; wenn du zurückkommst, geht es an der richtigen Stelle weiter.",
@@ -1806,12 +1887,12 @@ WorkoutPlayer.i18n.add("de", {
   "btn.goNow": "Sofort los",
   "btn.doneNext": "Fertig, weiter",
   "btn.setDone": "Satz geschafft",
-  "btn.doneDrop": "Fertig: Gewicht reduzieren",
-  "btn.donePart": "Fertig: nächster Teil",
+  "btn.doneDrop": "Gewicht runter",
+  "btn.donePart": "Nächster Teil",
   "btn.nextMinute": "Nächste Minute",
   "btn.nextInterval": "Nächstes Intervall",
   "btn.finished": "Geschafft!",
-  "btn.skipRest": "Pause überspringen",
+  "btn.skipRest": "Erholung beenden",
   "btn.ready": "Ich bin bereit",
   "gate.phase": "Phase {n} von {of}",
   "gate.optional": "optional",
@@ -1823,7 +1904,7 @@ WorkoutPlayer.i18n.add("de", {
   "state.dropLoad": "Gewicht reduzieren",
   "state.noPause": "Direkt weiter, ohne Pause",
   "state.followPlan": "Folge dem Plan",
-  "state.rest": "Pause",
+  "state.rest": "Erholung",
   "dial.reps": "Wiederholungen",
   "dial.elapsed": "verstrichene Zeit",
   "dial.paused": "pausiert",
@@ -1835,6 +1916,8 @@ WorkoutPlayer.i18n.add("de", {
   "dial.thenGo": "dann geht's weiter",
   "dial.nextInterval": "bis zum nächsten Intervall",
   "dial.cap": "Zeitlimit {t}",
+  "dial.rangeMin": "mindestens {t}",
+  "dial.rangeDone": "Minimum geschafft · du kannst aufhören",
   "hold.hold": "halten · Wiederholung {n} von {of}",
   "hold.release": "lösen · dann die {n}.",
   "note.trainer": "Notiz vom Trainer",
@@ -1847,9 +1930,9 @@ WorkoutPlayer.i18n.add("de", {
   "rest.title": "Erholen",
   "rest.cue": "Tief durchatmen, einen Schluck trinken, Schultern lockern.",
   "rest.fromPlan": "Erholung: {text}",
-  "rest.next": "Gleich",
+  "rest.next": "Als Nächstes",
   "rest.newPhase": "Neue Phase",
-  "away.rest": "Pause seit {t} vorbei",
+  "away.rest": "Erholung seit {t} vorbei",
   "away.prep": "Vorbereitung seit {t} vorbei",
   "away.block": "Block seit {t} vorbei",
   "away.work": "Übung seit {t} vorbei",
@@ -1878,7 +1961,7 @@ WorkoutPlayer.i18n.add("de", {
   "chip.duration": "Dauer",
   "chip.effort": "Anstrengung",
   "chip.target": "Ziel",
-  "chip.rest": "Pause",
+  "chip.rest": "Erholung",
   "chip.work": "Arbeit",
   "chip.hold": "Halten",
   "chip.release": "Lösen",
@@ -1903,14 +1986,14 @@ WorkoutPlayer.i18n.add("de", {
   "sum.sets.one": "1 Satz",
   "sum.reps": "{r} Wiederholungen",
   "sum.repsShort": "{r} Wdh.",
-  "sum.hold": "halten {d}",
+  "sum.hold": "{d} halten",
   "sum.perSide": "pro Seite",
   "sum.lastSet": "letzter",
   "sum.asWritten": "wie im Plan",
   "block.circuitV0": "{n} Runden, ohne Pause zwischen den Übungen",
   "block.rounds": "{n} Runden",
   "block.rounds.one": "1 Runde",
-  "block.roundRest": "Pause nach jeder Runde {list}",
+  "block.roundRest": "Erholung nach jeder Runde {list}",
   "block.emomMinute": "EMOM: jede Minute",
   "block.every": "Alle {d}",
   "block.intervals": "{n} Intervalle",
@@ -1921,7 +2004,7 @@ WorkoutPlayer.i18n.add("de", {
   "block.forTime": "Auf Zeit",
   "block.cap": "Zeitlimit {d}",
   "block.intervalRounds": "{n} Runden: {d} Arbeit",
-  "block.intervalRest": "{d} Pause",
+  "block.intervalRest": "{d} Erholung",
   "data.sidePrefix": "Seite ",
 
   /* ---- T2: diario, serie aggiunte e tolte, valori della revisione ---- */
@@ -1938,15 +2021,16 @@ WorkoutPlayer.i18n.add("de", {
   "sets.inPlan": "im Plan {n} Sätze",
   "mark.confirmed": "{field}: {value}, von dir bestätigt",
   "mark.corrected": "{field}: {value}, von dir korrigiert (im Plan {original})",
+  "mark.unverified": "{field}: {value}, noch zu prüfen",
   "field.sets": "Sätze",
   "field.reps": "Wiederholungen",
   "field.dur": "Dauer",
   "field.kg": "Gewicht",
-  "field.rest": "Pause",
+  "field.rest": "Erholung",
   "field.hold": "Halten",
   "field.holdRest": "Lösen",
   "field.rounds": "Runden",
-  "field.roundRest": "Pause nach der Runde",
+  "field.roundRest": "Erholung nach der Runde",
   "field.work": "Arbeit",
   "field.every": "Intervall",
   "field.time": "Blockdauer",
@@ -1961,8 +2045,8 @@ WorkoutPlayer.i18n.add("de", {
   "app.plans.title": "Deine Pläne",
   "app.plans.meta": "{n} Einheiten · {lang}",
   "app.plans.meta.one": "1 Einheit · {lang}",
-  "app.plans.empty": "Hier erscheinen die auf diesem Gerät gespeicherten Pläne. Noch gibt es keinen: Zum Testen füg einen aus dem Prüfstand hinzu.",
-  "app.plans.add": "Aus dem Prüfstand hinzufügen",
+  "app.plans.empty": "Hier erscheinen die auf diesem Gerät gespeicherten Pläne. Noch gibt es keinen: Zum Testen füg einen aus der Testsammlung hinzu.",
+  "app.plans.add": "Aus der Testsammlung hinzufügen",
   "app.plans.values": "Gelesene Werte",
   "app.plans.delete": "Löschen",
   "app.plans.deleteSure": "Zum Löschen noch einmal tippen",
@@ -1970,10 +2054,10 @@ WorkoutPlayer.i18n.add("de", {
   "app.status.ready": "Bereit",
   "app.status.review": "Zu prüfen: {n} Werte bestätigen",
   "app.status.review.one": "Zu prüfen: 1 Wert bestätigen",
-  "app.status.confirm": "Zu prüfen: Prüfung bestätigen",
-  "app.bank.title": "Aus dem Prüfstand hinzufügen",
+  "app.status.confirm": "Bereit zur Bestätigung",
+  "app.bank.title": "Aus der Testsammlung hinzufügen",
   "app.bank.eyebrow": "Nur zum Testen",
-  "app.bank.lead": "Bereits erzeugte Pläne aus dem Prüfstand. Als Plan: öffnet sich im Player, nachdem du die unsicheren Werte geprüft hast. Als Vorschau: die ersten 2 Übungen spielbar, der Rest gesperrt.",
+  "app.bank.lead": "Bereits erzeugte Pläne aus der Testsammlung. Als Plan: öffnet sich im Player, nachdem du die unsicheren Werte geprüft hast. Als Vorschau: die ersten 2 Übungen spielbar, der Rest gesperrt.",
   "app.bank.meta": "{s} Einheiten · {e} Übungen",
   "app.bank.uncertain": "{n} unsichere Werte",
   "app.bank.uncertain.one": "1 unsicherer Wert",
@@ -1982,11 +2066,16 @@ WorkoutPlayer.i18n.add("de", {
   "app.bank.openPlan": "Plan öffnen",
   "app.bank.openPreview": "Vorschau öffnen",
   "app.bank.loading": "Lade „{title}“…",
-  "app.bank.missing": "Der Katalog des Prüfstands fehlt. Auf dem Mac, im Projektordner: python3 app/catalogo_banco.py",
+  "app.bank.missing": "Der Katalog der Testsammlung liegt nicht auf diesem Server.",
+  "app.bank.offline": "Die Testsammlung braucht eine Verbindung.",
   "app.settings.title": "Einstellungen",
-  "app.settings.lang": "Sprache der Oberfläche",
-  "app.settings.langHint": "Die Pläne bleiben in der Sprache des Originalplans",
+  "app.settings.lang": "Sprache der App",
+  "app.settings.langHint": "Menüs, Planliste und Prüfung",
   "app.settings.langAuto": "Automatisch ({lang})",
+  "app.settings.playerLang": "Sprache des Players",
+  "app.settings.playerLangHint": "Knöpfe und Texte während des Trainings",
+  "app.settings.playerLangPlan": "Des Plans",
+  "app.settings.playerLangApp": "Der App",
   "app.settings.theme": "Design",
   "app.settings.themeAuto": "Auto",
   "app.settings.themeLight": "Hell",
@@ -2031,8 +2120,13 @@ WorkoutPlayer.i18n.add("de", {
   "app.review.corrected": "Von dir korrigiert: {value} (im Plan {original})",
   "app.review.tagConfirmed": "von dir bestätigt",
   "app.review.tagCorrected": "von dir korrigiert",
-  "app.review.noEffect": "Der Player zeigt diese Übung so, wie sie im Plan steht: Der Wert bleibt in der Prüfung.",
-  "app.why.disagree": "Die Lesungen stimmen nicht überein: {values}",
+  "app.review.noEffect": "Der Player hat kein Feld für diesen Wert (zum Beispiel Sätze in einem Intervallblock, wo die Runden der Phase zählen): Die Übung bleibt, wie sie geschrieben ist, und der Wert bleibt in der Prüfung.",
+  "app.review.lbNote": "Das Gewicht bleibt in Pfund wie im Plan; die kg-Angabe ist eine Umrechnung der App (1 lb = 0,4536 kg).",
+  "app.review.noEffect.sides": "Der Player kann eine Seite zeigen oder die Seiten, die der Plan nennt: Mit dieser Zahl bleibt die Übung, wie sie ist.",
+  "app.review.noEffect.dropOn": "Der Player kann das Gewicht im letzten Satz oder in allen Sätzen reduzieren: Mit dieser Zahl bleibt der Drop-Satz, wie er ist.",
+  "app.review.noEffect.durRange": "Es braucht ein Minimum und ein Maximum über null.",
+  "app.review.noEffect.lb": "Der Gewichtstext steht nicht in der Übung: Der Wert bleibt in der Prüfung.",
+  "app.why.disagree": "Die Auswertungen stimmen nicht überein: {values}",
   "app.why.unit": "Einheit zu bestätigen: Im Plan steht „{written}“",
   "app.why.nosource": "Abgeleitete Zahl, ohne Zeile im Plan",
   "app.why.other": "Zu bestätigen",
@@ -2052,7 +2146,7 @@ WorkoutPlayer.i18n.add("de", {
   "app.preview.try": "Die ersten 2 Übungen testen",
   "app.preview.unlock": "Plan freischalten · {price}",
   "app.price": "4,99 €",
-  "app.preview.playable": "Im Test",
+  "app.preview.playable": "Zum Testen",
   "app.preview.locked": "Zahlen und Anleitungen gesperrt",
   "app.preview.playerNote": "Du testest die ersten 2 Übungen der ersten Einheit. Der Rest wird mit dem vollständigen Plan freigeschaltet.",
   "app.unlock.title": "Plan freischalten",
@@ -2068,17 +2162,19 @@ WorkoutPlayer.i18n.add("de", {
   "voice.secs": "{n} Sekunden",
   "voice.mins": "{n} Minuten",
   "voice.min1": "1 Minute",
+  "voice.durRange": "{min} bis {max}",
+  "voice.minDone": "Minimum geschafft. Du kannst aufhören.",
   "voice.reps": "{n} Wiederholungen",
   "voice.repsMax": "so viele Wiederholungen wie möglich",
   "voice.repsRange": "{min} bis {max} Wiederholungen",
   "voice.repsMin": "mindestens {n} Wiederholungen",
   "voice.kg": "{kg} Kilo",
-  "voice.restSecs": "Pause, {n} Sekunden.",
+  "voice.restSecs": "Erholung, {n} Sekunden.",
   "voice.restText": "Erholung: {text}.",
   "voice.byFeel": "nach Gefühl",
   "voice.then": "Danach: {what}.",
   "voice.follow": "Folge dem Plan. {what}.",
-  "voice.hold": "halten {d}",
+  "voice.hold": "{d} halten",
   "voice.holdGo": "Halten!",
   "voice.drop": "Gewicht reduzieren",
   "voice.dropTo": "auf {kg} Kilo",
@@ -2156,6 +2252,8 @@ WorkoutPlayer.i18n.add("de", {
   const posInt = v => Number.isInteger(v) && v > 0;
   const posNum = v => typeof v === "number" && v > 0;
   const nonNeg = v => typeof v === "number" && v >= 0;
+  // durata di una voce a tempo: secondi, oppure (T2) un intervallo { min, max } dato dall'utente in revisione
+  const durOk = d => posNum(d) || (!!d && typeof d === "object" && posNum(d.min) && posNum(d.max) && d.max > d.min);
 
   /* ---------------- v0: regole di T0, invariate ---------------- */
 
@@ -2217,7 +2315,7 @@ WorkoutPlayer.i18n.add("de", {
   function guidedV1(ph, it) {
     if (!it || !sidesOk(it)) return false;
     if (INTERVAL_FLOWS.includes(ph.flow)) return intervalsOk(ph);
-    if (it.mode === "timed") return posNum(it.dur) && !it.parts && !it.drops && it.hold == null;
+    if (it.mode === "timed") return durOk(it.dur) && !it.parts && !it.drops && it.hold == null;
     if (it.mode !== "reps") return false;
     if (it.parts != null) {
       return Array.isArray(it.parts) && it.parts.length >= 2 && it.reps == null && !it.drops && it.hold == null &&
@@ -2306,7 +2404,8 @@ WorkoutPlayer.i18n.add("de", {
     return problems.length ? { steps: null, problems } : { steps, problems };
   }
 
-  /* Durata e orologio di un passo: { secs, view }. secs > 0 = conto alla rovescia di secs; 0 = cronometro in avanti.
+  /* Durata e orologio di un passo: { secs, view, min }. secs > 0 = conto alla rovescia di secs; 0 = cronometro in avanti;
+     min (T2, durata a intervallo): secondi dopo i quali la durata minima è raggiunta.
      view: "down" (conto alla rovescia), "up" (For Time con tetto: il quadrante conta in avanti fino al tetto), "hold"
      (tenuta per ripetizione: il quadrante mostra la ripetizione e la tenuta in corso). v0 = regola di T0. */
   function timing(version, w, st, prepSec) {
@@ -2324,7 +2423,8 @@ WorkoutPlayer.i18n.add("de", {
     }
     if (st.type !== "work") return { secs: 0, view: "down" };
     if (INTERVAL_FLOWS.includes(ph.flow)) return { secs: ph.work, view: "down" };
-    if (it.mode === "timed") return { secs: it.dur, view: "down" };
+    // durata a intervallo: conto alla rovescia sul massimo, con il minimo segnato (min: bip e avviso quando è raggiunto)
+    if (it.mode === "timed") return typeof it.dur === "object" ? { secs: it.dur.max, view: "down", min: it.dur.min } : { secs: it.dur, view: "down" };
     const u = unitsOf(it, st.set, st.sets)[st.part || 0];
     if (u && u.hold != null) return { secs: holdSeconds(u), view: "hold" };
     return { secs: 0, view: "down" };
@@ -2374,7 +2474,42 @@ WorkoutPlayer.i18n.add("de", {
   WP.estimateMinutes = estimateMinutes;
   WP.countSets = countSets;
   WP.timing = timing;
-  WP.v1 = { BLOCK_FLOWS, INTERVAL_FLOWS, ROUND_FLOWS, repsOk, guided: guidedV1, blockOk, intervalsOk, unitsOf, unitTimed, restSeconds: restSecondsV1, hasRest: hasRestV1, holdAt, holdSeconds };
+  /* T2 passo 9 — mai un numero perduto in silenzio. La sequenza (script o riserva: lib/API-v1.md, "nessun recupero prima di una
+     nuova fase") non fa il recupero dopo l'ultima serie di una fase: la fase dopo comincia dal suo ingresso, dove ci si ferma
+     comunque. Quando però quel recupero è l'unico punto in cui i dati danno quel valore (una voce di una sola serie a fine fase, la
+     voce "Recupero fra blocchi" di una fase a sé, il recupero dell'ultimo giro diverso dagli altri, una fase a un solo giro), il
+     player lo fa: un passo di recupero prima della fase dopo (keepRests). Dopo l'ultima fase della seduta non c'è una fase dopo: il
+     recupero lo scrive la schermata finale (endRest). Solo piani v1 (lib/index.js): i piani v0 restano quelli di T0. */
+  const restValue = (ph, s) => restSecondsV1(ph, s.ii, s.round || 1) || "testo: " + (ph.items[s.ii].restText || "");
+  function lostRestV1(w, steps, pi) {
+    let at = -1;
+    steps.forEach((s, i) => { if (s.pi === pi) at = i; });
+    const last = steps[at], ph = w.phases[pi];
+    if (!last || !ph || last.type === "rest" || last.type === "gate" || last.ii == null) return null;
+    const it = ph.items[last.ii];
+    if (!it || !hasRestV1(ph, last.ii, last.round || 1) || (it.noRestAfterLast && last.set === last.sets)) return null;
+    const v = restValue(ph, last), shared = INTERVAL_FLOWS.includes(ph.flow); // negli intervalli il recupero è della fase
+    if (steps.some(s => s.pi === pi && s.type === "rest" && (shared || s.ii === last.ii) && restValue(ph, s) === v)) return null;
+    return { at, step: { type: "rest", pi, ii: last.ii, set: last.set, sets: last.sets, round: last.round } };
+  }
+  function keepRestsV1(w, steps) {
+    if (!Array.isArray(steps)) return steps;
+    let out = steps;
+    w.phases.forEach((ph, pi) => {
+      const lost = lostRestV1(w, out, pi);
+      if (lost && lost.at < out.length - 1) out = out.slice(0, lost.at + 1).concat([lost.step], out.slice(lost.at + 1));
+    });
+    return out;
+  }
+  // il recupero perso dopo l'ultimo passo della seduta: { type: "rest", pi, ii, … } oppure null
+  function endRestV1(w, steps) {
+    if (!Array.isArray(steps) || !steps.length) return null;
+    const lost = lostRestV1(w, steps, steps[steps.length - 1].pi);
+    return lost && lost.at === steps.length - 1 ? lost.step : null;
+  }
+
+  WP.v1 = { durOk, BLOCK_FLOWS, INTERVAL_FLOWS, ROUND_FLOWS, repsOk, guided: guidedV1, blockOk, intervalsOk, unitsOf, unitTimed, restSeconds: restSecondsV1, hasRest: hasRestV1, holdAt, holdSeconds,
+    keepRests: keepRestsV1, endRest: endRestV1 };
 })(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
 /* WorkoutPlayer · rendering di riserva: la sequenza dei passi dai soli dati del piano, senza script di composizione.
    È il paracadute quando lo script manca o non supera le verifiche, e il termine di confronto dello script.
@@ -2463,7 +2598,8 @@ WorkoutPlayer.i18n.add("de", {
           for (let set = 1; set <= sets; set++) emitSet(ii, set, sets, 0);
         });
       } else if (flow === "circuit" && posInt(ph.rounds)) {
-        for (let r = 1; r <= ph.rounds; r++) ph.items.forEach((_, ii) => emitSet(ii, 1, 1, r));
+        // una serie per voce a ogni giro; più serie per giro solo se i dati le hanno (T2: serie corretta dall'utente in revisione)
+        for (let r = 1; r <= ph.rounds; r++) ph.items.forEach((it, ii) => { const n = posInt(it.sets) ? it.sets : 1; for (let set = 1; set <= n; set++) emitSet(ii, set, n, r); });
       } else if (V.INTERVAL_FLOWS.includes(flow) && V.intervalsOk(ph)) {
         for (let r = 1; r <= ph.rounds; r++) emitSet((r - 1) % ph.items.length, 1, 1, r);
       } else if (flow === "emom" && V.blockOk(ph)) {
@@ -2534,14 +2670,15 @@ WorkoutPlayer.i18n.add("de", {
   const workerSource = composeSource => "var WorkoutPlayer = {};\n(" + WP.defineApi.toString() + ")(WorkoutPlayer);\n" +
     composeSource + "\n;(" + workerMain.toString() + ")();\n";
 
-  /* Esegue lo script isolato. Risolve sempre (mai rifiuta): { ok: true, steps } oppure { ok: false, error }.
+  /* Esegue lo script isolato. Risolve sempre (mai rifiuta): { ok: true, steps } oppure { ok: false, error }. lang: lingua
+     dell'interfaccia per il titolo (nascosto) del riquadro.
      timeoutMs vale per l'esecuzione nel Worker; l'ospite aspetta al massimo timeoutMs + 3 s anche se il riquadro non risponde. */
-  function composeIsolated(plan, composeSource, timeoutMs) {
+  function composeIsolated(plan, composeSource, timeoutMs, lang) {
     timeoutMs = timeoutMs || 2000;
     return new Promise(resolve => {
       const frame = document.createElement("iframe");
       frame.setAttribute("sandbox", "allow-scripts");
-      frame.hidden = true; frame.title = "Script del piano";
+      frame.hidden = true; frame.title = WP.i18n.t(lang || "it", "aria.scriptFrame");
       frame.srcdoc = '<meta http-equiv="Content-Security-Policy" content="' + CSP + '"><script>' + RUNNER + "</" + "script>";
       let settled = false;
       const finish = res => {
@@ -2564,20 +2701,36 @@ WorkoutPlayer.i18n.add("de", {
 })(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
 /* WorkoutPlayer · motore: memoria locale (solo comodità su questo dispositivo). Da src/app1.js:1-14.
    La chiave viene dal piano (R.storageKey). T2: con R.settingsKey (l'app) le impostazioni audio (bip, voce,
-   preparazione) stanno in una memoria comune a tutti i piani, sotto quella chiave; il resto resta del piano. */
+   preparazione) stanno in una memoria comune a tutti i piani, sotto quella chiave; il resto resta del piano.
+   T2 passo 9 (decisione del titolare, #56): il ritocco "−/+" del carico si tiene per esercizio come differenza dal carico in
+   scheda (kgDiff, in kg), non più come carico assoluto (kg): così vale anche dove il carico in scheda cambia (settimane, altre
+   sedute, voci dello stesso esercizio). La memoria salvata prima (kg) si converte una volta nella differenza dal carico in scheda
+   della prima voce di quell'esercizio nel piano (esatta quando ogni esercizio ha un solo carico, come nel piano del titolare);
+   se quella voce non ha un carico numerico, o l'esercizio non c'è più, il ritocco vecchio si scarta. */
 (function (WP) {
   "use strict";
   WP.modules.store = function (R) {
     const KEY = R.storageKey, SKEY = R.settingsKey;
     const store = (() => {
-      let data = { settings: { beep: 1, voice: 1, prep: 10 }, kg: {}, last: {}, age: null, session: null };
+      let data = { settings: { beep: 1, voice: 1, prep: 10 }, kgDiff: {}, last: {}, age: null, session: null };
       try {
         const raw = JSON.parse(localStorage.getItem(KEY) || "null");
         if (raw && typeof raw === "object") data = Object.assign(data, raw, { settings: Object.assign(data.settings, raw.settings || {}) });
         const shared = SKEY ? JSON.parse(localStorage.getItem(SKEY) || "null") : null;
         if (shared && typeof shared === "object") Object.assign(data.settings, shared);
       } catch (e) { /* storage non disponibile: si lavora in memoria */ }
-      return {
+      if (!data.kgDiff || typeof data.kgDiff !== "object") data.kgDiff = {};
+      const old = data.kg && typeof data.kg === "object" ? data.kg : null;
+      if (old) {
+        const first = {};
+        Object.keys(R.WORKOUTS).forEach(wid => R.WORKOUTS[wid].phases.forEach(ph => ph.items.forEach(it => { if (!(it.ex in first)) first[it.ex] = it.kg; })));
+        Object.keys(old).forEach(ex => {
+          const base = first[ex], v = old[ex];
+          if (typeof base === "number" && typeof v === "number" && v !== base && !(ex in data.kgDiff)) data.kgDiff[ex] = Math.round((v - base) * 100) / 100;
+        });
+        delete data.kg;
+      }
+      const api = {
         get: () => data,
         save() {
           try {
@@ -2587,6 +2740,8 @@ WorkoutPlayer.i18n.add("de", {
           } catch (e) { /* ignora */ }
         }
       };
+      if (old) api.save(); // la conversione si salva subito: la memoria vecchia non si converte due volte
+      return api;
     })();
     return { store, S: store.get() };
   };
@@ -2605,7 +2760,8 @@ WorkoutPlayer.i18n.add("de", {
     const S = R.S, EX = R.EX, V = WP.v1;
     const T = (lang, key, p) => WP.i18n.t(lang || R.lang, key, p);
     const fmtKg = (v, lang) => WP.util.fmtKg(v, T(lang, "num.decimal"));
-    const kgOf = item => (typeof item.kg === "number" ? (S.kg[item.ex] != null ? S.kg[item.ex] : item.kg) : item.kg);
+    // carico della voce: in scheda + ritocco dell'esercizio (differenza, S.kgDiff, lib/engine/store.js), mai sotto zero
+    const kgOf = item => (typeof item.kg === "number" ? Math.max(0, Math.round((item.kg + (S.kgDiff[item.ex] || 0)) * 100) / 100) : item.kg);
     const kgText = (item, lang) => { const k = kgOf(item); return k == null ? T(lang, "kg.free") : k === "BW" ? T(lang, "kg.bw") : fmtKg(k, lang) + " kg"; };
     const exName = ex => (ex ? ex.it || ex.name || "" : "");
 
@@ -2635,7 +2791,7 @@ WorkoutPlayer.i18n.add("de", {
     const rawSummary = (it, lang) => [
       it.sets != null ? T(lang, "sum.sets", { n: it.sets }) : "",
       it.reps != null ? T(lang, "sum.reps", { r: R.v1 ? repsText(it.reps, lang) : it.reps }) : "",
-      it.dur != null ? (typeof it.dur === "number" ? durText(it.dur) : String(it.dur)) : "",
+      it.dur != null ? (typeof it.dur === "number" || typeof it.dur === "object" ? durText(it.dur) : String(it.dur)) : "",
       it.kg != null ? kgText(it, lang) : "",
       it.label || "", it.text || ""
     ].filter(Boolean).join(" · ") || T(lang, "sum.asWritten");
@@ -2681,19 +2837,20 @@ WorkoutPlayer.i18n.add("de", {
       return "";
     }
 
-    // serie, giro, blocco o intervallo di un passo: { kind, n, of, side } (kind vuoto = nessuna etichetta)
+    // serie, giro, blocco o intervallo di un passo: { kind, n, of, side, set } (kind vuoto = nessuna etichetta); set = serie dentro
+    // il giro di un circuito, solo se la voce ne ha più di una per giro (T2 passo 9: serie per giro corretta in revisione)
     const setInfo = st => {
       const it = R.itemOf(st), ph = R.phaseOf(st);
       if (R.v1 && st.type === "block") return ph.flow === "emom" ? { kind: ph.every === 60 ? "minute" : "interval", n: st.round, of: ph.rounds } : { kind: "" };
       if (R.v1 && V.INTERVAL_FLOWS.includes(ph.flow)) return { kind: "round", n: st.round, of: ph.rounds };
-      if (ph.flow === "circuit") return { kind: "round", n: st.round, of: ph.rounds, side: R.v1 && it && it.perSide && st.side != null ? it.sides[st.side] : null };
+      if (ph.flow === "circuit") return { kind: "round", n: st.round, of: ph.rounds, side: R.v1 && it && it.perSide && st.side != null ? it.sides[st.side] : null, set: R.v1 && st.sets > 1 ? { n: st.set, of: st.sets } : null };
       if (ph.flow === "continuous") return ph.items.length > 1 ? { kind: "block", n: st.ii + 1, of: ph.items.length } : { kind: "" };
       let side = null;
       if (R.v1 && it && it.perSide) { if (st.side != null) side = it.sides[st.side]; }
       else if (it.sides) side = it.sides[(st.set - 1) % it.sides.length];
       return { kind: "set", n: st.set, of: st.sets, side };
     };
-    const setLabel = (st, lang) => { const i = setInfo(st); return i.kind ? T(lang, "label." + i.kind, i) + (i.side ? " · " + i.side : "") : ""; };
+    const setLabel = (st, lang) => { const i = setInfo(st); return i.kind ? T(lang, "label." + i.kind, i) + (i.set ? " · " + T(lang, "label.set", i.set) : "") + (i.side ? " · " + i.side : "") : ""; };
     // nome del lato senza la parola "Lato" della lingua del piano ("Lato sinistro" → "sinistro"), per il riquadro "Lato"
     const sideValue = side => { const pre = R.voiceLang ? T(R.voiceLang, "data.sidePrefix") : ""; return pre && side.indexOf(pre) === 0 ? side.slice(pre.length) : side; };
     // fasi con hr: obiettivo al 90% della FC max stimata (220 - età)
@@ -2705,20 +2862,33 @@ WorkoutPlayer.i18n.add("de", {
 /* WorkoutPlayer · motore: bip, voce, vibrazione. Da src/app1.js:80-117.
    La voce usa la lingua del piano (R.plan.lang, per esempio "it-IT").
    T2 (AC-P4'): le frasi della voce sono nella lingua del piano se è una delle cinque (R.voiceLang). Stato della voce:
-   "ok" (il browser ha una voce in quella lingua), "unknown" (il browser non ha ancora elencato le sue voci: si parla
-   con la lingua impostata, come l'artifact), "noVoice" (le voci ci sono e nessuna è in quella lingua, o niente sintesi),
-   "noPhrases" (lingua del piano fuori dalle cinque). Con "noVoice" e "noPhrases" niente voce: bip e testo. */
+   "ok" (il browser ha una voce in quella lingua), "unknown" (il browser non ha ancora elencato le sue voci),
+   "noVoice" (le voci ci sono e nessuna è in quella lingua, o niente sintesi), "noPhrases" (lingua del piano fuori dalle
+   cinque). Con "noVoice" e "noPhrases" niente voce: bip e testo.
+   T2 passo 9 (#61, voce con accento inglese su un testo italiano): mai una frase senza una voce esplicita nella lingua del
+   piano. Un'utterance senza voice usa "la voce predefinita più adatta" per il suo lang (MDN, SpeechSynthesisUtterance.voice),
+   che su un telefono in inglese è spesso inglese; e Chrome elenca le voci solo dopo, con l'evento voiceschanged (MDN, Using
+   the Web Speech API: "you have to wait for the event to fire"). Quindi:
+   - all'apertura del player e al primo tocco (unlockAudio: "Inizia") si chiede l'elenco e si ascolta voiceschanged;
+   - una frase detta mentre l'elenco non c'è ancora aspetta al massimo WAIT_MS; se in tempo arriva una voce giusta si dice,
+     altrimenti si scarta (niente frasi vecchie dette in ritardo; la frase dopo la sostituisce);
+   - fra le voci della lingua del piano si preferisce quella locale (localService: niente rete), poi quella predefinita
+     (default), poi quella della stessa variante (it-IT per un piano it-IT);
+   - "noVoice" con la voce accesa: solo bip e testo, e nel passo in corso un avviso, una volta sola (R.showVoiceNotice);
+     il dialogo Audio dice lo stato e si aggiorna quando arriva l'elenco. */
 (function (WP) {
   "use strict";
+  const WAIT_MS = 1500; // attesa massima dell'elenco delle voci per una frase
   WP.modules.audio = function (R) {
     const S = R.S;
     const lang = R.plan.lang || "it-IT", langRe = new RegExp("^" + lang.slice(0, 2), "i");
-    let actx = null;
+    let actx = null, pending = null, listening = false, warned = false;
     function unlockAudio() {
       try {
         if (!actx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) actx = new AC(); }
         if (actx && actx.state === "suspended") actx.resume();
       } catch (e) { /* audio non disponibile */ }
+      primeVoices();
     }
     function tone(freq, ms, when, gain) {
       if (!S.settings.beep || !actx) return;
@@ -2738,30 +2908,69 @@ WorkoutPlayer.i18n.add("de", {
       done: () => { tone(784, 160); tone(988, 160, 0.18); tone(1319, 520, 0.36); buzz([150, 80, 150, 80, 300]); }
     };
     function buzz(p) { try { if (S.settings.beep && navigator.vibrate) navigator.vibrate(p); } catch (e) { /* ignora */ } }
+    const synthOf = () => { try { return window.speechSynthesis || null; } catch (e) { return null; } };
+    const tag = x => String(x || "").replace("_", "-").toLowerCase(); // Android a volte scrive "it_IT"
+    // la voce della lingua del piano: locale prima, poi predefinita, poi della stessa variante; mai una voce di un'altra lingua
     function voiceFor() {
-      try {
-        const synth = window.speechSynthesis; if (!synth) return { status: "noVoice" };
-        const all = synth.getVoices() || [];
-        if (!all.length) return { status: "unknown" };
-        const v = all.find(x => langRe.test(x.lang));
-        return v ? { status: "ok", voice: v } : { status: "noVoice" };
-      } catch (e) { return { status: "noVoice" }; }
+      const synth = synthOf(); if (!synth) return { status: "noVoice" };
+      let all;
+      try { all = synth.getVoices() || []; } catch (e) { return { status: "noVoice" }; }
+      if (!all.length) return { status: "unknown" };
+      const mine = all.filter(v => v && langRe.test(tag(v.lang)));
+      if (!mine.length) return { status: "noVoice" };
+      const score = v => (v.localService ? 4 : 0) + (v.default ? 2 : 0) + (tag(v.lang) === tag(lang) ? 1 : 0);
+      return { status: "ok", voice: mine.reduce((a, b) => (score(b) > score(a) ? b : a)) };
     }
     const voiceStatus = () => (R.voiceLang ? voiceFor().status : "noPhrases");
-    function say(text) {
-      if (!S.settings.voice || !R.voiceLang) return;
+    // chiede l'elenco delle voci e ascolta voiceschanged (una volta sola l'ascolto, la richiesta a ogni chiamata)
+    function primeVoices() {
+      const synth = synthOf(); if (!synth) return;
+      try { synth.getVoices(); } catch (e) { /* ignora */ }
+      if (listening) return;
+      listening = true;
+      try { if (synth.addEventListener) synth.addEventListener("voiceschanged", onVoices); else synth.onvoiceschanged = onVoices; } catch (e) { /* ignora */ }
+    }
+    function onVoices() {
+      try { if (R.paintSettings) R.paintSettings(); } catch (e) { /* dialogo Audio non montato */ }
+      if (!pending) return;
+      const vf = voiceFor();
+      if (vf.status === "unknown") return;
+      const text = pending.text;
+      dropPending();
+      if (vf.status === "ok") speakNow(text, vf.voice); else missing();
+    }
+    function speakNow(text, voice) {
       try {
-        const synth = window.speechSynthesis; if (!synth) return;
-        const vf = voiceFor(); if (vf.status === "noVoice") return;
+        const synth = synthOf();
         synth.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = lang; u.rate = 1.02;
-        if (vf.voice) u.voice = vf.voice;
+        u.lang = lang; u.voice = voice; u.rate = 1.02;
         synth.speak(u);
       } catch (e) { /* voce non disponibile */ }
     }
-    const hush = () => { try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) { /* ignora */ } };
-    return { unlockAudio, tone, sfx, buzz, say, hush, voiceStatus };
+    // voci elencate e nessuna nella lingua del piano: nel passo in corso un avviso, una volta sola
+    function missing() {
+      if (warned || !R.cur || !R.showVoiceNotice) return;
+      warned = true;
+      try { R.showVoiceNotice(); } catch (e) { /* ignora */ }
+    }
+    function dropPending() { if (pending) { if (typeof clearTimeout === "function") clearTimeout(pending.timer); pending = null; } }
+    function say(text) {
+      if (!S.settings.voice || !R.voiceLang) return;
+      const synth = synthOf(); if (!synth) return;
+      const vf = voiceFor();
+      dropPending(); // una frase nuova sostituisce quella che aspettava
+      if (vf.status === "ok") return speakNow(text, vf.voice);
+      if (vf.status === "noVoice") return missing();
+      primeVoices(); // "unknown": l'elenco non c'è ancora; la frase aspetta al massimo WAIT_MS, poi si scarta
+      if (typeof setTimeout !== "function") return;
+      const p = { text };
+      p.timer = setTimeout(() => { if (pending === p) pending = null; }, WAIT_MS);
+      pending = p;
+    }
+    const hush = () => { dropPending(); try { const synth = synthOf(); if (synth) synth.cancel(); } catch (e) { /* ignora */ } };
+    primeVoices(); // all'apertura del player
+    return { unlockAudio, tone, sfx, buzz, say, hush, voiceStatus, voiceFor };
   };
 })(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
 /* WorkoutPlayer · motore: schermo sempre acceso durante la seduta (Wake Lock). Da src/app1.js:119-126. */
@@ -2806,6 +3015,13 @@ WorkoutPlayer.i18n.add("de", {
    - serie aggiunte e tolte dall'utente (R.features.editSets, AC-P9): modifiche della seduta (edits) applicate alla sequenza
      e salvate con la seduta; esercizi e sedute non si toccano; si aggiunge una serie in fondo alle serie della voce e si
      toglie l'ultima non ancora iniziata, lasciandone almeno una;
+   - timer salvato e scheda cambiata (correzione in revisione dopo il salvataggio, difetto del 24/09): la seduta salvata registra
+     anche la durata del passo nella scheda (timer.secs); se alla riapertura la scheda dà un'altra durata, il timer salvato non
+     vale più e il passo riparte da capo, fermo, con la durata nuova (le sedute salvate prima, senza secs, riprendono come prima);
+   - durata a intervallo ({ min, max }, dalla revisione): conto alla rovescia sul massimo, bip e voce quando il minimo è
+     raggiunto ("puoi fermarti"), poi avanti da solo al massimo come ogni lavoro a tempo;
+   - carico "−/+" (passo 9, decisione del titolare #56): il ritocco è la differenza dal carico in scheda, per esercizio (S.kgDiff),
+     e vale sopra il carico in scheda di ogni voce di quell'esercizio (settimane, altre sedute), mai sotto zero (changeKg);
    - diario locale per serie (R.features.diary): a ogni passo di lavoro lasciato in avanti si registra la serie (carico
      usato, ripetizioni fatte, durata, serie aggiunta); a fine seduta il diario della seduta va in S.diary (ultime 30). */
 (function (WP) {
@@ -2818,7 +3034,7 @@ WorkoutPlayer.i18n.add("de", {
     let ticker = null;
     const AWAY_MS = 2000; // scaduto da più di così: il passo è finito mentre la pagina era nascosta o ferma
     R.W = null; R.STEPS = []; R.cur = null;
-    // R.cur = { wid, idx, startedAt, stepAt, endsAt, remaining, total, paused, lastSec, view, seg, counts, edits, log, repsDone }
+    // R.cur = { wid, idx, startedAt, stepAt, endsAt, remaining, total, secs, paused, lastSec, view, seg, counts, edits, log, repsDone }
     const VL = () => R.voiceLang || R.lang;           // lingua della voce
     const tv = (key, p) => WP.i18n.t(VL(), key, p);    // frase della voce
     const vLabel = st => R.setLabel(st, VL());
@@ -2892,6 +3108,17 @@ WorkoutPlayer.i18n.add("de", {
       R.cur.repsDone = Math.max(0, (n == null ? 0 : n) + delta);
       persist(); R.render();
     }
+    // "−/+" sul carico (T2 passo 9, decisione del titolare #56): il ritocco è la differenza dal carico in scheda (S.kgDiff), calcolata
+    // sulla voce del riquadro toccato (il passo in corso, o "Tra poco" nel recupero) con il passo dell'attrezzo (plan.kgStep, 1 kg);
+    // vale per quell'esercizio in ogni voce, sopra il suo carico in scheda, mai sotto zero
+    function changeKg(exId, dir) {
+      const mine = i => i && i.ex === exId && typeof i.kg === "number";
+      const item = [R.STEPS[R.cur.idx], nextWork(R.cur.idx)].map(s => (s && s.ii != null ? itemOf(s) : null)).find(mine) || R.W.phases.flatMap(p => p.items).find(mine);
+      if (!item) return;
+      const shown = Math.max(0, Math.round((R.kgOf(item) + dir * ((R.plan.kgStep || {})[exId] || 1)) * 100) / 100), diff = Math.round((shown - item.kg) * 100) / 100;
+      if (diff) S.kgDiff[exId] = diff; else delete S.kgDiff[exId];
+      store.save(); R.render();
+    }
     function logStep(i) {
       const cur = R.cur, st = R.STEPS[i];
       if (!st || !["work", "block", "free"].includes(st.type)) return;
@@ -2918,7 +3145,7 @@ WorkoutPlayer.i18n.add("de", {
       S.session = cur ? {
         wid: cur.wid, idx: cur.idx, startedAt: cur.startedAt, savedAt: Date.now(),
         seq: R.mode, left: !!left, stepAt: cur.stepAt,
-        timer: cur.endsAt == null ? null : { endsAt: cur.endsAt, total: cur.total, paused: !!cur.paused, remaining: cur.paused ? cur.remaining : null }
+        timer: cur.endsAt == null ? null : { endsAt: cur.endsAt, total: cur.total, paused: !!cur.paused, remaining: cur.paused ? cur.remaining : null, secs: cur.secs }
       } : null;
       if (cur && cur.counts) S.session.counts = cur.counts;
       if (cur && R.STEPS[cur.idx]) S.session.step = stepDesc(R.STEPS[cur.idx]);
@@ -2992,13 +3219,17 @@ WorkoutPlayer.i18n.add("de", {
       cur.repsDone = opt.restore && opt.restore.repsDone != null ? opt.restore.repsDone : null;
       cur.idx = idx; cur.stepAt = Date.now(); cur.paused = false; cur.lastSec = null; cur.endsAt = null; cur.total = 0; cur.seg = null;
       const tm = WP.timing(R.version, R.W, st, S.settings.prep), secs = tm.secs;
+      cur.secs = secs || 0; // durata del passo nella scheda (il timer salvato vale solo finché è questa)
       cur.view = tm.view;
+      // durata a intervallo (T2): il minimo è raggiunto quando restano (massimo − minimo) secondi
+      cur.rangeLeftMs = tm.min ? (secs - tm.min) * 1000 : null; cur.minDone = false;
       if (secs) {
         cur.total = secs * 1000; cur.endsAt = Date.now() + cur.total;
         if (opt.resumed) { cur.paused = true; cur.remaining = cur.total; }
       }
       const t = opt.restore && opt.restore.timer;
-      if (t && cur.endsAt != null) { // ripresa sull'orologio: stessa scadenza, oppure stessa pausa con lo stesso residuo
+      if (t && cur.endsAt != null && t.secs != null && t.secs !== cur.secs) { cur.paused = true; cur.remaining = cur.total; } // la scheda è cambiata: da capo, fermo
+      else if (t && cur.endsAt != null) { // ripresa sull'orologio: stessa scadenza, oppure stessa pausa con lo stesso residuo
         cur.total = t.total;
         if (t.paused) { cur.paused = true; cur.remaining = t.remaining; } else { cur.paused = false; cur.endsAt = t.endsAt; }
       } else if (opt.restore && cur.endsAt == null && opt.restore.stepAt) cur.stepAt = opt.restore.stepAt;
@@ -3028,7 +3259,8 @@ WorkoutPlayer.i18n.add("de", {
     }
 
     // durate dette a voce (v1): "30 secondi", "1 minuto", "2 minuti", "1:30 minuti"
-    const spokenDur = sec => (sec < 60 ? tv("voice.secs", { n: sec }) : sec % 60 ? tv("voice.mins", { n: fmt(sec) }) : sec === 60 ? tv("voice.min1") : tv("voice.mins", { n: sec / 60 }));
+    const spokenOne = sec => (sec < 60 ? tv("voice.secs", { n: sec }) : sec % 60 ? tv("voice.mins", { n: fmt(sec) }) : sec === 60 ? tv("voice.min1") : tv("voice.mins", { n: sec / 60 }));
+    const spokenDur = sec => (sec && typeof sec === "object" ? tv("voice.durRange", { min: spokenOne(sec.min), max: spokenOne(sec.max) }) : spokenOne(sec));
     const repsSay = r => R.repsVoice(r, VL());
     function announceV1(st, it, opt) {
       const say = R.say, sfx = R.sfx, ph = phaseOf(st), ex = it ? EX[it.ex] : null, name = R.exName(ex);
@@ -3081,6 +3313,10 @@ WorkoutPlayer.i18n.add("de", {
       }
       const ms = remainingMs(), sec = Math.ceil(ms / 1000);
       if (!cur.paused && ms <= 0) return ms < -AWAY_MS ? awayExpired(cur.idx, cur.endsAt) : enter(cur.idx + 1, { auto: true });
+      if (cur.rangeLeftMs != null && !cur.paused && ms <= cur.rangeLeftMs && !cur.minDone) { // durata a intervallo: minimo raggiunto
+        cur.minDone = true;
+        if (cur.lastSec != null) { R.sfx.go(); R.say(tv("voice.minDone")); }
+      }
       if (cur.view === "hold") { // tenuta per ripetizione: un bip a ogni tenuta che parte, uno a ogni rilascio
         const h = WP.v1.holdAt(R.unitOf(st), cur.total - ms), key = h.rep + h.phase;
         if (key !== cur.seg) {
@@ -3140,7 +3376,7 @@ WorkoutPlayer.i18n.add("de", {
     }
 
     return { phaseOf, itemOf, nextWork, blockItems, estimateMinutes, countSets, persist, resumable, locate, sessionSteps, startWorkout, resumeInterrupted, enter, announce, addRound, remainingMs, tick, togglePause, adjust, finish, leave,
-      canRemoveSet, editSets, repsDone, changeReps };
+      canRemoveSet, editSets, repsDone, changeReps, changeKg };
   };
 })(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
 /* WorkoutPlayer · componenti: le viste dello scheletro (lib/shell.html) e i testi del piano che vi entrano.
@@ -3157,6 +3393,18 @@ WorkoutPlayer.i18n.add("de", {
     const views = ["home", "preview", "player", "done"];
     function show(id) { views.forEach(v => { $(v).hidden = v !== id; }); window.scrollTo(0, 0); }
     const scrollTop = () => window.scrollTo(0, 0);
+    // T2: ridisegno del passo dopo un tocco che non cambia passo (serie, ripetizioni fatte, carico, pausa, giro contato): il
+    // pulsante toccato resta nello stesso punto dello schermo (se il ridisegno non lo ha più, resta lo scroll di prima).
+    // Il cambio di passo e l'apertura di un'altra vista tornano in cima (enter, show).
+    function keepPlace(el, paint) {
+      const key = JSON.stringify(el.dataset), same = () => [...$("stage").querySelectorAll("button")].filter(b => JSON.stringify(b.dataset) === key);
+      const k = same().indexOf(el), top = el.getBoundingClientRect().top, y = window.scrollY;
+      paint();
+      const again = same()[k];
+      if (!again) { if (window.scrollY !== y) window.scrollTo(0, y); return; }
+      const d = Math.round(again.getBoundingClientRect().top - top);
+      if (d) window.scrollBy(0, d);
+    }
     const playerHidden = () => $("player").hidden;
     const pageHidden = () => document.visibilityState === "hidden";
     function setText(el, s) {
@@ -3178,7 +3426,7 @@ WorkoutPlayer.i18n.add("de", {
       $("rulesList").innerHTML = rules.map(r => "<li>" + esc(r) + "</li>").join("");
       $("rulesHead").hidden = $("rulesList").hidden = !rules.length;
     }
-    return { show, scrollTop, playerHidden, pageHidden, fillShell };
+    return { show, scrollTop, keepPlace, playerHidden, pageHidden, fillShell };
   };
 })(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
 /* WorkoutPlayer · componente: home (scelta della seduta con "ultima volta", ripresa della seduta in corso).
@@ -3258,7 +3506,10 @@ WorkoutPlayer.i18n.add("de", {
    T2: tutte le parole dell'interfaccia vengono da lib/lang/ nella lingua scelta (R.t). Con le opzioni dell'app, in più:
    ripetizioni fatte per il diario (R.features.diary), "aggiungi / togli una serie" con le serie marcate
    (R.features.editSets, AC-P9), valori confermati o corretti in revisione (R.marks, AC-R4), avviso di ripresa con la
-   sequenza di riserva (R.cur.fallbackNotice, AC-L7). Senza opzioni il disegno è quello di T1 (parità con l'artifact). */
+   sequenza di riserva (R.cur.fallbackNotice, AC-L7). Senza opzioni il disegno è quello di T1 (parità con l'artifact).
+   Durata a intervallo (T2, dalla revisione): sotto il quadrante "almeno N" fino al minimo, poi "puoi fermarti".
+   T2 passo 9 (#61): se il telefono non ha una voce nella lingua della scheda, un avviso nel passo in cui la prima frase non si è
+   potuta dire, una volta sola (showVoiceNotice, chiamato da lib/engine/audio.js). */
 (function (WP) {
   "use strict";
   const CIRC = 2 * Math.PI * 135;
@@ -3284,14 +3535,16 @@ WorkoutPlayer.i18n.add("de", {
     const pauseHTML = () => '<div class="adjust"><button type="button" data-act="pause">' + pauseLabel() + "</button></div>";
     const noteHTML = t => (t ? '<div class="note"><span class="eyebrow">' + T("note.trainer") + "</span>" + esc(t) + "</div>" : "");
     const chip = (label, value) => '<div class="chip"><span>' + esc(label) + "</span><b>" + esc(value) + "</b></div>";
-    // "Serie 1 di 4 · Lato sinistro" → [Serie 1/4] [Lato sinistro]; info = R.setInfo(st) o R.partInfo(st)
+    // "Serie 1 di 4 · Lato sinistro" → [Serie 1/4] [Lato sinistro]; "Giro 2 di 3 · Serie 1 di 2" → [Giro 2/3] [Serie 1/2];
+    // info = R.setInfo(st) o R.partInfo(st)
     const infoChips = info => {
       if (!info || !info.kind) return "";
-      return chip(T("chip." + info.kind), info.n + "/" + info.of) + (info.side ? chip(T("chip.side"), R.sideValue(info.side)) : "");
+      return chip(T("chip." + info.kind), info.n + "/" + info.of) + (info.set ? chip(T("chip.set"), info.set.n + "/" + info.set.of) : "") +
+        (info.side ? chip(T("chip.side"), R.sideValue(info.side)) : "");
     };
     function kgChipHTML(it) {
       if (typeof it.kg === "number") {
-        const changed = S.kg[it.ex] != null && S.kg[it.ex] !== it.kg;
+        const changed = R.kgOf(it) !== it.kg;
         return '<div class="chip kg"><span>' + T("chip.load") + '</span><div class="kgrow"><button type="button" data-kg="-1" data-ex="' + it.ex + '" aria-label="' + T("aria.kgDown") + '">−</button><b>' + fmtKg(R.kgOf(it)) + ' kg</b><button type="button" data-kg="1" data-ex="' + it.ex + '" aria-label="' + T("aria.kgUp") + '">+</button></div>' +
           (changed ? "<small>" + T("kg.inPlan", { kg: fmtKg(it.kg) }) + "</small>" : "") + "</div>";
       }
@@ -3373,7 +3626,8 @@ WorkoutPlayer.i18n.add("de", {
       const W = R.W, keys = [R.cur.wid + "/" + st.pi].concat(withItem && st.ii != null ? [R.cur.wid + "/" + st.pi + "/" + st.ii] : []);
       const list = keys.flatMap(k => R.marks[k] || []);
       if (!list.length || !W) return "";
-      return '<p class="gear">' + esc(list.map(m => T(m.state === "corrected" ? "mark.corrected" : "mark.confirmed", { field: T("field." + m.field), value: m.value, original: m.original })).join(" · ")) + "</p>";
+      const KEYS = { corrected: "mark.corrected", confirmed: "mark.confirmed", unverified: "mark.unverified" };
+      return '<p class="gear">' + esc(list.map(m => T(KEYS[m.state] || KEYS.confirmed, { field: T("field." + m.field), value: m.value, original: m.original })).join(" · ")) + "</p>";
     }
 
     // il passo "block" (v1): EMOM (un intervallo), AMRAP, For Time
@@ -3456,7 +3710,10 @@ WorkoutPlayer.i18n.add("de", {
       }
       const away = cur.notice ? '<div class="note"><span class="eyebrow">' + T("note.away") + "</span>" + esc(cur.notice) + "</div>" : "";
       const fallback = cur.fallbackNotice ? '<div class="note"><span class="eyebrow">' + T("note.fallback") + "</span>" + esc(cur.fallbackNotice) + "</div>" : "";
-      $("stage").innerHTML = fallback + away + h; $("btnMain").textContent = main;
+      // T2 passo 9 (#61): il telefono non ha una voce nella lingua della scheda; si dice nel passo in cui è successo, una volta sola
+      const voice = R.voiceNotice != null && R.voiceNotice === cur.stepAt ? '<div class="note" id="voiceNotice"><span class="eyebrow">' + T("audio.voice") + "</span>" +
+        esc(T("audio.noVoice", { lang: R.planLangName() })) + "</div>" : "";
+      $("stage").innerHTML = voice + fallback + away + h; $("btnMain").textContent = main;
       if (cur.endsAt != null) { cur.lastSec = Math.ceil(R.remainingMs() / 1000); paintClock(R.remainingMs()); }
       paintAge();
     }
@@ -3474,18 +3731,26 @@ WorkoutPlayer.i18n.add("de", {
       } else if (cur.view === "up") { // For Time con tetto: il quadrante conta in avanti
         sec = Math.floor((cur.total - Math.max(0, ms)) / 1000); frac = 1 - frac;
       }
+      if (cur.rangeLeftMs != null && !cur.paused) { // durata a intervallo: prima del minimo "almeno 30 s", poi "puoi fermarti"
+        const sub = document.querySelector("#stage .dial .sub"), it = R.itemOf(R.STEPS[cur.idx]);
+        if (sub) sub.textContent = ms <= cur.rangeLeftMs ? T("dial.rangeDone") : T("dial.rangeMin", { t: durText(it.dur.min) });
+      }
       big.textContent = sec >= 60 || cur.view === "up" ? fmt(sec) : String(sec);
       big.classList.toggle("long", sec >= 600);
       if (rng) rng.style.strokeDashoffset = String(CIRC * (1 - frac));
     }
     function paintElapsed(sec) { const el = $("elapsed"); if (el) el.textContent = fmt(sec); }
 
+    // barra delle fasi; il player si apre (in cima) solo se non è già aperto: "+ Serie" e "− Serie" la ridisegnano restando dove si è
     function mountPlayer() {
       $("track").innerHTML = R.W.phases.map((ph, pi) => '<i style="flex:' + R.STEPS.filter(s => s.pi === pi).length + '"><b></b></i>').join("");
-      R.show("player");
+      if ($("player").hidden) R.show("player");
     }
 
-    return { render, paintAge, paintClock, paintElapsed, mountPlayer };
+    // chiamato dalla voce (lib/engine/audio.js) quando una frase non si può dire: avviso nel passo in corso
+    function showVoiceNotice() { if (!R.cur) return; R.voiceNotice = R.cur.stepAt; R.render(); }
+
+    return { render, paintAge, paintClock, paintElapsed, mountPlayer, showVoiceNotice };
   };
 })(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
 /* WorkoutPlayer · componente: scaletta (tutte le voci della seduta, fatte / in corso, salto a una voce). Da src/app3.js:75-83.
@@ -3503,7 +3768,8 @@ WorkoutPlayer.i18n.add("de", {
         if (!idxs.length) idxs = indexes(s => s.pi === pi && s.type !== "gate");
         const now = idxs.includes(cur.idx), done = !now && idxs[idxs.length - 1] < cur.idx;
         const target = ph.flow === "circuit" && STEPS[cur.idx].pi === pi ? (idxs.find(i => STEPS[i].round === (STEPS[cur.idx].round || 1)) ?? idxs[0]) : idxs[0];
-        return '<button type="button" class="sl-item' + (now ? " now" : done ? " done" : "") + '" data-jump="' + target + '"><span>' + esc(EX[it.ex].name) + "</span><span>" + esc(R.itemSummary(it, ph)) + "</span></button>";
+        const sum = R.itemSummary(it, ph), long = R.v1 && sum.length > 22 ? " long" : ""; // v1: un riepilogo lungo va a capo (piani v0 come l'artifact)
+        return '<button type="button" class="sl-item' + (now ? " now" : done ? " done" : "") + long + '" data-jump="' + target + '"><span>' + esc(EX[it.ex].name) + "</span><span>" + esc(sum) + "</span></button>";
       }).join("")).join("");
     }
     return { renderList };
@@ -3536,13 +3802,14 @@ WorkoutPlayer.i18n.add("de", {
       document.querySelectorAll(".seg").forEach(seg => [...seg.children].forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.v) === Number(R.S.settings[seg.dataset.set])))));
       paintVoiceNote();
     }
-    return { openDlg, closeDlg, paintSettings };
+    return { openDlg, closeDlg, paintSettings, planLangName };
   };
 })(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
 /* WorkoutPlayer · componente: schermata finale (tempo totale, serie e blocchi, messaggio di chiusura della seduta).
    Da src/app2.js:154-157. Il messaggio viene dai dati (workout.doneMsg).
    T2, con il diario (R.features.diary): "serie fatte" al posto di "serie e blocchi" e il diario della seduta, voce per voce
-   (carico e ripetizioni di ogni serie, durata delle serie a tempo; "+" = serie aggiunta da te), con le serie aggiunte e tolte. */
+   (carico e ripetizioni di ogni serie, durata delle serie a tempo; "+" = serie aggiunta da te), con le serie aggiunte e tolte.
+   T2 passo 9 (piani v1): il recupero scritto dopo l'ultima serie della seduta, che non si esegue, si dice sotto il messaggio. */
 (function (WP) {
   "use strict";
   WP.modules.done = function (R) {
@@ -3570,6 +3837,14 @@ WorkoutPlayer.i18n.add("de", {
         groups.map(g => '<div class="row long"><span>' + esc(g.name) + "</span><span>" + esc(g.sets.join(" · ")) + "</span></div>").join("") +
         (added || removed ? '<p class="fine">' + esc(T("diary.edits", { added, removed })) + "</p>" : "") + "</section></div>";
     }
+    // T2 passo 9: un recupero scritto dopo l'ultima serie della seduta (lib/engine/steps.js, endRest) non si esegue, ma si dice qui
+    function paintEndRest(st) {
+      let p = $("doneRest");
+      if (!st) { if (p) p.remove(); return; }
+      if (!p) { p = document.createElement("p"); p.className = "fine"; p.id = "doneRest"; $("doneMsg").after(p); }
+      const ph = R.W.phases[st.pi], it = ph.items[st.ii], secs = WP.v1.restSeconds(ph, st.ii, st.round || 1);
+      p.textContent = T("done.lastRest", { what: R.EX[it.ex].name, rest: secs ? durText(secs) : it.restText });
+    }
     function renderDone(mins) {
       const W = R.W, log = R.features.diary ? R.lastLog : null;
       const setsDone = log ? new Set(log.sets.filter(e => e.type !== "block").map(e => e.pi + "." + e.ii + "." + e.set + "." + e.round)).size + log.sets.filter(e => e.type === "block").length : 0;
@@ -3577,6 +3852,7 @@ WorkoutPlayer.i18n.add("de", {
       $("doneStats").innerHTML = "<div><b>" + mins + "′</b><span>" + T("stats.total") + "</span></div>" +
         (log ? "<div><b>" + setsDone + "</b><span>" + T("stats.setsDone") + "</span></div>" : "<div><b>" + R.countSets(W) + "</b><span>" + T("stats.sets") + "</span></div>");
       $("doneMsg").textContent = W.doneMsg || "";
+      paintEndRest(R.v1 ? WP.v1.endRest(W, R.STEPS) : null);
       const box = $("doneDiary");
       if (box) { box.innerHTML = log && log.sets.length ? diaryHTML(log) : ""; box.hidden = !box.innerHTML; }
       R.show("done");
@@ -3585,13 +3861,15 @@ WorkoutPlayer.i18n.add("de", {
   };
 })(globalThis.WorkoutPlayer = globalThis.WorkoutPlayer || {});
 /* WorkoutPlayer · componenti: eventi dell'interfaccia (tocchi, impostazioni, carico, salti, età, visibilità).
-   Da src/app3.js:97-132. Il passo del carico per esercizio viene dai dati (plan.kgStep, 1 kg se manca).
-   T2: ripetizioni fatte (data-reps) e serie aggiunte o tolte (data-sets), solo con le opzioni dell'app. */
+   Da src/app3.js:97-132. Il carico "−/+" lo calcola il motore (R.changeKg, lib/engine/session.js): passo dell'attrezzo dai dati
+   (plan.kgStep, 1 kg se manca); dal T2 passo 9 il ritocco si tiene come differenza dal carico in scheda (S.kgDiff, #56).
+   T2: ripetizioni fatte (data-reps) e serie aggiunte o tolte (data-sets), solo con le opzioni dell'app. I tocchi che ridisegnano
+   il passo senza cambiarlo lasciano il pulsante toccato dove era sullo schermo (R.keepPlace); prima "+ Serie" riportava in cima. */
 (function (WP) {
   "use strict";
   WP.modules.events = function (R) {
     const { $ } = WP.util;
-    const S = R.S, KG_STEP = R.plan.kgStep || {};
+    const S = R.S;
     function wireEvents() {
       document.addEventListener("click", e => {
         const t = e.target.closest("button"); if (!t) return;
@@ -3606,15 +3884,11 @@ WorkoutPlayer.i18n.add("de", {
         if (!R.cur) return;
         R.unlockAudio();
         if (t.dataset.adj) { R.adjust(Number(t.dataset.adj)); R.paintClock(R.remainingMs()); return; }
-        if (t.dataset.act === "pause") return R.togglePause();
-        if (t.dataset.act === "round") return R.addRound();
-        if (t.dataset.reps) return R.changeReps(Number(t.dataset.reps));
-        if (t.dataset.sets) return R.editSets(Number(t.dataset.sets));
-        if (t.dataset.kg) {
-          const exId = t.dataset.ex, item = R.W.phases.flatMap(p => p.items).find(i => i.ex === exId);
-          S.kg[exId] = Math.max(0, Math.round((R.kgOf(item) + Number(t.dataset.kg) * (KG_STEP[exId] || 1)) * 100) / 100);
-          R.store.save(); return R.render();
-        }
+        if (t.dataset.act === "pause") return R.keepPlace(t, R.togglePause);
+        if (t.dataset.act === "round") return R.keepPlace(t, R.addRound);
+        if (t.dataset.reps) return R.keepPlace(t, () => R.changeReps(Number(t.dataset.reps)));
+        if (t.dataset.sets) return R.keepPlace(t, () => R.editSets(Number(t.dataset.sets)));
+        if (t.dataset.kg) return R.keepPlace(t, () => R.changeKg(t.dataset.ex, Number(t.dataset.kg)));
         if (t.dataset.jump) { R.closeDlg($("dlgList")); return R.enter(Number(t.dataset.jump)); }
       });
       $("stage").addEventListener("input", e => {
@@ -3657,16 +3931,28 @@ WorkoutPlayer.i18n.add("de", {
    (R.version, R.v1). Un piano con una versione non supportata va in riserva con le regole più recenti.
 
    Opzioni aggiunte in T2 (le passa l'app, app/; senza, il player è quello di T1, a parità con l'artifact):
-   lang         lingua dell'interfaccia fra it, en, fr, es, de (lib/i18n.js); senza, italiano. La voce usa la lingua del piano.
+   lang         lingua dell'interfaccia fra it, en, fr, es, de (lib/i18n.js); senza, la lingua del piano se è una delle cinque,
+                altrimenti italiano (T2 passo 9, #61: il player parla e scrive nella lingua della scheda; l'app può chiedere la sua).
+                La voce usa sempre la lingua del piano.
    settingsKey  chiave della memoria comune delle impostazioni audio (bip, voce, preparazione) fra tutti i piani
    diary        true: ripetizioni fatte nel passo, diario per serie, "serie fatte" e diario nella schermata finale
    editSets     true: "aggiungi / togli una serie" nei passi di lavoro, serie aggiunte marcate (AC-P9)
-   marks        { "seduta/fase" | "seduta/fase/voce": [{ field, state: "confirmed" | "corrected", value, original }] }: valori
-                confermati o corretti dall'utente in revisione, mostrati nei passi (AC-R4) */
+   marks        { "seduta/fase" | "seduta/fase/voce": [{ field, state: "confirmed" | "corrected" | "unverified", value, original }] }:
+                valori confermati o corretti dall'utente in revisione (AC-R4), o ancora da verificare (anteprima), mostrati nei passi
+   Forme dei dati che la libreria accetta in più dal T2 e che producono solo le correzioni della revisione (non il generatore:
+   lib/API-v1.md, che il generatore riceve nel prompt, non le elenca): durata di una voce a tempo come intervallo
+   dur: { min, max }; più serie per giro di una voce di circuito (sets > 1, il rendering di riserva le guida giro per giro).
+   T2 passo 9, solo piani v1, per la sequenza dello script e per quella di riserva: il recupero dopo l'ultima serie di una fase, se è
+   l'unico punto in cui i dati lo danno, diventa un passo di recupero prima della fase dopo (WP.v1.keepRests; dopo l'ultima fase
+   della seduta lo scrive la schermata finale, WP.v1.endRest). lib/API-v1.md dice "nessun recupero prima di una nuova fase": vale
+   ancora per la sequenza che lo script restituisce, non per quella che il player esegue. */
 (function (WP) {
   "use strict";
   const MODULES = ["store", "texts", "audio", "wakelock", "session", "shell", "home", "preview", "player", "list", "dialogs", "done", "events"];
   const copy = v => JSON.parse(JSON.stringify(v));
+  // lingua dell'interfaccia del player: quella chiesta (opzione lang), altrimenti quella del piano se è una delle cinque,
+  // altrimenti italiano (le pagine di build_plan.py senza --lang: il piano del titolare, in italiano, resta com'era)
+  const uiLang = (plan, lang) => WP.i18n.code(lang) || WP.i18n.code(plan.lang) || "it";
 
   WP.create = function (opts) {
     const plan = opts.plan;
@@ -3683,11 +3969,13 @@ WorkoutPlayer.i18n.add("de", {
       if (res.problems.length) reason = "passi rifiutati: " + res.problems.slice(0, 3).join("; "); else steps = res.steps;
     }
     const keyOf = new Map(Object.keys(plan.workouts).map(k => [plan.workouts[k], k]));
-    const lang = WP.i18n.code(opts.lang) || "it";
+    // piani v1: il recupero che la sequenza toglierebbe a fine fase resta se è l'unico punto in cui i dati lo danno (WP.v1.keepRests)
+    const sequence = steps ? (w => steps[keyOf.get(w)]) : (w => WP.fallbackSteps(w, version));
+    const lang = uiLang(plan, opts.lang);
     const R = {
       plan, EX: plan.exercises, WORKOUTS: plan.workouts, IMG: opts.images || {}, version, v1: version === "v1",
       mode: steps ? "script" : "riserva", fallbackReason: steps ? null : reason,
-      buildSteps: steps ? (w => steps[keyOf.get(w)]) : (w => WP.fallbackSteps(w, version)),
+      buildSteps: version === "v1" ? (w => WP.v1.keepRests(w, sequence(w))) : sequence,
       // una sola memoria per piano: la seduta salvata dice con quale sequenza (script o riserva) è stata salvata
       storageKey: plan.storageKey || "workoutplayer-" + plan.id,
       // T2: lingua dell'interfaccia e della voce (null = lingua del piano fuori dalle cinque: niente voce), opzioni dell'app
@@ -3701,7 +3989,7 @@ WorkoutPlayer.i18n.add("de", {
   WP.start = async function (opts) {
     let steps = null, reason = null;
     if (opts.composeSource) {
-      const res = await WP.composeIsolated(opts.plan, opts.composeSource, opts.timeoutMs);
+      const res = await WP.composeIsolated(opts.plan, opts.composeSource, opts.timeoutMs, uiLang(opts.plan, opts.lang));
       if (res.ok) steps = res.steps; else reason = res.error;
     }
     const R = WP.create(Object.assign({}, opts, { steps, fallbackReason: reason, compose: undefined }));
