@@ -103,32 +103,69 @@
   }
   .btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
 
-  /* ---------- Flusso "file → player" (< 900 px): documenti → freccia verticale, poi il telefono sotto ---------- */
-  .flow-mobile { margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 40px; }
-  .flow-stage { display: flex; flex-direction: column; align-items: center; gap: 12px; flex: 0 0 auto; }
-  .flow-docs { display: flex; gap: 12px; }
-  .doc-icon { width: 72px; height: 93px; display: block; overflow: visible; }
-  .flow-arrow { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
-  .flow-arrow svg { width: 100%; height: 100%; overflow: visible; transform: rotate(90deg); }
-  .flow-dot { opacity: .55; }
-  @media (prefers-reduced-motion: no-preference) {
-    .flow-dot-1 { animation: flowPulse 1.4s ease-in-out infinite; }
-    .flow-dot-2 { animation: flowPulse 1.4s ease-in-out infinite .18s; }
-    .flow-dot-3 { animation: flowPulse 1.4s ease-in-out infinite .36s; }
-  }
-  @keyframes flowPulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
-  /* Ogni tappa: numero grande sopra, didascalia sotto (stesso schema a ogni larghezza) */
+  /* ---------- Come funziona: due passi, dal foglio all'app ----------
+     1 · la foto del foglio scritto a mano («Allenamento di oggi»); 2 · il player sulla stessa scheda. Fra i due, una freccia a mano.
+     < 900 px: in colonna nell'hero, prima del telefono; lì il passo 2 è la demo dal vivo e il telefono piccolo resta nascosto.
+     ≥ 900 px: fascia sotto l'hero, foglio → freccia → telefono, stessa altezza per le due immagini.
+     I formati sul foglio hanno due varianti, scelte con una classe su <ol class="steps">: «formati-ventaglio» (una pagina PDF,
+     una foto e un foglio di calcolo aperti a ventaglio dietro il foglio; attiva) oppure «formati-icone» (tre icone in
+     sovraimpressione sull'angolo del foglio). */
+  .steps { list-style: none; margin: 40px 0 0; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 40px; }
   .step { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 300px; text-align: center; }
+  .steps .step { width: 100%; }
+  .steps .step-2 { display: none; }
   .step-n { font: 700 52px/0.8 var(--display); color: var(--work); }
   .step-label { font: 600 17px/1.3 var(--body); color: var(--ink); }
-
-  /* ---------- I tre passi con icona (≥ 900 px): tre colonne nella colonna sinistra ---------- */
-  .steps-desktop { display: none; }
-  .step-row { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
-  .step-row > span { display: flex; flex-direction: column; gap: 10px; }
-  .step-icon { width: 80px; height: 80px; flex: 0 0 auto; display: block; overflow: visible; }
-  .step-row .step-n { font: 700 64px/0.8 var(--display); color: var(--work); }
-  .step-row .step-label { font: 600 17px/1.3 var(--body); color: var(--ink); }
+  .step-fig { margin: 0 0 12px; width: 100%; aspect-ratio: 6 / 5; display: grid; place-items: center; }
+  .formati-ventaglio .step-fig { aspect-ratio: 1; }
+  .step-fig img { display: block; }
+  /* 1 · la foto della scheda: carta vera, appena ruotata, con un'ombra morbida. La carta resta chiara anche nel tema scuro:
+     quello che le sta sopra o dietro usa colori fissi (i valori chiari di --work, --rest, --ink). */
+  .photo { position: relative; width: 86%; transform: rotate(-2deg); }
+  .photo img { position: relative; z-index: 1; width: 100%; height: auto; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 16px 30px -14px rgba(0,0,0,.4); }
+  .photo-mark { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; }
+  /* variante «ventaglio»: i documenti dietro il foglio, disegnati in coordinate della foto (630×530) */
+  .fan {
+    display: none; position: absolute; z-index: 0; overflow: visible;
+    left: calc(-70 / 630 * 100%); top: calc(-160 / 530 * 100%); width: calc(780 / 630 * 100%); height: calc(700 / 530 * 100%);
+  }
+  .fan-tag { font: 700 26px var(--display); fill: #fff; letter-spacing: .04em; }
+  .formati-ventaglio .fan { display: block; }
+  .formati-ventaglio .photo { width: 78%; translate: 0 14%; }
+  /* variante «icone»: tre segni appoggiati sull'angolo in alto a destra del foglio */
+  .formats { display: none; position: absolute; z-index: 3; top: -16px; right: -12px; align-items: flex-start; }
+  .formati-icone .formats { display: flex; }
+  .formats svg { width: 28px; height: 34px; display: block; filter: drop-shadow(0 1px 1px rgba(0,0,0,.16)) drop-shadow(0 4px 6px rgba(0,0,0,.14)); }
+  .formats svg + svg { margin-left: -7px; }
+  .formats svg:nth-child(1) { transform: rotate(-9deg) translateY(4px); }
+  .formats svg:nth-child(2) { transform: rotate(2deg); }
+  .formats svg:nth-child(3) { width: 32px; transform: rotate(10deg) translateY(5px); }
+  .fmt-tag { font: 700 7px var(--display); fill: #fff; letter-spacing: .03em; }
+  /* la freccia a mano fra i due passi, stesso tratto della sottolineatura: verticale sul telefono, orizzontale da 900 px;
+     si disegna quando entra nello schermo, solo se il sistema non chiede meno movimento (script in fondo alla pagina) */
+  .step-arrow { height: 72px; margin-block: -12px; display: grid; place-items: center; }
+  .step-arrow svg { width: 84px; height: auto; overflow: visible; transform: rotate(90deg); }
+  .step-arrow path { fill: none; stroke: var(--work); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+  @media (prefers-reduced-motion: no-preference) {
+    .step-arrow.draw path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .7s ease-out; }
+    .step-arrow.draw path + path { transition-duration: .25s; transition-delay: .6s; }
+    .step-arrow.draw.drawn path { stroke-dashoffset: 0; }
+  }
+  /* 2 · il player sullo squat, in un telefono con lo stesso stile di .phone (la demo dal vivo), tagliato sotto 2/4 e 75 kg */
+  .mini-phone { position: relative; width: 56%; background: var(--ink); border-radius: 24px; padding: 7px; box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 16px 30px -14px rgba(0,0,0,.4); }
+  .mini-phone::before {
+    content: ""; position: absolute; top: 7px; left: 50%; translate: -50% 0; width: 26%; height: 12px;
+    background: var(--ink); border-radius: 0 0 8px 8px; z-index: 2;
+  }
+  /* la fascia in alto fa da barra di stato: la tacca non copre la barra del player */
+  .mini-phone picture { display: block; padding-top: 12px; background: var(--bg); border-radius: 17px; overflow: hidden; }
+  .mini-phone img { width: 100%; height: auto; }
+  /* Tema scuro: la carta si abbassa un poco e le ombre si fanno più scure, così le immagini non sembrano adesivi */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .photo { filter: brightness(.9); }
+    :root:not([data-theme="light"]) .photo img { box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 18px 34px -12px rgba(0,0,0,.8); }
+    :root:not([data-theme="light"]) .mini-phone { box-shadow: 0 18px 34px -12px rgba(0,0,0,.8); }
+  }
 
   /* ---------- Telefono con la demo dal vivo ---------- */
   .phone-block { margin-top: 40px; display: flex; justify-content: center; }
@@ -151,21 +188,39 @@
   .phone-caption .eyebrow { display: block; }
   .phone-caption a { display: inline-block; margin-top: 4px; font-weight: 600; font-size: 14.5px; border-bottom: 1px solid var(--line); }
 
-  /* ---------- ≥ 900 px: due colonne, testo + passi a sinistra, telefono a destra, allineato in alto ---------- */
+  /* ---------- ≥ 900 px: in alto testo a sinistra e telefono a destra, sotto la fascia dei due passi ---------- */
   @media (min-width: 900px) {
     .hero .wrap {
-      display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: 56px; align-items: start;
+      display: grid; grid-template-columns: minmax(0, 1fr) 360px; grid-template-rows: auto 1fr auto;
+      grid-template-areas: "head phone" "foot phone" "steps steps"; column-gap: 56px; align-items: start;
     }
-    .hero-head { grid-column: 1; grid-row: 1; text-align: left; max-width: none; margin-inline: 0; }
-    .flow-mobile { display: none; }
-    .steps-desktop { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 28px; grid-column: 1; grid-row: 2; margin-top: 36px; }
-    .hero-foot { grid-column: 1; grid-row: 3; text-align: left; max-width: 480px; margin: 30px 0 0; }
+    .hero-head { grid-area: head; text-align: left; max-width: none; margin-inline: 0; }
+    .steps {
+      grid-area: steps; display: grid; grid-template-columns: minmax(0, 1.25fr) 120px minmax(0, 1fr); column-gap: 24px; align-items: start;
+      margin-top: 64px; padding-top: 48px; border-top: 1px solid var(--line); --fig-h: 360px;
+    }
+    .steps .step { max-width: none; }
+    .steps .step-2 { display: flex; }
+    .step-fig, .formati-ventaglio .step-fig { aspect-ratio: auto; height: var(--fig-h); }
+    .formati-ventaglio .photo { width: 70%; }
+    .formats { transform: scale(1.2); transform-origin: top right; }
+    .step-arrow { height: var(--fig-h); margin: 0; }
+    .step-arrow svg { width: 120px; transform: none; }
+    .fig-phone {
+      place-items: start center; overflow: hidden; overflow: clip;
+      -webkit-mask-image: linear-gradient(#000 calc(100% - 16px), transparent); mask-image: linear-gradient(#000 calc(100% - 16px), transparent);
+    }
+    /* telefono alto quanto il riquadro e tagliato sotto 2/4 e 75 kg: la larghezza si ricava dall'altezza del riquadro */
+    .fig-phone .mini-phone { width: calc((var(--fig-h) - 49px) * .557 + 14px); margin-top: 8px; }
+    .steps .step-n { font-size: 60px; }
+    .hero-foot { grid-area: foot; text-align: left; max-width: 480px; margin: 30px 0 0; }
     .hero-foot .fine-print { text-align: left; }
     .cta-row { justify-content: flex-start; }
-    .phone-block { grid-column: 2; grid-row: 1 / span 3; margin-top: 4px; justify-content: flex-start; }
+    .phone-block { grid-area: phone; margin-top: 4px; justify-content: flex-start; }
     .phone-block .phone { width: 340px; }
     .phone-block .step { display: none; }
   }
+  @media (min-width: 1100px) { .steps { --fig-h: 420px; } }
 
   /* ---------- Pubblici ---------- */
   .aud-head { max-width: 56ch; }
@@ -234,87 +289,68 @@
       <h1 data-i18n="heroTitle"></h1>
     </div>
 
-    <!-- < 900 px: documenti → freccia verticale → telefono, impilati -->
-    <div class="flow-mobile">
-      <div class="flow-stage">
-        <div class="flow-docs">
-          <svg class="doc-icon" viewBox="0 0 70 90" aria-hidden="true">
-            <path d="M8 4h38l16 16v66a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
-            <path d="M46 4v16h16" fill="none" stroke="var(--line)" stroke-width="2" stroke-linejoin="round"/>
-            <rect x="14" y="34" width="26" height="6" rx="1.5" fill="var(--work)"/>
-            <rect x="14" y="46" width="42" height="4" rx="1" fill="var(--ink-3)"/>
-            <rect x="14" y="55" width="34" height="4" rx="1" fill="var(--ink-3)"/>
-            <rect x="14" y="64" width="38" height="4" rx="1" fill="var(--ink-3)"/>
-          </svg>
-          <svg class="doc-icon" viewBox="0 0 70 90" aria-hidden="true">
-            <rect x="4" y="4" width="62" height="82" rx="4" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
-            <path d="M4 24h62M4 40h62M4 56h62M4 72h62" stroke="var(--line)" stroke-width="1.5"/>
-            <path d="M25 4v82M46 4v82" stroke="var(--line)" stroke-width="1.5"/>
-            <rect x="25.5" y="24.5" width="20" height="15.5" fill="var(--work)" opacity=".85"/>
-          </svg>
-          <svg class="doc-icon" viewBox="0 0 70 90" aria-hidden="true">
-            <g transform="rotate(-7 35 45)">
-              <rect x="9" y="9" width="52" height="72" rx="3" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
-              <rect x="17" y="20" width="36" height="4" rx="1" fill="var(--ink-3)"/>
-              <rect x="17" y="30" width="30" height="4" rx="1" fill="var(--ink-3)"/>
-              <rect x="17" y="40" width="34" height="4" rx="1" fill="var(--ink-3)"/>
-              <rect x="17" y="50" width="24" height="4" rx="1" fill="var(--ink-3)"/>
-            </g>
-            <path d="M3 16V6a3 3 0 0 1 3-3h10" fill="none" stroke="var(--work)" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M67 16V6a3 3 0 0 0-3-3H54" fill="none" stroke="var(--work)" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M3 74v10a3 3 0 0 0 3 3h10" fill="none" stroke="var(--work)" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M67 74v10a3 3 0 0 1-3 3H54" fill="none" stroke="var(--work)" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="step"><span class="step-n num">1</span><span class="step-label" data-i18n="step1"></span></div>
-      </div>
-
-      <div class="flow-stage">
-        <div class="flow-arrow">
-          <svg viewBox="0 0 60 60" aria-hidden="true">
-            <line x1="6" y1="30" x2="46" y2="30" stroke="var(--line)" stroke-width="2"/>
-            <path d="M38 20l12 10-12 10" fill="none" stroke="var(--ink-3)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle class="flow-dot flow-dot-1" cx="14" cy="30" r="3" fill="var(--work)"/>
-            <circle class="flow-dot flow-dot-2" cx="22" cy="30" r="3" fill="var(--work)"/>
-            <circle class="flow-dot flow-dot-3" cx="30" cy="30" r="3" fill="var(--work)"/>
-          </svg>
-        </div>
-        <div class="step"><span class="step-n num">2</span><span class="step-label" data-i18n="step2"></span></div>
-      </div>
-    </div>
-
-    <!-- ≥ 900 px: stessi tre passi, in verticale con icona, colonna sinistra -->
-    <div class="steps-desktop">
-      <div class="step-row">
-        <svg class="step-icon" viewBox="0 0 40 40" aria-hidden="true">
-          <path d="M5 9h18l5 5v15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
-          <path d="M23 9v5h5" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-linejoin="round"/>
-          <rect x="7" y="20" width="12" height="2.4" rx="1.2" fill="var(--work)"/>
-          <rect x="7" y="25" width="16" height="2" rx="1" fill="var(--ink-3)"/>
-          <rect x="26" y="4" width="10" height="13" rx="1.5" fill="var(--surface)" stroke="var(--line)" stroke-width="1.4" transform="rotate(8 31 10)"/>
-        </svg>
-        <span><span class="step-n num">1</span><span class="step-label" data-i18n="step1"></span></span>
-      </div>
-      <div class="step-row">
-        <svg class="step-icon" viewBox="0 0 40 40" aria-hidden="true">
-          <rect x="2" y="16" width="11" height="2.6" rx="1.3" fill="var(--ink-3)"/>
-          <rect x="2" y="21.5" width="8" height="2.6" rx="1.3" fill="var(--ink-3)"/>
-          <path d="M18 20l4.5 4-4.5 4" fill="none" stroke="var(--ink-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="26" y="13.5" width="12" height="5.4" rx="2.7" fill="var(--work)"/>
-          <rect x="26" y="21" width="9" height="5.4" rx="2.7" fill="var(--work)" opacity=".55"/>
-        </svg>
-        <span><span class="step-n num">2</span><span class="step-label" data-i18n="step2"></span></span>
-      </div>
-      <div class="step-row">
-        <svg class="step-icon" viewBox="0 0 40 40" aria-hidden="true">
-          <rect x="12" y="3" width="16" height="34" rx="4" fill="var(--surface)" stroke="var(--line)" stroke-width="1.6"/>
-          <circle cx="20" cy="21" r="7.5" fill="none" stroke="var(--work)" stroke-width="1.8"/>
-          <path d="M20 21V15.5" stroke="var(--work)" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M20 21l4 2.3" stroke="var(--work)" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        <span><span class="step-n num">3</span><span class="step-label" data-i18n="step3"></span></span>
-      </div>
-    </div>
+    <!-- Come funziona: due passi, dal foglio all'app (img/, vedi README). < 900 px in colonna prima del telefono (il passo 2 è la
+         demo dal vivo); ≥ 900 px fascia sotto l'hero: foglio → freccia → telefono. Variante dei formati: classe su <ol class="steps">. -->
+    <ol class="steps formati-ventaglio">
+      <li class="step">
+        <figure class="step-fig">
+          <div class="photo">
+            <svg class="fan" viewBox="-70 -160 780 700" aria-hidden="true" focusable="false">
+              <g transform="rotate(-11 190 190)">
+                <rect x="22" y="-110" width="340" height="440" rx="6" fill="#000" opacity=".07" transform="translate(4 6)"/>
+                <path d="M28 -110h282l52 52v382a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V-104a6 6 0 0 1 6-6z" fill="#FFFFFF" stroke="#D3D8D0" stroke-width="2"/>
+                <path d="M310 -110v46a6 6 0 0 0 6 6h46" fill="#EEF0EB" stroke="#D3D8D0" stroke-width="2" stroke-linejoin="round"/>
+                <rect x="52" y="-78" width="92" height="40" rx="6" fill="#D9480B"/>
+                <text class="fan-tag" x="98" y="-49" text-anchor="middle">PDF</text>
+                <rect x="52" y="-18" width="210" height="10" rx="4" fill="#D3D8D0"/><rect x="52" y="4" width="250" height="10" rx="4" fill="#D3D8D0"/><rect x="52" y="26" width="180" height="10" rx="4" fill="#D3D8D0"/>
+              </g>
+              <g transform="rotate(-2 330 60)">
+                <rect x="196" y="-128" width="270" height="226" rx="4" fill="#000" opacity=".07" transform="translate(4 6)"/>
+                <rect x="196" y="-128" width="270" height="226" rx="4" fill="#FFFFFF" stroke="#D3D8D0" stroke-width="2"/>
+                <rect x="212" y="-112" width="238" height="164" fill="#CFE3DE"/>
+                <circle cx="404" cy="-76" r="16" fill="#E9B949"/>
+                <path d="M212 52l62-70 40 44 34-30 102 56z" fill="#6E9C92"/>
+                <path d="M212 52l92-88 60 58 86 30z" fill="#4E7F74" opacity=".85"/>
+              </g>
+              <g transform="rotate(9 520 150)">
+                <rect x="370" y="-86" width="330" height="420" rx="6" fill="#000" opacity=".07" transform="translate(4 6)"/>
+                <rect x="370" y="-86" width="330" height="420" rx="6" fill="#FFFFFF" stroke="#D3D8D0" stroke-width="2"/>
+                <rect x="370" y="-86" width="330" height="30" rx="6" fill="#0A8070"/><rect x="370" y="-66" width="330" height="10" fill="#0A8070"/>
+                <rect x="370" y="-56" width="330" height="34" fill="#0A8070" opacity=".16"/>
+                <g stroke="#0A8070" stroke-width="2" opacity=".55">
+                  <path d="M370 -22h330M370 12h330M370 46h330M370 80h330M370 114h330"/>
+                  <path d="M452 -56v420M534 -56v420M616 -56v420"/>
+                </g>
+              </g>
+            </svg>
+            <img src="img/scheda-manoscritta.webp" width="630" height="530" loading="lazy" decoding="async" data-i18n-alt="step1Alt"
+                 alt="Foto di una scheda scritta a mano, «Allenamento di oggi»: squat 4x8 con 75 kg, affondi, panca con manubri, plank, curl per i bicipiti.">
+            <svg class="photo-mark" viewBox="0 0 630 530" aria-hidden="true" focusable="false"><path d="M237 221c21-4.5 52-6.5 104-4.2" fill="none" stroke="#D9480B" stroke-width="6.5" stroke-linecap="round" opacity=".9"/></svg>
+            <span class="formats" aria-hidden="true">
+              <svg viewBox="0 0 26 32"><path d="M3 1.5h14l6.5 6.5v21a1.5 1.5 0 0 1-1.5 1.5H3A1.5 1.5 0 0 1 1.5 29V3A1.5 1.5 0 0 1 3 1.5z" fill="#fff" stroke="#49545A" stroke-width="1.4"/><path d="M17 1.5V8h6.5" fill="none" stroke="#49545A" stroke-width="1.4" stroke-linejoin="round"/><rect x="1.5" y="16" width="19" height="9" rx="1.5" fill="#D9480B"/><text class="fmt-tag" x="11" y="23" text-anchor="middle">PDF</text></svg>
+              <svg viewBox="0 0 26 32"><path d="M3 1.5h14l6.5 6.5v21a1.5 1.5 0 0 1-1.5 1.5H3A1.5 1.5 0 0 1 1.5 29V3A1.5 1.5 0 0 1 3 1.5z" fill="#fff" stroke="#49545A" stroke-width="1.4"/><path d="M17 1.5V8h6.5" fill="none" stroke="#49545A" stroke-width="1.4" stroke-linejoin="round"/><path d="M5 13h15v12H5zM5 17h15M5 21h15M10 13v12M15 13v12" fill="none" stroke="#0A8070" stroke-width="1.3"/><path d="M5 13h15v4H5z" fill="#0A8070"/></svg>
+              <svg viewBox="0 0 30 32"><path d="M4.5 11.5a2.5 2.5 0 0 1 2.5-2.5h3l2-3h6l2 3h3a2.5 2.5 0 0 1 2.5 2.5v11a2.5 2.5 0 0 1-2.5 2.5H7a2.5 2.5 0 0 1-2.5-2.5z" fill="#fff" stroke="#14181A" stroke-width="1.6" stroke-linejoin="round"/><circle cx="15" cy="17" r="4.6" fill="none" stroke="#14181A" stroke-width="1.6"/></svg>
+            </span>
+          </div>
+        </figure>
+        <span class="step-n num">1</span><span class="step-label" data-i18n="step1"></span>
+      </li>
+      <li class="step-arrow" aria-hidden="true">
+        <svg viewBox="0 0 120 48" focusable="false"><path pathLength="1" d="M6 27c22-7 51-8 92-2.5"/><path pathLength="1" d="M86 14.5c6.5 4.3 11.5 8 15.5 11.5-5 3.6-10.3 7.4-16 12.5"/></svg>
+      </li>
+      <li class="step step-2">
+        <figure class="step-fig fig-phone">
+          <div class="mini-phone">
+            <picture>
+              <source media="(prefers-color-scheme: dark)" srcset="img/player-squat-scuro.webp">
+              <img src="img/player-squat.webp" width="440" height="857" loading="lazy" decoding="async" data-i18n-alt="step2Alt"
+                   alt="Il player durante lo squat: serie 2 di 4, 8 ripetizioni, 75 kg.">
+            </picture>
+          </div>
+        </figure>
+        <span class="step-n num">2</span><span class="step-label" data-i18n="step2"></span>
+      </li>
+    </ol>
 
     <div class="phone-block">
       <div class="phone-col">
@@ -323,7 +359,7 @@
             <iframe data-demo-src data-i18n-title="demoFrameTitle" src="demo-it.html" title="WorkoutPlayer" loading="eager"></iframe>
           </div>
         </div>
-        <div class="step"><span class="step-n num">3</span><span class="step-label" data-i18n="step3"></span></div>
+        <div class="step"><span class="step-n num">2</span><span class="step-label" data-i18n="step2"></span></div>
         <p class="phone-caption">
           <span class="eyebrow" data-i18n="phoneCaptionEyebrow"></span>
           <a data-demo-link href="demo-it.html" target="_blank" rel="noopener" data-i18n="phoneCaptionLink"></a>
@@ -445,9 +481,10 @@
       heroTitle: "Trasforma la tua scheda\nin un allenamento guidato.",
       heroLede: "Carichi una scheda PDF, Excel o una foto della scheda su carta, e ottieni un workout con serie, riposi, timer e note che usi direttamente dal tuo telefono.",
       heroFine: "Anteprima gratuita dei primi 2 esercizi. Nessuna registrazione.",
-      step1: "Carichi la scheda",
-      step2: "La leggiamo e la trasformiamo",
-      step3: "Ti alleni con il player",
+      step1: "Fotografi o carichi la tua scheda",
+      step2: "Ti alleni guidato, serie per serie",
+      step1Alt: "Foto di una scheda scritta a mano, «Allenamento di oggi»: squat 4x8 con 75 kg, affondi, panca con manubri, plank, curl per i bicipiti.",
+      step2Alt: "Il player durante lo squat: serie 2 di 4, 8 ripetizioni, 75 kg.",
       priceValue: "4,99 €",
       priceDesc: "IVA inclusa, per scheda caricata.",
       ctaUpload: "Prenota l'accesso anticipato",
@@ -492,9 +529,10 @@
       heroTitle: "Turn your training plan\ninto a guided workout.",
       heroLede: "You upload your training plan — a PDF, an Excel file, or a photo of the printed page — and get a workout with sets, rest, a timer and notes you use straight from your phone.",
       heroFine: "Free preview of the first 2 exercises. No sign-up.",
-      step1: "Upload your plan",
-      step2: "We read it and transform it",
-      step3: "Train with the player",
+      step1: "Snap or upload your plan",
+      step2: "Train guided, set by set",
+      step1Alt: "Photo of a handwritten plan in Italian, “Allenamento di oggi”: squats 4x8 at 75 kg, lunges, dumbbell bench press, plank, biceps curls.",
+      step2Alt: "The player during the squats: set 2 of 4, 8 reps, 75 kg.",
       priceValue: "€4.99",
       priceDesc: "VAT included, per plan you upload.",
       ctaUpload: "Reserve early access",
@@ -539,9 +577,10 @@
       heroTitle: "Transforme ton programme\nen séance guidée.",
       heroLede: "Tu charges ton programme — en PDF, en Excel ou en photo de la feuille — et tu obtiens une séance avec séries, repos, minuteur et notes, à utiliser directement depuis ton téléphone.",
       heroFine: "Aperçu gratuit des 2 premiers exercices. Sans inscription.",
-      step1: "Tu charges ton programme",
-      step2: "On la lit et on la transforme",
-      step3: "Tu t'entraînes avec le player",
+      step1: "Tu photographies ou charges ton programme",
+      step2: "Tu t'entraînes guidé, série après série",
+      step1Alt: "Photo d'un programme écrit à la main en italien, « Allenamento di oggi » : squat 4x8 à 75 kg, fentes, développé couché aux haltères, gainage, curl biceps.",
+      step2Alt: "Le player pendant le squat : série 2 sur 4, 8 répétitions, 75 kg.",
       priceValue: "4,99 €",
       priceDesc: "TVA incluse, par programme chargé.",
       ctaUpload: "Réserver l'accès anticipé",
@@ -586,9 +625,10 @@
       heroTitle: "Convierte tu rutina\nen un entrenamiento guiado.",
       heroLede: "Subes tu rutina — en PDF, en Excel o en foto de la hoja impresa — y obtienes un entreno con series, descansos, temporizador y notas que usas directamente desde tu móvil.",
       heroFine: "Vista previa gratis de los 2 primeros ejercicios. Sin registro.",
-      step1: "Subes tu rutina",
-      step2: "La leemos y la transformamos",
-      step3: "Entrenas con el player",
+      step1: "Fotografías o subes tu rutina",
+      step2: "Entrenas guiado, serie a serie",
+      step1Alt: "Foto de una rutina escrita a mano en italiano, «Allenamento di oggi»: sentadilla 4x8 con 75 kg, zancadas, press de banca con mancuernas, plancha, curl de bíceps.",
+      step2Alt: "El player durante la sentadilla: serie 2 de 4, 8 repeticiones, 75 kg.",
       priceValue: "4,99 €",
       priceDesc: "IVA incluido, por rutina subida.",
       ctaUpload: "Reservar acceso anticipado",
@@ -633,9 +673,10 @@
       heroTitle: "Mach aus deinem Trainingsplan\nein geführtes Workout.",
       heroLede: "Du lädst deinen Trainingsplan hoch — als PDF, Excel-Datei oder Foto der ausgedruckten Seite — und bekommst ein Workout mit Sätzen, Pausen, Timer und Hinweisen, das du direkt auf deinem Handy nutzt.",
       heroFine: "Kostenlose Vorschau der ersten 2 Übungen. Keine Registrierung.",
-      step1: "Plan hochladen",
-      step2: "Wir lesen ihn und wandeln ihn um",
-      step3: "Mit dem Player trainieren",
+      step1: "Plan fotografieren oder hochladen",
+      step2: "Geführt trainieren, Satz für Satz",
+      step1Alt: "Foto eines handgeschriebenen Plans auf Italienisch, „Allenamento di oggi“: Kniebeugen 4x8 mit 75 kg, Ausfallschritte, Kurzhantel-Bankdrücken, Plank, Bizepscurls.",
+      step2Alt: "Der Player bei den Kniebeugen: Satz 2 von 4, 8 Wiederholungen, 75 kg.",
       priceValue: "4,99 €",
       priceDesc: "Inkl. MwSt., pro hochgeladenem Plan.",
       ctaUpload: "Vorab-Zugang reservieren",
@@ -718,6 +759,11 @@
       var val = dict[key] != null ? dict[key] : fallback[key];
       if (val != null) el.title = val;
     });
+    document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
+      var key = el.getAttribute("data-i18n-alt");
+      var val = dict[key] != null ? dict[key] : fallback[key];
+      if (val != null) el.alt = val;
+    });
     var langNav = document.getElementById("langNav");
     if (langNav) {
       langNav.setAttribute("aria-label", dict.langLabel || fallback.langLabel);
@@ -741,6 +787,17 @@
       history.replaceState(null, "", url);
     }
   }
+
+  /* Freccia fra i due passi: si disegna quando entra nello schermo, solo se il sistema non chiede meno movimento */
+  (function () {
+    var arrow = document.querySelector(".step-arrow");
+    if (!arrow || !("IntersectionObserver" in window) || !matchMedia("(prefers-reduced-motion: no-preference)").matches) return;
+    arrow.classList.add("draw");
+    var io = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) { arrow.classList.add("drawn"); io.disconnect(); }
+    }, { threshold: 0.6 });
+    io.observe(arrow);
+  })();
 
   render(detectLang());
   document.addEventListener("DOMContentLoaded", function () {
