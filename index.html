@@ -295,20 +295,49 @@
   .aud p { color: var(--ink-2); font-size: 15.5px; max-width: 60ch; }
   .aud .case { color: var(--ink-3); font-size: 14px; margin-top: 6px; }
 
-  /* ---------- Accesso anticipato, #manda-scheda (compare solo se UPLOAD_FORM_URL è impostata) ---------- */
-  .upload { padding-block: 0 56px; }
-  .upload h2 {
-    font: 700 clamp(28px, 4vw, 40px)/1.02 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 8px;
+  /* ---------- Accesso anticipato, #manda-scheda (compare solo se UPLOAD_FORM_URL è impostata) ----------
+     Fascia scura a tutta larghezza in entrambi i temi: il modulo Tally è in tema scuro e ci si appoggia senza riquadro.
+     La sezione ridefinisce i token con i valori scuri, così testi, avvertenza, link e focus prendono i colori giusti da soli. */
+  .upload {
+    --bg: #181D20; --surface: #232A2E; --surface-2: #2B3337; --line: #2E373B;
+    --ink: #F0F3EE; --ink-2: #B1BBBF; --ink-3: #87939A;
+    --work: #FF6B2C; --on-phase: #0E1113;
+    --note-bg: #2B2410; --note-ink: #F6E3A6; --note-line: #6B5618;
+    background: var(--bg); color: var(--ink);
+    padding-block: 56px 48px;
+    /* copre il filo del piè di pagina: sotto la fascia il passaggio al piè di pagina è il suo bordo, pulito in tutti e due i temi */
+    position: relative; margin-bottom: -1px;
   }
-  .upload-body { color: var(--ink-2); max-width: 62ch; margin-top: 12px; }
+  @media (prefers-color-scheme: dark) {
+    /* Nel tema scuro la pagina è #0E1113: la fascia resta un gradino più chiara, con un filo sopra e uno sotto. */
+    :root:not([data-theme="light"]) .upload { border-block: 1px solid var(--line); }
+  }
+  .upload .eyebrow { color: var(--work); }
+  .upload h2 {
+    font: 700 clamp(32px, 5vw, 56px)/.98 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 10px;
+  }
+  .upload-body { color: var(--ink-2); max-width: 46ch; margin-top: 14px; font-size: 18px; text-wrap: pretty; }
   .upload-warn {
-    max-width: 520px; margin-top: 20px; padding: 12px 14px; border-radius: 6px; font-size: 15px; font-weight: 500;
+    max-width: 520px; margin-top: 24px; padding: 12px 14px; border-radius: 6px; font-size: 15px; font-weight: 500;
     background: var(--note-bg); color: var(--note-ink); border: 1px solid var(--note-line); border-left-width: 4px;
   }
-  /* Fondo sempre scuro: il modulo Tally è in tema scuro (testi chiari) a prescindere dal nostro tema. */
-  .upload-embed { max-width: 520px; margin-top: 12px; background: #181D20; border: 1px solid #2E373B; border-radius: 12px; padding: 8px 12px 0; }
+  /* Niente riquadro: il modulo (fondo trasparente) si fonde con la fascia. Tally ha 8 px di margine interno ai lati:
+     il margine negativo allinea i campi al bordo del testo. */
+  .upload-embed { max-width: 536px; margin: 4px -8px 0; }
   .upload-embed iframe { display: block; max-width: 100%; }
-  .upload-fallback { color: var(--ink-3); font-size: 14px; margin-top: 12px; }
+  .upload-fallback { color: var(--ink-3); font-size: 14px; margin-top: 8px; }
+  @media (min-width: 900px) { .upload { padding-block: 88px 80px; } }
+  @media (min-width: 1000px) {
+    /* Due colonne da 1000 px (sotto, la colonna del testo sarebbe stretta e il titolo andrebbe a capo): a sinistra titolo,
+       testo e avvertenza; a destra il modulo. L'ultima riga elastica evita che l'altezza del modulo allarghi gli spazi tra i testi. */
+    .upload .wrap {
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 480px); grid-template-rows: repeat(4, auto) 1fr;
+      column-gap: 72px; align-items: start;
+    }
+    .upload .wrap > * { grid-column: 1; }
+    .upload .upload-embed { grid-column: 2; grid-row: 1 / 6; max-width: none; margin: 0 -8px; }
+    .upload .upload-fallback { grid-column: 2; grid-row: 6; }
+  }
 
   /* ---------- Piè di pagina ---------- */
   footer { border-top: 1px solid var(--line); }
@@ -336,6 +365,11 @@
     font: 600 13.5px/1 var(--display); letter-spacing: .03em; text-transform: uppercase;
   }
   .consent-btn:hover { background: var(--surface-2); }
+  @media (prefers-color-scheme: dark) {
+    /* nel tema scuro un gradino più chiaro della fascia di «Accesso anticipato» (#181D20), così si stacca anche sopra di lei */
+    :root:not([data-theme="light"]) .consent { background: var(--surface-2); border-color: #4A555B; }
+    :root:not([data-theme="light"]) .consent-btn:hover { background: #2B3337; }
+  }
 </style>
 </head>
 <body>
