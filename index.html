@@ -126,8 +126,10 @@
     --fig-h: clamp(165px, calc(54vw - 2px), 300px);
   }
   .step { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; text-align: left; }
-  .step-1 { width: 54%; }
-  .step-2 { width: 32%; margin-top: 36px; }
+  /* sul telefono il telefonino sta al bordo destro e il ventaglio prende il resto, meno una corsia di 82 px per la freccia */
+  .step-1 { width: calc(100% - (var(--fig-h) - 24px) * .56 - 82px); }
+  .step-2 { width: calc((var(--fig-h) - 24px) * .56); margin-top: 36px; }
+  @media (max-width: 599px) { .steps { margin-inline: -8px; } }   /* i passi usano 8 px del margine della pagina per lato */
   .step-note { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-bottom: 10px; }
   .step-n { font: 700 32px/0.8 var(--display); color: var(--work); }
   .step-label { font: 600 13.5px/1.25 var(--body); color: var(--ink); }
@@ -148,7 +150,7 @@
   /* la freccia fra i due passi: un tratto a mano, disegnato dallo script fra i bordi veri delle due immagini */
   .steps-arrow { position: absolute; inset: 0; pointer-events: none; }
   .steps-arrow svg { display: block; width: 100%; height: 100%; overflow: visible; }
-  .steps-arrow path { fill: none; stroke: var(--work); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  .steps-arrow path { fill: none; stroke: var(--work); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
   @media (prefers-reduced-motion: no-preference) {
     .steps-arrow.draw path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .8s ease-out; }
     .steps-arrow.draw path + path { transition-duration: .25s; transition-delay: .7s; }
@@ -229,12 +231,12 @@
     :root:not([data-theme="light"]) .phone { box-shadow: inset 0 0 0 calc(3.5px * var(--s)) #43464B, 0 30px 60px -30px rgba(0,0,0,.6); }
   }
 
-  /* ---------- 600–899 px (tablet, impaginazione ancora in colonna): il ventaglio non supera i 380 px e il telefono scende di più,
-     così la diagonale fra i due passi resta verso il basso ---------- */
+  /* ---------- 600–899 px (tablet, impaginazione ancora in colonna): il ventaglio non supera i 380 px, fra i due passi restano
+     90 px per la freccia e il telefono scende quanto basta perché la freccia arrivi su SQUAT poco sotto la metà del ventaglio ---------- */
   @media (min-width: 600px) and (max-width: 899px) {
-    .steps { justify-content: center; gap: 60px; }
+    .steps { justify-content: center; gap: 90px; }
     .step-1 { width: min(50%, 380px); }
-    .step-2 { width: min(30%, 240px); margin-top: 96px; }
+    .step-2 { width: min(30%, 240px); margin-top: calc(min(50%, 380px) * .41 - 56px); }   /* SQUAT poco sotto la metà del ventaglio */
   }
 
   /* ---------- ≥ 900 px: in alto titolo e testo a sinistra, la scheda del prezzo a destra; sotto, i due passi centrati nella pagina ---------- */
@@ -878,22 +880,33 @@
     if (!ol) return;
     var box = ol.getBoundingClientRect(), cards = ol.querySelectorAll(".fan .card"), top = Infinity, bottom = -Infinity, right = -Infinity;
     cards.forEach(function (c) { var r = c.getBoundingClientRect(); top = Math.min(top, r.top); bottom = Math.max(bottom, r.bottom); right = Math.max(right, r.right); });
-    var y = top + (bottom - top) * 0.45, edge = -Infinity;
+    var small = !matchMedia("(min-width: 900px)").matches;
+    var y = top + (bottom - top) * (small ? 0.5 : 0.45), edge = -Infinity;
     cards.forEach(function (c) {   // punto del lato destro della carta (ruotata attorno al suo centro) all'altezza y
       var r = c.getBoundingClientRect(), m = new DOMMatrix(getComputedStyle(c).transform), t = Math.atan2(m.b, m.a);
       var w = c.offsetWidth / 2, v = (y - (r.top + r.bottom) / 2 - w * Math.sin(t)) / Math.cos(t);
       if (Math.abs(v) <= c.offsetHeight / 2) edge = Math.max(edge, (r.left + r.right) / 2 + w * Math.cos(t) - v * Math.sin(t));
     });
     var fig = ol.querySelector(".fig-phone").getBoundingClientRect(), ph = ol.querySelector(".mini-phone").getBoundingClientRect();
-    var sx = (isFinite(edge) ? edge : right) - box.left + 8, sy = y - box.top;
-    var ex = ph.left - box.left - 8, ey = ph.top + (Math.min(ph.bottom, fig.bottom) - ph.top) * 0.3 - box.top;
-    var dx = ex - sx, c2x = ex - dx * 0.35, c2y = ey - Math.abs(dx) * 0.08;
     var n = function (v) { return Math.round(v * 10) / 10; };
-    var paths = ol.querySelectorAll(".steps-arrow path");
-    paths[0].setAttribute("d", "M" + n(sx) + " " + n(sy) + "C" + n(sx + dx * 0.45) + " " + n(sy - Math.abs(dx) * 0.22) + " " + n(c2x) + " " + n(c2y) + " " + n(ex) + " " + n(ey));
-    var a = Math.atan2(ey - c2y, ex - c2x), len = Math.max(8, Math.min(14, Math.abs(dx) * 0.2));
-    paths[1].setAttribute("d", "M" + n(ex - len * Math.cos(a - 0.5)) + " " + n(ey - len * Math.sin(a - 0.5)) + "L" + n(ex) + " " + n(ey) +
-      "L" + n(ex - len * Math.cos(a + 0.5)) + " " + n(ey - len * Math.sin(a + 0.5)));
+    var paths = ol.querySelectorAll(".steps-arrow path"), sx, sy = y - box.top, ex, ey, c1x, c1y, c2x, c2y, a, len, open;
+    if (small) {
+      /* sotto i 900 px: dal ventaglio a metà altezza al bordo del telefono all'altezza di SQUAT, con una curva ampia che sale
+         appena e scende morbida (tangenti a −38° e +15° dalla corda, al massimo 42° in arrivo); punta di 11 px ben aperta */
+      var im = ol.querySelector(".mini-phone img").getBoundingClientRect();
+      sx = (isFinite(edge) ? edge : right) - box.left + 6; ex = ph.left - box.left - 7; ey = im.top + im.width * 162 / 390 - box.top;
+      var phi = Math.atan2(ey - sy, ex - sx), k = Math.hypot(ex - sx, ey - sy) * 0.42, ts = phi - 0.66;
+      a = Math.min(phi + 0.26, 0.74); len = 11; open = 0.55;
+      c1x = sx + k * Math.cos(ts); c1y = sy + k * Math.sin(ts); c2x = ex - k * Math.cos(a); c2y = ey - k * Math.sin(a);
+    } else {
+      sx = (isFinite(edge) ? edge : right) - box.left + 8; ex = ph.left - box.left - 8; ey = ph.top + (Math.min(ph.bottom, fig.bottom) - ph.top) * 0.3 - box.top;
+      var dx = ex - sx;
+      c1x = sx + dx * 0.45; c1y = sy - Math.abs(dx) * 0.22; c2x = ex - dx * 0.35; c2y = ey - Math.abs(dx) * 0.08;
+      a = Math.atan2(ey - c2y, ex - c2x); len = Math.max(8, Math.min(14, Math.abs(dx) * 0.2)); open = 0.5;
+    }
+    paths[0].setAttribute("d", "M" + n(sx) + " " + n(sy) + "C" + n(c1x) + " " + n(c1y) + " " + n(c2x) + " " + n(c2y) + " " + n(ex) + " " + n(ey));
+    paths[1].setAttribute("d", "M" + n(ex - len * Math.cos(a - open)) + " " + n(ey - len * Math.sin(a - open)) + "L" + n(ex) + " " + n(ey) +
+      "L" + n(ex - len * Math.cos(a + open)) + " " + n(ey - len * Math.sin(a + open)));
     revealStepsArrow();
   }
   /* Entrando nello schermo la freccia si disegna, solo se il sistema non chiede meno movimento: quando lei è tutta nella
