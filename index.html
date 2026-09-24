@@ -154,34 +154,48 @@
     .steps-arrow.draw path + path { transition-duration: .25s; transition-delay: .7s; }
     .steps-arrow.draw.drawn path { stroke-dashoffset: 0; }
   }
-  /* 2 · il player sullo squat, immagine fissa in un telefono con lo stesso stile di .phone, tagliato sotto 2/4 e 75 kg.
-     Larghezza, cornice e tacca si ricavano dall'altezza del riquadro, così 2/4 e 75 kg restano sopra la sfumatura. */
+  /* 2 · il player sullo squat, immagine fissa nello stesso telefono della demo (cornice scura, bordo in titanio, isola, barra di
+     stato), tagliato sotto 2/4 e 75 kg. La larghezza si ricava dall'altezza del riquadro, così 2/4 e 75 kg restano sopra la
+     sfumatura; il resto è in proporzione al telefono della demo, largo 463: cornice 16,5, angoli 71,5 fuori e 55 dentro, isola
+     126 × 37 a 11 dal bordo dello schermo, barra di stato 59. La cattura comincia sotto la barra, così l'isola non la copre. */
   .fig-phone {
     height: var(--fig-h); display: grid; place-items: start; overflow: hidden; overflow: clip;
     -webkit-mask-image: linear-gradient(#000 calc(100% - 14px), transparent); mask-image: linear-gradient(#000 calc(100% - 14px), transparent);
   }
   .mini-phone {
     --pw: calc((var(--fig-h) - 24px) * .56);
-    position: relative; width: var(--pw); margin-top: 2px; padding: calc(var(--pw) * .03); border-radius: calc(var(--pw) * .11);
-    background: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 16px 30px -14px rgba(0,0,0,.4);
+    position: relative; width: var(--pw); margin-top: 2px; padding: calc(var(--pw) * .0356); border-radius: calc(var(--pw) * .1544);
+    background: #08090A; box-shadow: inset 0 0 0 max(1px, calc(var(--pw) * .0076)) #43464B, 0 1px 2px rgba(0,0,0,.12), 0 16px 30px -14px rgba(0,0,0,.4);
   }
-  .mini-phone::before {
-    content: ""; position: absolute; top: calc(var(--pw) * .03); left: 50%; translate: -50% 0; width: 26%; height: calc(var(--pw) * .055);
-    background: var(--ink); border-radius: 0 0 calc(var(--pw) * .04) calc(var(--pw) * .04); z-index: 2;
+  .mini-phone::before {   /* l'isola */
+    content: ""; position: absolute; top: calc(var(--pw) * .0594); left: 50%; translate: -50% 0; width: calc(var(--pw) * .2721); height: calc(var(--pw) * .0799);
+    background: #000; border-radius: calc(var(--pw) * .04); z-index: 2;
   }
-  /* la fascia in alto fa da barra di stato: la tacca non copre la barra del player */
-  .mini-phone picture { display: block; padding-top: calc(var(--pw) * .055); background: var(--bg); border-radius: calc(var(--pw) * .08); overflow: hidden; }
+  .mini-phone picture { display: block; padding-top: calc(var(--pw) * .1274); background: var(--bg); border-radius: calc(var(--pw) * .1188); overflow: hidden; }
   .mini-phone img { width: 100%; height: auto; }
+  /* ora e icone della barra di stato solo da 900 px, dove l'ora è alta 7 px e si legge; sotto resta la barra con l'isola */
+  .mini-bar { display: none; }
+  @media (min-width: 900px) {
+    .mini-bar { display: block; position: absolute; top: calc(var(--pw) * .0356); left: calc(var(--pw) * .0356); right: calc(var(--pw) * .0356); height: calc(var(--pw) * .1274); color: var(--ink); z-index: 2; }
+    .mini-bar .time { position: absolute; left: 0; top: 18.64%; width: 35.35%; height: 62.71%; display: grid; place-items: center; font: 600 calc(var(--pw) * .0367)/1 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .mini-bar svg { position: absolute; left: 73.95%; top: 38.98%; width: 16.74%; height: 22.03%; }
+  }
   /* Tema scuro: la carta si abbassa un poco e le ombre si fanno più scure, così le immagini non sembrano adesivi */
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .fan { filter: brightness(.9); }
     :root:not([data-theme="light"]) .card svg { filter: drop-shadow(0 0 1px rgba(255,255,255,.08)) drop-shadow(0 10px 14px rgba(0,0,0,.6)); }
     :root:not([data-theme="light"]) .card-photo { box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 14px 26px -8px rgba(0,0,0,.75); }
-    :root:not([data-theme="light"]) .mini-phone { box-shadow: 0 18px 34px -12px rgba(0,0,0,.8); }
+    :root:not([data-theme="light"]) .mini-phone { box-shadow: inset 0 0 0 max(1px, calc(var(--pw) * .0076)) #43464B, 0 18px 34px -12px rgba(0,0,0,.8); }
   }
 
-  /* ---------- Demo dal vivo: testo e telefono con la demo vera (schermo di 390 px da 900 px, largo quanto lo schermo sotto) ---------- */
-  .demo { padding-block: 56px 0; }
+  /* ---------- Demo dal vivo: testo e un telefono vero con la demo dentro ----------
+     Il telefono è un iPhone Pro Max: schermo 430 × 932 px CSS con angoli di 55, cornice di 16,5 (bordo in titanio compreso) con
+     angoli di 71,5, isola 126 × 37 a 11 px dal bordo, barra di stato alta 59; sotto, la demo in un iframe di 430 × 873 che si
+     impagina sempre così. Il telefono si scala tutto insieme con --s: 0,85 con la finestra da 410 px in su (su desktop è alto
+     820 px come quello di prima, così la sezione non cresce), sotto quanto basta a stare nello schermo con 8 px ai lati:
+     --s = (larghezza della finestra − 16 px) / 463 px, scritto tan(atan2(…)) perché in CSS una lunghezza non si divide per un'altra. */
+  .demo { padding-block: 56px 0; --s: .65; }   /* senza tan()/atan2(): sta anche in 320 px */
+  @supports (scale: tan(atan2(1px, 1px))) { .demo { --s: min(.85, tan(atan2(100vw - 16px, 463px))); } }
   .demo .wrap { display: flex; flex-direction: column; gap: 28px; }
   .demo-text h2 { font: 700 clamp(28px, 4vw, 40px)/1.02 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 8px; }
   .demo-text p { color: var(--ink-2); margin-top: 12px; max-width: 46ch; }
@@ -189,19 +203,31 @@
   .demo-text .demo-note { color: var(--ink-3); font-size: 14px; margin-top: 10px; }
   .demo-phone { display: flex; justify-content: center; }
   .phone {
-    width: min(416px, calc(100vw - 16px)); flex: none; background: var(--ink); border-radius: 40px; padding: 12px; position: relative;
-    box-shadow: 0 30px 60px -30px rgba(0,0,0,.35);
+    position: relative; flex: none; width: calc(463px * var(--s)); padding: calc(16.5px * var(--s)); border-radius: calc(71.5px * var(--s));
+    background: #08090A; box-shadow: inset 0 0 0 calc(3.5px * var(--s)) #43464B, 0 30px 60px -30px rgba(0,0,0,.35);
   }
-  :root:not([data-theme="light"]) .phone { box-shadow: 0 30px 60px -30px rgba(0,0,0,.6); }
+  /* tasti laterali: a sinistra azione, volume su e giù; a destra accensione */
+  .phone::before, .phone::after { content: ""; position: absolute; width: calc(3px * var(--s)); background: #43464B; }
   .phone::before {
-    content: ""; position: absolute; top: 12px; left: 50%; translate: -50% 0; width: 90px; height: 22px;
-    background: var(--ink); border-radius: 0 0 14px 14px; z-index: 2;
+    right: 100%; top: calc(186px * var(--s)); height: calc(217px * var(--s)); border-radius: 2px 0 0 2px;
+    background: linear-gradient(#43464B 0 calc(30px * var(--s)), transparent 0 calc(76px * var(--s)), #43464B 0 calc(137px * var(--s)), transparent 0 calc(156px * var(--s)), #43464B 0);
   }
+  .phone::after { left: 100%; top: calc(293px * var(--s)); height: calc(99px * var(--s)); border-radius: 0 2px 2px 0; }
   .screen {
-    width: 100%; aspect-ratio: 390 / 800; border-radius: 28px; overflow: hidden; background: var(--bg);
-    border: 1px solid rgba(255,255,255,.08);
+    position: relative; width: calc(430px * var(--s)); height: calc(932px * var(--s)); border-radius: calc(55px * var(--s));
+    overflow: hidden; overflow: clip; background: var(--bg);
   }
-  .screen iframe { width: 100%; height: 100%; border: 0; display: block; }
+  /* dentro lo schermo tutto è in px veri del telefono (430 × 932) e si scala insieme */
+  .screen-inner { position: relative; width: 430px; height: 932px; transform: scale(var(--s)); transform-origin: 0 0; }
+  .status-bar { position: relative; height: 59px; color: var(--ink); }
+  .status-bar .time { position: absolute; left: 0; top: 11px; width: 152px; height: 37px; display: grid; place-items: center; font: 600 17px/1 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .status-bar .island { position: absolute; left: 152px; top: 11px; width: 126px; height: 37px; border-radius: 19px; background: #000; }
+  .status-bar svg { position: absolute; left: 318px; top: 23px; width: 72px; height: 13px; }
+  .screen iframe { display: block; width: 430px; height: 873px; border: 0; }
+  .home-bar { position: absolute; left: 143px; bottom: 8px; width: 144px; height: 5px; border-radius: 3px; background: var(--ink); pointer-events: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .phone { box-shadow: inset 0 0 0 calc(3.5px * var(--s)) #43464B, 0 30px 60px -30px rgba(0,0,0,.6); }
+  }
 
   /* ---------- 600–899 px (tablet, impaginazione ancora in colonna): il ventaglio non supera i 380 px e il telefono scende di più,
      così la diagonale fra i due passi resta verso il basso ---------- */
@@ -236,8 +262,7 @@
     .step-label { font-size: 17px; max-width: 210px; }
     .steps-arrow path { stroke-width: 3; }
     .demo { padding-top: 72px; }
-    .demo .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 416px; column-gap: 56px; align-items: center; border-top: 1px solid var(--line); padding-top: 64px; }
-    .phone { width: 416px; }
+    .demo .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 56px; align-items: center; border-top: 1px solid var(--line); padding-top: 64px; }
   }
   @media (min-width: 1100px) {
     .hero .wrap { grid-template-columns: minmax(0, 1fr) 340px; column-gap: 56px; }
@@ -350,6 +375,17 @@
         <p class="step-note"><span class="step-n num">2</span><span class="step-label" data-i18n="step2"></span></p>
         <figure class="step-fig fig-phone">
           <div class="mini-phone">
+            <span class="mini-bar" aria-hidden="true">
+              <span class="time">9:41</span>
+              <svg viewBox="0 0 72 13" focusable="false">
+                <g fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="6" width="3" height="6" rx="1"/><rect x="9" y="3.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="1" width="3" height="11" rx="1"/></g>
+                <path d="M23.4 4.9a10 10 0 0 1 14.2 0M26.3 7.8a6 6 0 0 1 8.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="30.5" cy="10.8" r="1.6" fill="currentColor"/>
+                <rect x="44.5" y=".5" width="24" height="12" rx="3.6" fill="none" stroke="currentColor" stroke-opacity=".4"/>
+                <rect x="46.5" y="2.5" width="16" height="8" rx="2" fill="currentColor"/>
+                <path d="M70 4.6v3.8a2 2 0 0 0 0-3.8z" fill="currentColor" fill-opacity=".4"/>
+              </svg>
+            </span>
             <picture>
               <source media="(prefers-color-scheme: dark)" srcset="img/player-squat-scuro.webp">
               <img src="img/player-squat.webp" width="440" height="857" loading="lazy" decoding="async" data-i18n-alt="step2Alt"
@@ -390,7 +426,22 @@
     <div class="demo-phone">
       <div class="phone">
         <div class="screen">
-          <iframe data-demo-src data-i18n-title="demoFrameTitle" src="demo-it.html" title="WorkoutPlayer" loading="lazy"></iframe>
+          <div class="screen-inner">
+            <div class="status-bar" aria-hidden="true">
+              <span class="time">9:41</span>
+              <span class="island"></span>
+              <svg viewBox="0 0 72 13" focusable="false">
+                <g fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="6" width="3" height="6" rx="1"/><rect x="9" y="3.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="1" width="3" height="11" rx="1"/></g>
+                <path d="M23.4 4.9a10 10 0 0 1 14.2 0M26.3 7.8a6 6 0 0 1 8.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="30.5" cy="10.8" r="1.6" fill="currentColor"/>
+                <rect x="44.5" y=".5" width="24" height="12" rx="3.6" fill="none" stroke="currentColor" stroke-opacity=".4"/>
+                <rect x="46.5" y="2.5" width="16" height="8" rx="2" fill="currentColor"/>
+                <path d="M70 4.6v3.8a2 2 0 0 0 0-3.8z" fill="currentColor" fill-opacity=".4"/>
+              </svg>
+            </div>
+            <iframe data-demo-src data-i18n-title="demoFrameTitle" src="demo-it.html" title="WorkoutPlayer" loading="lazy"></iframe>
+            <span class="home-bar" aria-hidden="true"></span>
+          </div>
         </div>
       </div>
     </div>
