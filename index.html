@@ -29,6 +29,10 @@
      ID di misurazione GA4 (es. "G-XXXXXXXXXX"). Se la lasci vuota non si carica nulla: niente banner, niente link, niente
      paragrafo sulle statistiche nell'informativa. */
   const GA_MEASUREMENT_ID = "G-KW31JGBFBZ";
+  /* VISITE SENZA COOKIE — GoatCounter, sempre, anche senza consenso (non usa cookie né dati personali), accanto a Google Analytics.
+     Codice del sito su goatcounter.com (es. "workoutplayer" per https://workoutplayer.goatcounter.com). Se la lasci vuota non si
+     carica nulla e sparisce la frase su GoatCounter nell'informativa. */
+  const GOATCOUNTER_CODE = "workoutplayer";
 </script>
 <style>
   /* ---------- Token e temi: copia di lib/tokens.css (fonte del design system del player) ---------- */
@@ -585,6 +589,7 @@
       <p data-i18n="privacyCollect"></p>
       <p data-i18n="privacyPurpose"></p>
       <p><span data-i18n="privacyDeletePre"></span> <a href="mailto:blinko@pec.it">blinko@pec.it</a>.</p>
+      <p data-i18n="privacyGoat" data-gc-only hidden></p>
       <p data-i18n="privacyAnalytics" data-ga-only hidden></p>
       <p data-ga-only hidden><button type="button" class="linklike" id="consentPrefs" data-i18n="consentPrefs"></button></p>
     </div>
@@ -654,6 +659,7 @@
       privacyCollect: "Cosa raccogliamo: la tua scheda (file o foto) e l'email che lasci nel modulo per mandarcela. Il modulo è su Tally, un servizio di terzi, non nostro.",
       privacyPurpose: "A cosa servono: l'email, ad avvisarti quando puoi provare WorkoutPlayer; la scheda, solo a provare e migliorare la conversione da scheda a workout. Per provare la conversione la scheda passa da un servizio AI di terzi (Anthropic), che non la usa per addestrare i suoi modelli. Email e scheda non le pubblichiamo, non le cediamo a nessuno e non le usiamo per altro.",
       privacyDeletePre: "Cancelliamo tutto quando non ci serve più, o prima se ce lo chiedi. Vuoi far cancellare scheda ed email? Scrivi a",
+      privacyGoat: "Visite: contiamo le visite e i clic in forma anonima con GoatCounter, un servizio di terzi, senza cookie e senza dati personali.",
       consentLabel: "Statistiche",
       consentText: "Usiamo Google Analytics solo se accetti.",
       consentMore: "Informativa",
@@ -712,6 +718,7 @@
       privacyCollect: "What we collect: your plan (file or photo) and the email you leave in the form you send it with. The form runs on Tally, a third-party service, not ours.",
       privacyPurpose: "What we use them for: your email, to let you know when you can try WorkoutPlayer; your plan, only to test and improve the conversion from plan to workout. To test the conversion, your plan goes through a third-party AI service (Anthropic), which doesn't use it to train its models. We don't publish your email or your plan, we don't share them with anyone and we don't use them for anything else.",
       privacyDeletePre: "We delete everything once we no longer need it, or sooner if you ask. Want your plan and email deleted? Email",
+      privacyGoat: "Visits: we count visits and clicks anonymously with GoatCounter, a third-party service, without cookies and without personal data.",
       consentLabel: "Analytics",
       consentText: "We use Google Analytics only if you accept.",
       consentMore: "Privacy",
@@ -770,6 +777,7 @@
       privacyCollect: "Ce qu'on récolte : ton programme (fichier ou photo) et l'email que tu laisses dans le formulaire pour nous l'envoyer. Le formulaire est sur Tally, un service tiers, pas le nôtre.",
       privacyPurpose: "À quoi ça sert : l'email, à te prévenir quand tu peux essayer WorkoutPlayer ; le programme, seulement à tester et améliorer la conversion du programme en séance. Pour tester la conversion, ton programme passe par un service d'IA tiers (Anthropic), qui ne s'en sert pas pour entraîner ses modèles. Ton email et ton programme, on ne les publie pas, on ne les partage avec personne et on ne s'en sert pour rien d'autre.",
       privacyDeletePre: "On supprime tout quand on n'en a plus besoin, ou avant si tu le demandes. Tu veux faire supprimer ton programme et ton email ? Écris à",
+      privacyGoat: "Visites : on compte les visites et les clics de façon anonyme avec GoatCounter, un service tiers, sans cookies et sans données personnelles.",
       consentLabel: "Statistiques",
       consentText: "Google Analytics seulement si tu acceptes.",
       consentMore: "Détails",
@@ -828,6 +836,7 @@
       privacyCollect: "Qué recogemos: tu rutina (archivo o foto) y el email que dejas en el formulario para mandárnosla. El formulario está en Tally, un servicio de terceros, no nuestro.",
       privacyPurpose: "Para qué sirven: el email, para avisarte cuando puedas probar WorkoutPlayer; la rutina, solo para probar y mejorar la conversión de rutina a entreno. Para probar la conversión, tu rutina pasa por un servicio de IA de terceros (Anthropic), que no la usa para entrenar sus modelos. Tu email y tu rutina no los publicamos, no los compartimos con nadie y no los usamos para nada más.",
       privacyDeletePre: "Lo borramos todo cuando ya no nos hace falta, o antes si nos lo pides. ¿Quieres que borremos tu rutina y tu email? Escribe a",
+      privacyGoat: "Visitas: contamos las visitas y los clics de forma anónima con GoatCounter, un servicio de terceros, sin cookies y sin datos personales.",
       consentLabel: "Estadísticas",
       consentText: "Usamos Google Analytics solo si aceptas.",
       consentMore: "Privacidad",
@@ -886,6 +895,7 @@
       privacyCollect: "Was wir erfassen: deinen Plan (Datei oder Foto) und die E-Mail-Adresse, die du im Formular angibst, mit dem du ihn uns schickst. Das Formular läuft über Tally, einen Dienst eines Drittanbieters, nicht unseren.",
       privacyPurpose: "Wofür: deine E-Mail, um dir Bescheid zu geben, wenn du WorkoutPlayer ausprobieren kannst; dein Plan nur, um die Umwandlung vom Plan ins Workout zu testen und zu verbessern. Zum Testen der Umwandlung läuft dein Plan über einen KI-Dienst eines Drittanbieters (Anthropic), der ihn nicht zum Trainieren seiner Modelle nutzt. Wir veröffentlichen weder deine E-Mail noch deinen Plan, geben sie an niemanden weiter und nutzen sie für nichts anderes.",
       privacyDeletePre: "Wir löschen alles, sobald wir es nicht mehr brauchen, oder früher, wenn du uns darum bittest. Plan und E-Mail löschen lassen? Schreib an",
+      privacyGoat: "Besuche: Wir zählen Besuche und Klicks anonym mit GoatCounter, einem Dienst eines Drittanbieters, ohne Cookies und ohne personenbezogene Daten.",
       consentLabel: "Statistik",
       consentText: "Google Analytics nur, wenn du zustimmst.",
       consentMore: "Details",
@@ -1058,17 +1068,16 @@
      - il banner compare al primo scorrimento oltre 160 px o al primo tocco su un pulsante o un link, mai al caricamento sopra
        «Prenota»; «Preferenze cookie» nel piè di pagina lo riapre. La scelta vale 6 mesi (localStorage); ritirare il consenso
        lo nega, spegne il tag e cancella i cookie _ga*;
-     - eventi: la pagina vista automatica e ogni evento portano page_lang (aggiornato se cambi lingua), cta_prenota, cta_demo (cta_position:
-       hero | demo), demo_interazione (primo tocco dentro la demo, una volta per pagina), iscrizione (il modulo Tally manda
-       «Tally.FormSubmitted» con postMessage: developers.tally.so/widgets/events). Nessun dato del modulo va a Google. */
+     - la pagina vista automatica e ogni evento portano page_lang (aggiornato se cambi lingua); gli eventi (cta_prenota,
+       cta_demo con cta_position hero | demo, demo_interazione, iscrizione) partono dagli agganci comuni più sotto. */
   var GA = (function () {
     var id = String(GA_MEASUREMENT_ID || "").trim();
-    if (!/^G-[A-Z0-9]{4,}$/.test(id)) return { lang: function () {}, cookie: function () { return "_ga_…"; } };
+    if (!/^G-[A-Z0-9]{4,}$/.test(id)) return { lang: function () {}, cookie: function () { return "_ga_…"; }, track: function () { return false; } };
     var KEY = "wp-statistiche", SEI_MESI = 182 * 864e5;
     var CONF = { allow_google_signals: false, allow_ad_personalization_signals: false, cookie_expires: 390 * 86400, cookie_update: false };
     // page_lang va nella configurazione: GA4 lo manda con ogni evento (con «set» non arriva); si riconfigura se cambi lingua
     function config(extra) { var c = {}, k; for (k in CONF) c[k] = CONF[k]; for (k in extra) c[k] = extra[k]; gtag("config", id, c); }
-    var on = false, loaded = false, lang = detectLang(), demoSent = false;
+    var on = false, loaded = false, lang = detectLang();
     var banner = document.getElementById("consent");
     window.dataLayer = window.dataLayer || [];
     function gtag() { window.dataLayer.push(arguments); }
@@ -1108,7 +1117,7 @@
       window["ga-disable-" + id] = true;
       clearCookies();
     }
-    function track(name, params) { if (on) gtag("event", name, params || {}); }
+    function track(name, params) { if (!on) return false; gtag("event", name, params || {}); return true; }   // solo col consenso
     function show() {
       if (!banner.hidden) return;
       banner.hidden = false;
@@ -1146,32 +1155,77 @@
       }
     }
 
-    document.addEventListener("click", function (e) {
-      var a = e.target.closest && e.target.closest("a");
-      if (!a) return;
-      if (a.matches('.offer a[href="#manda-scheda"]')) track("cta_prenota");
-      else if (a.hasAttribute("data-demo-link")) track("cta_demo", { cta_position: a.closest(".offer") ? "hero" : "demo" });
-    });
-    var frame = document.querySelector(".demo iframe");
-    if (frame) frame.addEventListener("load", function () {   // la demo è della stessa origine: si ascolta il suo documento
-      try {
-        frame.contentDocument.addEventListener("pointerdown", function () {
-          if (on && !demoSent) { demoSent = true; track("demo_interazione"); }
-        }, true);
-      } catch (err) {}
-    });
-    addEventListener("message", function (e) {
-      if (e.origin !== "https://tally.so" || typeof e.data !== "string" || e.data.indexOf("Tally.FormSubmitted") === -1) return;
-      try { var m = JSON.parse(e.data); if (m && m.event && m.event !== "Tally.FormSubmitted") return; } catch (err) { return; }
-      track("iscrizione");
-    });
-
     return {
       // cambio di lingua: gli eventi dopo portano la lingua nuova; la pagina vista la conta GA da sé, perché l'indirizzo cambia
       // (?lang=) e la misurazione avanzata conta i cambi di pagina della cronologia (vedi README)
       lang: function (l) { if (l === lang) return; lang = l; if (on) config({ page_lang: l, send_page_view: false }); },
-      cookie: function () { return "_ga_" + id.slice(2); }
+      cookie: function () { return "_ga_" + id.slice(2); },
+      track: track
     };
+  })();
+
+  /* ---------- Visite senza cookie: GoatCounter, sempre, senza consenso (niente cookie né dati personali) ----------
+     Senza GOATCOUNTER_CODE non succede niente. Con il codice: count.js (https://gc.zgo.at/count.js, con data-goatcounter =
+     https://<codice>.goatcounter.com/count) conta la visita una volta al caricamento, col percorso della lingua mostrata
+     (/it, /en, …) e un titolo chiaro; cambiare lingua dal selettore non riconta. Gli eventi passano da
+     goatcounter.count({ path, title, event: true }); se count.js non è ancora arrivato aspettano in coda.
+     Fonte: goatcounter.com/help/start (come si incorpora), goatcounter.com/code/js e /code/path (window.goatcounter con path e
+     title prima di count.js, count()), goatcounter.com/code/events (eventi: nome senza «/» iniziale). */
+  var GC = (function () {
+    var code = String(GOATCOUNTER_CODE || "").trim().toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(code)) return { count: function () {} };
+    var lang = detectLang(), coda = [];
+    var LINGUE = { it: "italiano", en: "inglese", fr: "francese", es: "spagnolo", de: "tedesco" };
+    window.goatcounter = { path: "/" + lang, title: "Landing WorkoutPlayer · " + (LINGUE[lang] || lang) };
+    function pronto() { return !!window.goatcounter && typeof window.goatcounter.count === "function"; }
+    function manda(v) { try { window.goatcounter.count(v); } catch (err) {} }
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://gc.zgo.at/count.js";
+    s.setAttribute("data-goatcounter", "https://" + code + ".goatcounter.com/count");
+    s.onload = function () { if (pronto()) while (coda.length) manda(coda.shift()); };
+    document.body.appendChild(s);
+    document.querySelectorAll("[data-gc-only]").forEach(function (el) { el.hidden = false; });
+    return {
+      count: function (name, title) {
+        var v = { path: name, title: title, event: true };
+        if (pronto()) manda(v); else if (coda.length < 20) coda.push(v);
+      }
+    };
+  })();
+
+  /* ---------- Eventi: un solo aggancio per clic, demo e modulo; GoatCounter sempre, Google Analytics solo col consenso ---------- */
+  (function () {
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("a");
+      if (!a) return;
+      if (a.matches('.offer a[href="#manda-scheda"]')) {
+        GA.track("cta_prenota");
+        GC.count("cta-prenota", "Clic su «Prenota l'accesso anticipato»");
+      } else if (a.hasAttribute("data-demo-link")) {
+        var hero = !!a.closest(".offer");
+        GA.track("cta_demo", { cta_position: hero ? "hero" : "demo" });
+        GC.count(hero ? "cta-demo-hero" : "cta-demo-sezione", hero ? "Clic su «Apri la demo a schermo intero» (in alto)" : "Clic su «Aprila a schermo intero» (sezione demo)");
+      }
+    });
+    // primo tocco dentro la demo, una volta per pagina (per GA la prima volta col consenso); la demo è della stessa origine
+    var frame = document.querySelector(".demo iframe"), demoGA = false, demoGC = false;
+    if (frame) frame.addEventListener("load", function () {
+      try {
+        frame.contentDocument.addEventListener("pointerdown", function () {
+          if (!demoGC) { demoGC = true; GC.count("demo-interazione", "Primo tocco dentro la demo"); }
+          if (!demoGA) demoGA = GA.track("demo_interazione");
+        }, true);
+      } catch (err) {}
+    });
+    // modulo inviato: Tally manda «Tally.FormSubmitted» con postMessage (developers.tally.so/widgets/events); solo da tally.so,
+    // e nessun dato del modulo va alle statistiche
+    addEventListener("message", function (e) {
+      if (e.origin !== "https://tally.so" || typeof e.data !== "string" || e.data.indexOf("Tally.FormSubmitted") === -1) return;
+      try { var m = JSON.parse(e.data); if (m && m.event && m.event !== "Tally.FormSubmitted") return; } catch (err) { return; }
+      GA.track("iscrizione");
+      GC.count("iscrizione", "Modulo di accesso anticipato inviato");
+    });
   })();
 
   render(detectLang());
