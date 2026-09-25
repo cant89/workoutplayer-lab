@@ -17,14 +17,25 @@
 <link rel="alternate" hreflang="es" href="?lang=es">
 <link rel="alternate" hreflang="de" href="?lang=de">
 <link rel="alternate" hreflang="x-default" href="?lang=en">
-<!-- Stessi caratteri del player (lib/tokens.css): se vuoi una pagina senza nessuna richiesta di rete, rimuovi
-     questo link e i due qui sotto: i token hanno già un ripiego di sistema (Arial Narrow / system-ui). -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<!-- Same fonts as the player (lib/tokens.css), self-hosted in fonts/ (no request to Google Fonts: privacy, GDPR); @font-face rules
+     in the <style> below. Preloaded: the four latin files the first screen uses (title and buttons, text and labels). -->
+<link rel="preload" href="fonts/barlow-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/barlow-condensed-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/barlow-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/barlow-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <script>
-  /* RACCOLTA SCHEDE — sezione "Accesso anticipato" (#manda-scheda), unico modulo della pagina (raccoglie scheda ed email).
-     Link del modulo Tally (es. "https://tally.so/r/XXXX"). Se la svuoti la sezione sparisce e il pulsante del hero non porta più a niente. */
+  /* EARLY ACCESS FORM — section "Accesso anticipato" (#manda-scheda), the only form on the page (email required, plan optional).
+     One Tally form per language (links like "https://tally.so/r/XXXX"): the section loads the form of the language shown and
+     swaps it when the language changes. A language left empty uses UPLOAD_FORM_URL, the fallback (the English form). If that is
+     empty too, languages without their own form hide the section and the «Prenota» button no longer leads anywhere. */
   const UPLOAD_FORM_URL = "https://tally.so/r/RGpLpd";
+  const UPLOAD_FORM_URLS = {
+    it: "https://tally.so/r/Zj0e45",
+    en: "https://tally.so/r/RGpLpd",
+    fr: "https://tally.so/r/GxW7vO",
+    es: "https://tally.so/r/QKLEKY",
+    de: "https://tally.so/r/BzN9ze"
+  };
   /* STATISTICHE — Google Analytics 4, solo con il consenso di chi visita (banner in basso, «Preferenze cookie» nel piè di pagina).
      ID di misurazione GA4 (es. "G-XXXXXXXXXX"). Se la lasci vuota non si carica nulla: niente banner, niente link, niente
      paragrafo sulle statistiche nell'informativa. */
@@ -35,15 +46,52 @@
   const GOATCOUNTER_CODE = "workoutplayer";
 </script>
 <style>
-  /* ---------- Token e temi: copia di lib/tokens.css (fonte del design system del player) ---------- */
+  /* ---------- Tokens and themes: copy of lib/tokens.css (source of the player's design system) ----------
+     Only intended difference: --display lists the fallbacks sized like Barlow Condensed (below) before the system fallbacks. */
   :root {
     --bg: #ECEFEA; --surface: #FFFFFF; --surface-2: #E1E5DF; --line: #CFD5CD;
-    --ink: #14181A; --ink-2: #49545A; --ink-3: #6F7B80;
-    --work: #D9480B; --rest: #0A8070; --prep: #9A6A00; --on-phase: #FFFFFF;
+    --ink: #14181A; --ink-2: #49545A; --ink-3: #5F6A6F;
+    --work: #C9430A; --rest: #0A8070; --prep: #9A6A00; --on-phase: #FFFFFF;
     --note-bg: #FFF4D6; --note-ink: #4A3600; --note-line: #E9C767;
-    --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --display: "Barlow Condensed", "BC fallback AN", "BC fallback HN", "BC fallback A", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
     --body: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
+  /* ---------- Fonts: Barlow and Barlow Condensed, self-hosted (copy of fonts/fonts.css, paths prefixed by fonts/) ----------
+     SIL Open Font License 1.1 (fonts/OFL.txt). Only the weights in use and the latin and latin-ext subsets. */
+  @font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/barlow-400-latin-ext.woff2) format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/barlow-400-latin.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: swap; src: url(fonts/barlow-500-latin-ext.woff2) format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: swap; src: url(fonts/barlow-500-latin.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/barlow-600-latin-ext.woff2) format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/barlow-600-latin.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/barlow-condensed-600-latin-ext.woff2) format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/barlow-condensed-600-latin.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 700; font-display: swap; src: url(fonts/barlow-condensed-700-latin-ext.woff2) format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+  @font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 700; font-display: swap; src: url(fonts/barlow-condensed-700-latin.woff2) format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  /* ---------- Fonts: fallback sized like Barlow Condensed ----------
+     Barlow Condensed may arrive after the first paint. Until then a narrow system font takes its place, scaled
+     down with size-adjust just enough never to be wider than it (lowest width ratio measured line by line on the page's
+     uppercase texts in the 5 languages: title lines and h2 for 700, buttons and audience titles for 600), so the title, the
+     buttons and the header wrap at the same points and the page does not jump when the real font arrives; ascent and descent
+     are set to Barlow Condensed's (1 and 0.2 em, divided by size-adjust), so the text stays at the same height too. One per
+     system, the first one available: Arial Narrow (macOS, Windows with Office), Helvetica Neue Condensed (iOS), Arial or Roboto
+     (the others). local() only: no network requests. Values and measurements in README.md, "Fonts and layout shift". */
+  @font-face { font-family: "BC fallback AN"; src: local("Arial Narrow Bold"), local("ArialNarrow-Bold"); font-weight: 700; size-adjust: 81%; ascent-override: 123.5%; descent-override: 24.7%; line-gap-override: 0%; }
+  @font-face { font-family: "BC fallback AN"; src: local("Arial Narrow Bold"), local("ArialNarrow-Bold"); font-weight: 600; size-adjust: 78.5%; ascent-override: 127.4%; descent-override: 25.5%; line-gap-override: 0%; }
+  @font-face { font-family: "BC fallback HN"; src: local("HelveticaNeue-CondensedBold"), local("Helvetica Neue Condensed Bold"); font-weight: 700; size-adjust: 85%; ascent-override: 117.6%; descent-override: 23.5%; line-gap-override: 0%; }
+  @font-face { font-family: "BC fallback HN"; src: local("HelveticaNeue-CondensedBold"), local("Helvetica Neue Condensed Bold"); font-weight: 600; size-adjust: 83.5%; ascent-override: 119.8%; descent-override: 24%; line-gap-override: 0%; }
+  @font-face { font-family: "BC fallback A"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Roboto Bold"), local("Roboto-Bold"); font-weight: 700; size-adjust: 66.5%; ascent-override: 150.4%; descent-override: 30.1%; line-gap-override: 0%; }
+  @font-face { font-family: "BC fallback A"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Roboto Bold"), local("Roboto-Bold"); font-weight: 600; size-adjust: 64%; ascent-override: 156.2%; descent-override: 31.2%; line-gap-override: 0%; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #0E1113; --surface: #181D20; --surface-2: #232A2E; --line: #2E373B;
@@ -65,10 +113,18 @@
   a { color: inherit; }
   button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   :focus-visible { outline: 3px solid var(--work); outline-offset: 2px; }
+  ::selection { background: var(--work); color: var(--on-phase); }
   .wrap { max-width: 1040px; margin-inline: auto; padding-inline: 24px; }
-  .eyebrow { font: 600 13px/1.2 var(--body); letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); }
   .num { font-variant-numeric: tabular-nums; }
   section { padding-block: 56px; }
+  /* "Skip to content": the first element for keyboard users, off screen until it has focus; it leads to <main> */
+  .skip {
+    position: absolute; left: 8px; top: 8px; z-index: 60; padding: 12px 16px; border-radius: 6px;
+    background: var(--ink); color: var(--bg); font: 600 16px/1 var(--body); text-decoration: none;
+    transform: translateY(calc(-100% - 16px));
+  }
+  .skip:focus { transform: none; }
+  main:focus { outline: none; }
 
   /* ---------- Barra superiore ---------- */
   .top { border-bottom: 1px solid var(--line); }
@@ -78,22 +134,23 @@
   /* Icona dell'app accanto al nome: stesso disegno di icons/favicon.svg; nel tema scuro un filo di bordo la stacca dal fondo. */
   .brand-mark { width: 28px; height: 28px; flex: none; display: block; border-radius: 6px; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .brand-mark { box-shadow: 0 0 0 1px var(--line); } }
-  .top-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .langs { display: flex; gap: 4px; }
   .langs button {
-    border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 5px 9px;
+    position: relative; min-width: 34px; border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 5px 9px;
     font: 600 12.5px/1 var(--body); letter-spacing: .04em; color: var(--ink-2);
   }
+  /* invisible touch area, 46 px tall and as wide as the button plus half the gap on each side: the header does not grow */
+  .langs button::after { content: ""; position: absolute; inset: -11px -2px; }
   .langs button[aria-current="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  /* Sotto i 600 px l'intestazione sta su una riga (logo e nome, lingue) e l'occhiello «Prova di domanda» non compare */
+  /* Below 600 px the header stays on one row (logo and name, languages). Language buttons are a fixed 30 px wide: the row has
+     the same width with any font and does not wrap while Barlow has not arrived yet. */
   @media (max-width: 599px) {
     .top .wrap { padding-inline: 16px; }
     .top-row { padding-block: 10px; }
-    .top-right .eyebrow { display: none; }
     .brand { font-size: 17px; gap: 8px; }
     .brand-mark { width: 24px; height: 24px; }
     .langs { gap: 3px; }
-    .langs button { padding: 5px 7px; font-size: 12px; }
+    .langs button { width: 30px; min-width: 0; padding: 5px 0; font-size: 12px; }
   }
 
   /* ---------- Hero ----------
@@ -101,6 +158,9 @@
      poi il testo introduttivo. Da 900 px: a sinistra titolo, testo e passi; a destra il prezzo con i pulsanti. */
   .hero .wrap { padding-block: 16px 8px; }
   .hero-head { text-align: center; max-width: 760px; margin-inline: auto; }
+  /* product status above the title: an orange light and plain text, like the indicator light on a scoreboard */
+  .status { display: flex; justify-content: center; align-items: center; gap: 8px; font: 600 15px/1.2 var(--body); color: var(--ink-2); }
+  .status::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--work); }
   .hero-head h1 {
     font: 700 clamp(27px, 5.2vw, 58px)/0.98 var(--display); text-transform: uppercase; letter-spacing: -.01em;
     margin-top: 8px;
@@ -115,13 +175,19 @@
   }
   .btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
 
-  /* ---------- Prezzo e pulsanti: sul telefono il prezzo è una riga sopra il pulsante, da 900 px una scheda a destra ---------- */
+  /* ---------- Price and buttons: on phones the price is a paragraph above the button, from 900 px a card on the right;
+     below them, the three reasons to trust (on phones after the button, outside the first screen) ---------- */
   .offer { max-width: 420px; margin: 18px auto 0; text-align: center; }
-  .price { color: var(--ink-2); font-size: 14px; line-height: 1.3; }
+  .price { color: var(--ink-2); font-size: 14px; line-height: 1.3; text-wrap: balance; }
   .price b { font: 700 20px/1 var(--display); color: var(--ink); }
   .price span::before { content: "· "; }
+  .price strong { font-weight: 600; color: var(--ink); }
   .offer-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
   .offer .btn { justify-content: center; text-align: center; text-wrap: balance; }
+  .reasons { list-style: none; max-width: 420px; margin: 24px auto 0; padding: 0; display: grid; gap: 10px; text-align: left; color: var(--ink-2); font-size: 15px; line-height: 1.4; }
+  .reasons li { position: relative; padding-left: 18px; }
+  .reasons li::before { content: ""; position: absolute; left: 0; top: .5em; width: 8px; height: 8px; border-radius: 2px; background: var(--work); }
+  .reasons b { font-weight: 600; color: var(--ink); }
 
   /* ---------- Come funziona: due passi, dal foglio all'app ----------
      Un piccolo racconto, non una tabella: a sinistra i tre formati della scheda aperti a ventaglio (pagina PDF, foto della
@@ -207,7 +273,7 @@
   .demo { padding-block: 56px 0; --s: .65; }   /* senza tan()/atan2(): sta anche in 320 px */
   @supports (scale: tan(atan2(1px, 1px))) { .demo { --s: min(.85, tan(atan2(100vw - 16px, 463px))); } }
   .demo .wrap { display: flex; flex-direction: column; gap: 28px; }
-  .demo-text h2 { font: 700 clamp(28px, 4vw, 40px)/1.02 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 8px; }
+  .demo-text h2 { font: 700 clamp(28px, 4vw, 40px)/1.02 var(--display); text-transform: uppercase; letter-spacing: -.005em; }
   .demo-text p { color: var(--ink-2); margin-top: 12px; max-width: 46ch; }
   .demo-text a { display: inline-block; margin-top: 14px; font-weight: 600; border-bottom: 1px solid var(--line); }
   .demo-text .demo-note { color: var(--ink-3); font-size: 14px; margin-top: 10px; }
@@ -234,6 +300,21 @@
   .status-bar .island { position: absolute; left: 152px; top: 11px; width: 126px; height: 37px; border-radius: 19px; background: #000; }
   .status-bar svg { position: absolute; left: 318px; top: 23px; width: 72px; height: 13px; }
   .screen iframe { display: block; width: 430px; height: 873px; border: 0; }
+  /* Below 600 px the phone shows a still image of the demo home (page language and theme) that opens the fullscreen demo on
+     tap: no scrolling inside the scrolling page, and a phone never downloads the demo. The live demo only from 600 px. */
+  .demo-shot { display: none; }
+  .demo-shot:focus-visible { outline-offset: -8px; }
+  /* the invite, part of the same link: in the empty space under the home's last line (at least 109 phone px in every
+     language), above the home bar; absolutely positioned, so it moves nothing */
+  .demo-shot-hint {
+    position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); white-space: nowrap; padding: 10px 18px;
+    border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); font: 600 18px/1 var(--body);
+  }
+  @media (max-width: 599px) {
+    .screen iframe { display: none; }
+    .demo-shot, .demo-shot img { display: block; width: 430px; height: 873px; }
+    .demo-shot { position: relative; text-decoration: none; }
+  }
   .home-bar { position: absolute; left: 143px; bottom: 8px; width: 144px; height: 5px; border-radius: 3px; background: var(--ink); pointer-events: none; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) .phone { box-shadow: inset 0 0 0 calc(3.5px * var(--s)) #43464B, 0 30px 60px -30px rgba(0,0,0,.6); }
@@ -247,22 +328,30 @@
     .step-2 { width: min(30%, 240px); margin-top: calc(min(50%, 380px) * .41 - 56px); }   /* SQUAT poco sotto la metà del ventaglio */
   }
 
-  /* ---------- ≥ 900 px: in alto titolo e testo a sinistra, la scheda del prezzo a destra; sotto, i due passi centrati nella pagina ---------- */
+  /* ---------- ≥ 900 px: title and text top left, the price card top right with the three reasons below it; below, the two
+     steps centred on the page. The text row is flexible: if the right column is taller, the extra space goes below the text,
+     not between title and text. The title does not break where the dictionary says ("\n"): text-wrap: balance splits it, so
+     the last word is never left alone on a line. ---------- */
   @media (min-width: 900px) {
     .hero .wrap {
       padding-block: 44px 8px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; column-gap: 48px; align-items: start;
-      grid-template-areas: "head offer" "intro offer" "steps steps";
+      grid-template-rows: auto 1fr auto; grid-template-areas: "head offer" "intro offer" "steps steps";
     }
     .hero-head { grid-area: head; text-align: left; max-width: none; margin-inline: 0; }
+    .status { justify-content: flex-start; }
+    .hero-head h1 br { display: none; }
     .hero-intro { grid-area: intro; text-align: left; max-width: 560px; margin: 24px 0 0; }
+    .hero-aside { grid-area: offer; align-self: start; margin-top: 4px; }
     .offer {
-      grid-area: offer; align-self: start; max-width: none; margin: 4px 0 0; text-align: left;
+      max-width: none; margin: 0; text-align: left;
       background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px;
     }
     .price b { display: block; font-size: 56px; line-height: .9; }
     .price span { display: block; margin-top: 8px; font-size: 15px; }
     .price span::before { content: none; }
+    .price strong { display: block; margin-top: 2px; font-size: 15px; }
     .offer-actions { margin-top: 20px; }
+    .reasons { max-width: none; margin: 24px 0 0; }
     .offer .btn { font-size: 16px; padding: 14px 16px; line-height: 1.15; }
     .steps { grid-area: steps; margin-top: 64px; justify-content: center; gap: 110px; --fig-h: 360px; }
     .step-1 { width: 380px; }
@@ -272,7 +361,9 @@
     .step-label { font-size: 17px; max-width: 210px; }
     .steps-arrow path { stroke-width: 3; }
     .demo { padding-top: 72px; }
-    .demo .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 56px; align-items: center; border-top: 1px solid var(--line); padding-top: 64px; }
+    /* the demo text starts at the top, next to the phone (not halfway down its height) */
+    .demo .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 56px; align-items: start; border-top: 1px solid var(--line); padding-top: 64px; }
+    .demo-text { padding-top: 24px; }
   }
   @media (min-width: 1100px) {
     .hero .wrap { grid-template-columns: minmax(0, 1fr) 340px; column-gap: 56px; }
@@ -284,24 +375,20 @@
   /* ---------- Pubblici ---------- */
   .aud-head { max-width: 56ch; }
   .aud-head h2 {
-    font: 700 clamp(28px, 4vw, 40px)/1.02 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 8px;
+    font: 700 clamp(28px, 4vw, 40px)/1.02 var(--display); text-transform: uppercase; letter-spacing: -.005em;
   }
+  .aud-lede { color: var(--ink-2); font-size: 18px; margin-top: 10px; }
   .aud-list { margin-top: 28px; }
-  .aud {
-    display: grid; grid-template-columns: 56px 1fr; gap: 16px; align-items: start;
-    padding-block: 22px; border-top: 1px solid var(--line);
-  }
+  /* two rows without numbers: who trains with a plan, the professionals who write it */
+  .aud { padding-block: 22px; border-top: 1px solid var(--line); }
   .aud:last-child { border-bottom: 1px solid var(--line); }
-  .aud-n { font: 700 40px/0.85 var(--display); color: var(--work); }
-  .aud b {
-    display: block; font: 600 21px/1.2 var(--display); text-transform: uppercase; letter-spacing: .01em; margin-bottom: 5px;
-  }
+  .aud h3 { font: 600 21px/1.2 var(--display); text-transform: uppercase; letter-spacing: .01em; margin-bottom: 5px; text-wrap: balance; }
   .aud p { color: var(--ink-2); font-size: 15.5px; max-width: 60ch; }
   .aud .case { color: var(--ink-3); font-size: 14px; margin-top: 6px; }
 
-  /* ---------- Accesso anticipato, #manda-scheda (compare solo se UPLOAD_FORM_URL è impostata) ----------
-     Fascia scura a tutta larghezza in entrambi i temi: il modulo Tally è in tema scuro e ci si appoggia senza riquadro.
-     La sezione ridefinisce i token con i valori scuri, così testi, avvertenza, link e focus prendono i colori giusti da soli. */
+  /* ---------- Early access, #manda-scheda (shown only if the language shown has a form: UPLOAD_FORM_URLS or UPLOAD_FORM_URL) ----------
+     Full-width dark band in both themes: the Tally form uses its dark theme and sits on it without a frame.
+     The section redefines the tokens with the dark values, so texts, warning, links and focus get the right colours by themselves. */
   .upload {
     --bg: #181D20; --surface: #232A2E; --surface-2: #2B3337; --line: #2E373B;
     --ink: #F0F3EE; --ink-2: #B1BBBF; --ink-3: #87939A;
@@ -316,31 +403,35 @@
     /* Nel tema scuro la pagina è #0E1113: la fascia resta un gradino più chiara, con un filo sopra e uno sotto. */
     :root:not([data-theme="light"]) .upload { border-block: 1px solid var(--line); }
   }
-  .upload .eyebrow { color: var(--work); }
   .upload h2 {
-    font: 700 clamp(32px, 5vw, 56px)/.98 var(--display); text-transform: uppercase; letter-spacing: -.005em; margin-top: 10px;
+    font: 700 clamp(32px, 5vw, 56px)/.98 var(--display); text-transform: uppercase; letter-spacing: -.005em;
   }
   .upload-body { color: var(--ink-2); max-width: 46ch; margin-top: 14px; font-size: 18px; text-wrap: pretty; }
+  .upload-optional { color: var(--ink-2); max-width: 52ch; margin-top: 10px; font-size: 16px; text-wrap: pretty; }
+  /* personal data warning: a box with a thin border, without the bar on the left */
   .upload-warn {
     max-width: 520px; margin-top: 24px; padding: 12px 14px; border-radius: 6px; font-size: 15px; font-weight: 500;
-    background: var(--note-bg); color: var(--note-ink); border: 1px solid var(--note-line); border-left-width: 4px;
+    background: var(--note-bg); color: var(--note-ink); border: 1px solid var(--note-line);
   }
-  /* Niente riquadro: il modulo (fondo trasparente) si fonde con la fascia. Tally ha 8 px di margine interno ai lati:
-     il margine negativo allinea i campi al bordo del testo. */
-  .upload-embed { max-width: 536px; margin: 4px -8px 0; }
+  .upload-safe { color: var(--ink-2); max-width: 520px; margin-top: 10px; font-size: 14.5px; text-wrap: pretty; }
+  /* No frame: the form (transparent background) blends into the band. Tally has 8 px of inner margin on the sides: the
+     negative margin aligns the fields with the text edge. Until the form has arrived, "Carico il modulo…" shows at the top. */
+  .upload-embed { position: relative; max-width: 536px; margin: 4px -8px 0; }
   .upload-embed iframe { display: block; max-width: 100%; }
+  .upload-wait { position: absolute; top: 20px; left: 8px; right: 8px; color: var(--ink-2); font-size: 15px; }
   .upload-fallback { color: var(--ink-3); font-size: 14px; margin-top: 8px; }
   @media (min-width: 900px) { .upload { padding-block: 88px 80px; } }
   @media (min-width: 1000px) {
-    /* Due colonne da 1000 px (sotto, la colonna del testo sarebbe stretta e il titolo andrebbe a capo): a sinistra titolo,
-       testo e avvertenza; a destra il modulo. L'ultima riga elastica evita che l'altezza del modulo allarghi gli spazi tra i testi. */
+    /* Two columns from 1000 px (below that the text column would be narrow and the title would wrap): title, texts, warning
+       and reassurance on the left; the form on the right. The flexible last row keeps the form's height from widening the gaps
+       between the texts. */
     .upload .wrap {
-      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 480px); grid-template-rows: repeat(4, auto) 1fr;
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 480px); grid-template-rows: repeat(5, auto) 1fr;
       column-gap: 72px; align-items: start;
     }
     .upload .wrap > * { grid-column: 1; }
-    .upload .upload-embed { grid-column: 2; grid-row: 1 / 6; max-width: none; margin: 0 -8px; }
-    .upload .upload-fallback { grid-column: 2; grid-row: 6; }
+    .upload .upload-embed { grid-column: 2; grid-row: 1 / 7; max-width: none; margin: 0 -8px; }
+    .upload .upload-fallback { grid-column: 2; grid-row: 7; }
   }
 
   /* ---------- Piè di pagina ---------- */
@@ -351,16 +442,26 @@
   .legal p + p { margin-top: 8px; }
   @media (max-width: 640px) { .legal { grid-template-columns: 1fr; } }
   .linklike { background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+  #consentPrefs { min-height: 24px; }
+  /* privacy notice, collapsed by default: the summary is the column heading with a chevron */
+  .privacy summary { display: flex; align-items: center; gap: 10px; min-height: 24px; margin-top: -4px; cursor: pointer; list-style: none; }
+  .privacy summary::-webkit-details-marker { display: none; }
+  .privacy summary::after { content: ""; flex: none; width: 7px; height: 7px; margin-top: -4px; border: solid var(--ink-3); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .privacy[open] summary::after { margin-top: 3px; transform: rotate(-135deg); }
+  .legal .privacy summary h3 { margin-bottom: 0; }
+  .privacy[open] summary { margin-bottom: 8px; }
+  .legal .prefs { margin-top: 12px; }
 
-  /* ---------- Banner delle statistiche: in basso, non modale, compare solo dopo il primo scorrimento o il primo tocco.
-     «Rifiuta» e «Accetta» hanno lo stesso aspetto: nessuno dei due è messo in evidenza. ---------- */
+  /* ---------- Analytics banner: at the bottom, not modal, it appears only after the first scroll or the first tap (not the one on
+     «Prenota»). «Rifiuta» and «Accetta» look the same: neither is emphasised. A border, no shadow. It never covers the Tally
+     form: when the form passes under it, it steps aside (.away) and comes back once the form has gone by. ---------- */
   .consent {
     position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 50; max-width: 720px; margin-inline: auto;
     display: flex; align-items: center; gap: 10px; padding: 10px 12px;
     background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 10px;
-    box-shadow: 0 10px 28px -10px rgba(0,0,0,.4);
   }
   .consent[hidden] { display: none; }
+  .consent.away { visibility: hidden; }
   .consent-text { flex: 1 1 auto; min-width: 0; font-size: 13px; line-height: 1.25; color: var(--ink-2); }
   .consent-text a { color: var(--ink); text-underline-offset: 2px; }
   .consent-actions { flex: none; display: flex; gap: 8px; }
@@ -378,26 +479,27 @@
 </head>
 <body>
 
-<div class="top">
+<a class="skip" href="#content" data-i18n="skipLink"></a>
+
+<header class="top">
   <div class="wrap top-row">
     <span class="brand"><svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><rect width="100" height="100" rx="22" fill="#0E1113"/><g fill="#FF6B2C"><rect x="32" y="19" width="14" height="62" rx="4.5"/><rect x="50" y="29" width="13" height="42" rx="4.5"/><rect x="67" y="39" width="12" height="22" rx="4.5"/></g></svg>WorkoutPlayer</span>
-    <div class="top-right">
-      <span class="eyebrow" data-i18n="topEyebrow"></span>
-      <nav class="langs" id="langNav">
-        <button type="button" data-lang="it">IT</button>
-        <button type="button" data-lang="en">EN</button>
-        <button type="button" data-lang="fr">FR</button>
-        <button type="button" data-lang="es">ES</button>
-        <button type="button" data-lang="de">DE</button>
-      </nav>
-    </div>
+    <!-- each language is named in that language (lang and aria-label), the same on every page: not in the dictionary -->
+    <nav class="langs" id="langNav">
+      <button type="button" data-lang="it" lang="it" aria-label="Italiano">IT</button>
+      <button type="button" data-lang="en" lang="en" aria-label="English">EN</button>
+      <button type="button" data-lang="fr" lang="fr" aria-label="Français">FR</button>
+      <button type="button" data-lang="es" lang="es" aria-label="Español">ES</button>
+      <button type="button" data-lang="de" lang="de" aria-label="Deutsch">DE</button>
+    </nav>
   </div>
-</div>
+</header>
 
+<main id="content" tabindex="-1">
 <div class="hero">
   <div class="wrap">
     <div class="hero-head">
-      <span class="eyebrow" data-i18n="heroEyebrow"></span>
+      <p class="status" data-i18n="heroStatus"></p>
       <h1 data-i18n="heroTitle"></h1>
     </div>
 
@@ -411,7 +513,7 @@
             <svg viewBox="0 0 190 253" focusable="false">
               <path d="M7 1h137l45 45v199a6 6 0 0 1-6 6H7a6 6 0 0 1-6-6V7a6 6 0 0 1 6-6z" fill="#FFFFFF" stroke="#D3D8D0" stroke-width="1.5"/>
               <path d="M144 1v39a6 6 0 0 0 6 6h39" fill="#EEF0EB" stroke="#D3D8D0" stroke-width="1.5" stroke-linejoin="round"/>
-              <rect x="16" y="16" width="72" height="34" rx="5" fill="#D9480B"/>
+              <rect x="16" y="16" width="72" height="34" rx="5" fill="#C9430A"/>
               <text class="card-tag" x="52" y="43" text-anchor="middle">PDF</text>
               <rect x="16" y="66" width="160" height="16" rx="2" fill="#E9ECE6"/>
               <g fill="#C8CEC5"><rect x="20" y="94" width="68" height="7" rx="2"/><rect x="112" y="94" width="16" height="7" rx="2"/><rect x="136" y="94" width="14" height="7" rx="2"/><rect x="158" y="94" width="14" height="7" rx="2"/><rect x="20" y="116" width="54" height="7" rx="2"/><rect x="112" y="116" width="16" height="7" rx="2"/><rect x="136" y="116" width="14" height="7" rx="2"/><rect x="158" y="116" width="14" height="7" rx="2"/><rect x="20" y="138" width="76" height="7" rx="2"/><rect x="112" y="138" width="16" height="7" rx="2"/><rect x="136" y="138" width="14" height="7" rx="2"/><rect x="158" y="138" width="14" height="7" rx="2"/><rect x="20" y="160" width="60" height="7" rx="2"/><rect x="112" y="160" width="16" height="7" rx="2"/><rect x="136" y="160" width="14" height="7" rx="2"/><rect x="158" y="160" width="14" height="7" rx="2"/><rect x="20" y="182" width="48" height="7" rx="2"/><rect x="112" y="182" width="16" height="7" rx="2"/><rect x="136" y="182" width="14" height="7" rx="2"/><rect x="158" y="182" width="14" height="7" rx="2"/><rect x="20" y="204" width="70" height="7" rx="2"/><rect x="112" y="204" width="16" height="7" rx="2"/><rect x="136" y="204" width="14" height="7" rx="2"/><rect x="158" y="204" width="14" height="7" rx="2"/><rect x="20" y="226" width="58" height="7" rx="2"/><rect x="112" y="226" width="16" height="7" rx="2"/><rect x="136" y="226" width="14" height="7" rx="2"/><rect x="158" y="226" width="14" height="7" rx="2"/></g>
@@ -462,12 +564,20 @@
       </li>
     </ol>
 
-    <div class="offer">
-      <p class="price"><b class="num" data-i18n="priceValue"></b> <span data-i18n="priceDesc"></span></p>
-      <div class="offer-actions">
-        <a class="btn" href="#manda-scheda" data-i18n="ctaUpload"></a>
-        <a class="btn ghost" data-demo-link href="demo-it.html" target="_blank" rel="noopener" data-i18n="ctaFullscreen"></a>
+    <div class="hero-aside">
+      <div class="offer">
+        <p class="price"><b class="num" data-i18n="priceValue"></b> <span data-i18n="priceDesc"></span> <strong data-i18n="priceFree"></strong></p>
+        <div class="offer-actions">
+          <a class="btn" href="#manda-scheda" data-i18n="ctaUpload"></a>
+          <a class="btn ghost" href="#demo" data-i18n="ctaDemo"></a>
+        </div>
       </div>
+      <!-- Three reasons to trust, only things that are true per PRODUCT.md (no numbers, no social proof) -->
+      <ul class="reasons" role="list">
+        <li><b data-i18n="why1Lead"></b> <span data-i18n="why1Text"></span></li>
+        <li><b data-i18n="why2Lead"></b> <span data-i18n="why2Text"></span></li>
+        <li><b data-i18n="why3Lead"></b> <span data-i18n="why3Text"></span></li>
+      </ul>
     </div>
 
     <div class="hero-intro">
@@ -480,10 +590,10 @@
 <section class="demo" id="demo">
   <div class="wrap">
     <div class="demo-text">
-      <span class="eyebrow" data-i18n="demoEyebrow"></span>
       <h2 data-i18n="demoTitle"></h2>
       <p data-i18n="demoBody"></p>
-      <a data-demo-link href="demo-it.html" target="_blank" rel="noopener" data-i18n="demoLink"></a>
+      <!-- the full-screen demo opens in this tab: "back" returns here -->
+      <a data-demo-link href="demo-it.html" data-i18n="demoLink"></a>
       <p class="demo-note" data-i18n="demoNote"></p>
     </div>
     <div class="demo-phone">
@@ -502,7 +612,16 @@
                 <path d="M70 4.6v3.8a2 2 0 0 0 0-3.8z" fill="currentColor" fill-opacity=".4"/>
               </svg>
             </div>
-            <iframe data-demo-src data-i18n-title="demoFrameTitle" src="demo-it.html" title="WorkoutPlayer" loading="lazy"></iframe>
+            <!-- from 600 px the live demo (the script sets src); below, a still image of the demo home that opens it full-screen -->
+            <iframe data-demo-src data-i18n-title="demoFrameTitle" title="WorkoutPlayer" loading="lazy"></iframe>
+            <a class="demo-shot" data-demo-shot href="demo-it.html">
+              <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="img/demo-home-it-dark.webp" data-lang-srcset="img/demo-home-{lang}-dark.webp">
+                <img src="img/demo-home-it-light.webp" data-lang-src="img/demo-home-{lang}-light.webp" width="430" height="873" loading="lazy" decoding="async" data-i18n-alt="demoShotAlt"
+                     alt="Apri la demo a schermo intero: la home con le tre sedute della scheda di esempio.">
+              </picture>
+              <span class="demo-shot-hint" data-i18n="demoShotHint"></span>
+            </a>
             <span class="home-bar" aria-hidden="true"></span>
           </div>
         </div>
@@ -514,84 +633,58 @@
 <section id="pubblici" style="padding-block:72px 56px">
   <div class="wrap">
     <div class="aud-head">
-      <span class="eyebrow" data-i18n="audEyebrow"></span>
       <h2 data-i18n="audTitle"></h2>
+      <p class="aud-lede" data-i18n="audLede"></p>
     </div>
     <div class="aud-list">
       <div class="aud">
-        <span class="aud-n num">1</span>
-        <div>
-          <b data-i18n="aud1Title"></b>
-          <p data-i18n="aud1Body"></p>
-        </div>
+        <h3 data-i18n="aud1Title"></h3>
+        <p data-i18n="aud1Body"></p>
       </div>
       <div class="aud">
-        <span class="aud-n num">2</span>
-        <div>
-          <b data-i18n="aud2Title"></b>
-          <p data-i18n="aud2Body"></p>
-          <p class="case" data-i18n="aud2Case"></p>
-        </div>
-      </div>
-      <div class="aud">
-        <span class="aud-n num">3</span>
-        <div>
-          <b data-i18n="aud3Title"></b>
-          <p data-i18n="aud3Body"></p>
-          <p class="case" data-i18n="aud3Case"></p>
-        </div>
-      </div>
-      <div class="aud">
-        <span class="aud-n num">4</span>
-        <div>
-          <b data-i18n="aud4Title"></b>
-          <p data-i18n="aud4Body"></p>
-          <p class="case" data-i18n="aud4Case"></p>
-        </div>
+        <h3 data-i18n="aud2Title"></h3>
+        <p data-i18n="aud2Body"></p>
+        <p class="case" data-i18n="aud2Case"></p>
       </div>
     </div>
   </div>
 </section>
 
+<!-- The form of the language shown is set by the script at the bottom of the page (UPLOAD, with Tally's official loader). -->
 <section class="upload" id="manda-scheda" hidden>
   <div class="wrap">
-    <span class="eyebrow" data-i18n="uploadEyebrow"></span>
     <h2 data-i18n="uploadTitle"></h2>
     <p class="upload-body" data-i18n="uploadBody"></p>
+    <p class="upload-optional" data-i18n="uploadOptional"></p>
     <p class="upload-warn" data-i18n="uploadWarn"></p>
+    <p class="upload-safe" data-i18n="uploadSafe"></p>
     <div class="upload-embed">
+      <p class="upload-wait" data-i18n="uploadLoading"></p>
       <iframe loading="lazy" width="100%" height="400" frameborder="0" marginheight="0" marginwidth="0" data-i18n-title="uploadFrameTitle" title="Accesso anticipato"></iframe>
     </div>
     <p class="upload-fallback">
       <span data-i18n="uploadFallbackPre"></span>
       <a data-upload-link target="_blank" rel="noopener" data-i18n="uploadFallbackLink"></a>.
     </p>
-    <script>
-      /* Si accende solo con un link Tally in UPLOAD_FORM_URL (in testa alla pagina). Gira prima del caricatore Tally qui sotto:
-         quando quello chiama Tally.loadEmbeds(), l'iframe ha già data-tally-src e viene incorporato. */
-      (function () {
-        var m = /^https:\/\/(?:www\.)?tally\.so\/(?:r|embed)\/([\w-]+)/.exec(String(UPLOAD_FORM_URL).trim());
-        if (!m) return;
-        var sec = document.getElementById("manda-scheda");
-        sec.querySelector("iframe").setAttribute("data-tally-src", "https://tally.so/embed/" + m[1] + "?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1");
-        sec.querySelector("[data-upload-link]").href = "https://tally.so/r/" + m[1];
-        sec.hidden = false;
-      })();
-    </script>
-    <script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){e.src=e.dataset.tallySrc})};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s)}</script>
   </div>
 </section>
+</main>
 
 <footer>
   <div class="wrap legal">
-    <div id="privacy">
-      <h3 data-i18n="privacyTitle"></h3>
-      <p data-i18n="privacyCollect"></p>
-      <p data-i18n="privacyPurpose"></p>
-      <p><span data-i18n="privacyDeletePre"></span> <a href="mailto:blinko@pec.it">blinko@pec.it</a>.</p>
-      <p data-i18n="privacyGoat" data-gc-only hidden></p>
-      <p data-i18n="privacyAnalytics" data-ga-only hidden></p>
-      <p data-ga-only hidden><button type="button" class="linklike" id="consentPrefs" data-i18n="consentPrefs"></button></p>
+    <div>
+      <!-- collapsed by default; a link to #privacy (the banner's «Informativa», a shared URL) opens it. «Preferenze cookie» stays
+           outside, always visible: withdrawing consent is as easy as giving it -->
+      <details class="privacy" id="privacy">
+        <summary><h3 data-i18n="privacyTitle"></h3></summary>
+        <p><span data-i18n="privacyControllerPre"></span> <a href="mailto:blinko@pec.it">blinko@pec.it</a>.</p>
+        <p data-i18n="privacyCollect"></p>
+        <p data-i18n="privacyPurpose"></p>
+        <p><span data-i18n="privacyDeletePre"></span> <a href="mailto:blinko@pec.it">blinko@pec.it</a>.</p>
+        <p data-i18n="privacyGoat" data-gc-only hidden></p>
+        <p data-i18n="privacyAnalytics" data-ga-only hidden></p>
+      </details>
+      <p class="prefs" data-ga-only hidden><button type="button" class="linklike" id="consentPrefs" data-i18n="consentPrefs"></button></p>
     </div>
     <div>
       <h3 data-i18n="daSapereTitle"></h3>
@@ -615,49 +708,54 @@
      "\n" in un valore diventa un a-capo (<br>) nel rendering. */
   var DICT = {
     it: {
-      topEyebrow: "Prova di domanda",
+      skipLink: "Vai al contenuto",
       langLabel: "Lingua",
-      heroEyebrow: "Dalla scheda al workout guidato",
+      heroStatus: "Beta in arrivo",
       heroTitle: "Trasforma la tua scheda\nin un allenamento guidato.",
-      heroLede: "Carichi una scheda PDF, Excel o una foto della scheda su carta, e ottieni un workout con serie, riposi, timer e note che usi direttamente dal tuo telefono.",
-      heroFine: "Anteprima gratuita dei primi 2 esercizi. Nessuna registrazione.",
+      heroLede: "Carichi una scheda PDF, Excel o una foto della scheda su carta, e ottieni un allenamento con serie, riposi, timer e note che usi direttamente dal tuo telefono.",
+      heroFine: "Al lancio: anteprima gratuita dei primi 2 esercizi, senza registrazione.",
       step1: "Fotografi o carichi la tua scheda",
       step2: "Ti alleni guidato, serie per serie",
       step1Alt: "Tre formati di scheda aperti a ventaglio: una pagina PDF, un foglio di calcolo e la foto di una scheda scritta a mano, «Allenamento di oggi», che comincia con squat 4x8 a 75 kg.",
       step2Alt: "Il player durante lo squat con bilanciere: serie 2 di 4, 8 ripetizioni, 75 kg.",
       priceValue: "4,99 €",
-      priceDesc: "IVA inclusa, per scheda caricata.",
+      priceDesc: "Al lancio · IVA inclusa, per scheda caricata.",
+      priceFree: "Prenotare è gratis.",
       ctaUpload: "Prenota l'accesso anticipato",
-      ctaFullscreen: "Apri la demo a schermo intero ↗",
-      demoEyebrow: "Demo dal vivo",
+      ctaDemo: "Prova la demo",
+      why1Lead: "Niente numeri inventati.",
+      why1Text: "Se un valore della scheda è incerto, lo vedi segnalato.",
+      why2Lead: "Funziona anche senza rete.",
+      why2Text: "In palestra, anche senza segnale, la seduta va avanti.",
+      why3Lead: "Voce e bip ti guidano.",
+      why3Text: "Segui tempi e riposi senza fissare lo schermo.",
       demoTitle: "Provalo adesso",
       demoBody: "Questa è una scheda di esempio già trasformata. Scegli una seduta e segui l'allenamento come in palestra: timer, serie, riposi e note del trainer.",
-      demoLink: "Aprila a schermo intero ↗",
+      demoLink: "Aprila a schermo intero",
       demoNote: "Scheda di esempio, nessun dato reale.",
       demoFrameTitle: "Demo dal vivo del player WorkoutPlayer",
-      audEyebrow: "Non solo per chi si allena da solo",
-      audTitle: "Quattro modi di usarlo.",
+      demoShotAlt: "Apri la demo a schermo intero: la home con le tre sedute della scheda di esempio.",
+      demoShotHint: "Tocca per provarla",
+      audTitle: "Due modi di usarlo.",
+      audLede: "Non solo per chi si allena da solo.",
       aud1Title: "Chi si allena con una scheda",
       aud1Body: "Hai una scheda scritta da un trainer, un fisioterapista o un osteopata? Caricala e allenati da subito, guidato passo per passo — nella lingua in cui te l'hanno scritta.",
-      aud2Title: "Personal trainer",
-      aud2Body: "Scrivi la scheda per un cliente e caricala tu.",
-      aud2Case: "Paghi tu, gliela mandi tu: il cliente la esegue con il player, senza poterla modificare.",
-      aud3Title: "Fisioterapisti",
-      aud3Body: "Il percorso di riabilitazione diventa un workout guidato, con tempi e serie sempre sotto controllo.",
-      aud3Case: "Paghi tu, lo invii al paziente: lui lo segue, tu resti il solo a poterlo cambiare.",
-      aud4Title: "Osteopati",
-      aud4Body: "Gli esercizi di mantenimento assegnati in seduta diventano un allenamento guidato da fare a casa.",
-      aud4Case: "Paghi tu, lo invii al paziente: stessa logica, stesso player.",
-      uploadEyebrow: "In arrivo",
+      aud2Title: "Personal trainer, fisioterapisti e osteopati",
+      aud2Body: "Scrivi la scheda per un cliente o un paziente e caricala tu: il programma per la palestra, il percorso di riabilitazione o gli esercizi da fare a casa diventano un allenamento guidato.",
+      aud2Case: "Paghi tu e la mandi al cliente o al paziente, che la esegue con il player senza poterla modificare. L'invio si può revocare.",
       uploadTitle: "Accesso anticipato",
       uploadBody: "Prenota il tuo posto: ti scriviamo quando apriamo la beta.",
+      uploadOptional: "Se hai la scheda a portata di mano, caricala: ci aiuta a prepararci. Altrimenti basta l'email.",
       uploadWarn: "Prima di caricare la scheda, se vuoi copri o cancella nomi e dati personali (tuoi, del trainer, di clienti). Massimo 10 MB per file.",
-      uploadFrameTitle: "Modulo per mandarci la tua scheda",
+      uploadSafe: "Scheda ed email: non le pubblichiamo, non le cediamo a nessuno e le cancelliamo se ce lo chiedi.",
+      uploadLoading: "Carico il modulo…",
+      uploadFrameTitle: "Modulo per prenotare l'accesso anticipato",
       uploadFallbackPre: "Se il modulo non si carica,",
       uploadFallbackLink: "aprilo qui",
       privacyTitle: "Informativa privacy",
-      privacyCollect: "Cosa raccogliamo: la tua scheda (file o foto) e l'email che lasci nel modulo per mandarcela. Il modulo è su Tally, un servizio di terzi, non nostro.",
-      privacyPurpose: "A cosa servono: l'email, ad avvisarti quando puoi provare WorkoutPlayer; la scheda, solo a provare e migliorare la conversione da scheda a workout. Per provare la conversione la scheda passa da un servizio AI di terzi (Anthropic), che non la usa per addestrare i suoi modelli. Email e scheda non le pubblichiamo, non le cediamo a nessuno e non le usiamo per altro.",
+      privacyControllerPre: "Titolare del trattamento: Blinko S.r.l.s. — P.IVA 04139060364 — Via Ezio Gibellini 8, 41043 Formigine (MO), Italia — contatto:",
+      privacyCollect: "Cosa raccogliamo: l'email che lasci nel modulo e, se la carichi, la tua scheda (file o foto). Il modulo è su Tally, un servizio di terzi, non nostro.",
+      privacyPurpose: "A cosa servono: l'email, ad avvisarti quando puoi provare WorkoutPlayer; la scheda, solo a provare e migliorare la conversione da scheda ad allenamento. Per provare la conversione la scheda passa da un servizio AI di terzi (Anthropic), che non la usa per addestrare i suoi modelli. Email e scheda non le pubblichiamo, non le cediamo a nessuno e non le usiamo per altro.",
       privacyDeletePre: "Cancelliamo tutto quando non ci serve più, o prima se ce lo chiedi. Vuoi far cancellare scheda ed email? Scrivi a",
       privacyGoat: "Visite: contiamo le visite e i clic in forma anonima con GoatCounter, un servizio di terzi, senza cookie e senza dati personali.",
       consentLabel: "Statistiche",
@@ -668,54 +766,59 @@
       consentPrefs: "Preferenze cookie",
       privacyAnalytics: "Statistiche: usiamo Google Analytics 4 solo se lo accetti, per contare visite e clic in forma aggregata. Salva i cookie _ga e {ga4} per al massimo 13 mesi. Niente pubblicità né profilazione. Google può trattare i dati negli Stati Uniti, nel quadro dell'EU-US Data Privacy Framework. Puoi cambiare idea quando vuoi da «Preferenze cookie», qui sotto.",
       daSapereTitle: "Da sapere",
-      disclaimerAI: "I workout di questa pagina sono generati dall'intelligenza artificiale a partire dalla scheda del tuo trainer: non sostituiscono il parere di un professionista della salute.",
+      disclaimerAI: "Gli allenamenti di questa pagina sono generati dall'intelligenza artificiale a partire dalla scheda del tuo trainer: non sostituiscono il parere di un professionista della salute.",
       disclaimerDemo: "La scheda mostrata nella demo qui sopra è di esempio: nessun nome, nessun dato reale.",
       metaTitle: "WorkoutPlayer — trasforma la tua scheda in un allenamento guidato",
-      metaDescription: "Carica la scheda del tuo trainer: diventa un workout guidato con timer, serie, riposi e note. Prova il player dal vivo."
+      metaDescription: "Carica la scheda del tuo trainer: diventa un allenamento guidato con timer, serie, riposi e note. Prova il player dal vivo."
     },
     en: {
-      topEyebrow: "Demand test",
+      skipLink: "Skip to content",
       langLabel: "Language",
-      heroEyebrow: "From training plan to guided workout",
+      heroStatus: "Beta coming soon",
       heroTitle: "Turn your training plan\ninto a guided workout.",
-      heroLede: "You upload your training plan — a PDF, an Excel file, or a photo of the printed page — and get a workout with sets, rest, a timer and notes you use straight from your phone.",
-      heroFine: "Free preview of the first 2 exercises. No sign-up.",
+      heroLede: "You upload your training plan — a PDF, an Excel file, or a photo of the plan on paper — and get a workout with sets, rest, a timer and notes you use straight from your phone.",
+      heroFine: "At launch: a free preview of the first 2 exercises, no sign-up.",
       step1: "Snap or upload your plan",
       step2: "Train guided, set by set",
       step1Alt: "Three plan formats fanned out: a PDF page, a spreadsheet and a photo of a handwritten plan, “Today's workout”, starting with squats 4x8 at 75 kg.",
       step2Alt: "The player during a barbell squat: set 2 of 4, 8 reps, 75 kg.",
       priceValue: "€4.99",
-      priceDesc: "VAT included, per plan you upload.",
+      priceDesc: "At launch · VAT included, per plan you upload.",
+      priceFree: "Reserving is free.",
       ctaUpload: "Reserve early access",
-      ctaFullscreen: "Open the demo full-screen ↗",
-      demoEyebrow: "Live demo",
+      ctaDemo: "Try the demo",
+      why1Lead: "No made-up numbers.",
+      why1Text: "If a value in your plan is unclear, you'll see it flagged.",
+      why2Lead: "Works without a connection.",
+      why2Text: "At the gym, even with no signal, your session keeps going.",
+      why3Lead: "Voice and beeps guide you.",
+      why3Text: "Follow timers and rest without staring at the screen.",
       demoTitle: "Try it now",
       demoBody: "This is a sample plan, already transformed. Pick a session and follow the workout as you would at the gym: timer, sets, rest and your trainer's notes.",
-      demoLink: "Open it full-screen ↗",
+      demoLink: "Open it full-screen",
       demoNote: "Sample plan, no real data.",
       demoFrameTitle: "Live demo of the WorkoutPlayer player",
-      audEyebrow: "Not just for solo training",
-      audTitle: "Four ways to use it.",
+      demoShotAlt: "Open the demo full-screen: the home screen with the three sessions of the sample plan.",
+      demoShotHint: "Tap to try it",
+      audTitle: "Two ways to use it.",
+      audLede: "Not just for solo training.",
       aud1Title: "Training with a plan",
       aud1Body: "Got a plan from a trainer, a physio, or an osteopath? Upload it and start training right away, guided step by step — in the language it was written in.",
-      aud2Title: "Personal trainers",
-      aud2Body: "Write the plan for a client and upload it yourself.",
-      aud2Case: "You pay, you send it: your client runs it with the player, without being able to change it.",
-      aud3Title: "Physiotherapists",
-      aud3Body: "The rehab plan becomes a guided workout, with timing and sets always under control.",
-      aud3Case: "You pay, you send it to your patient: they follow it, only you can change it.",
-      aud4Title: "Osteopaths",
-      aud4Body: "The maintenance exercises you give in a session become a guided workout to do at home.",
-      aud4Case: "You pay, you send it to your patient: same logic, same player.",
-      uploadEyebrow: "Coming soon",
+      aud2Title: "Personal trainers, physiotherapists and osteopaths",
+      aud2Body: "Write the plan for a client or a patient and upload it yourself: a gym programme, a rehab plan or exercises to do at home become a guided workout.",
+      aud2Case: "You pay and send it to your client or patient, who runs it with the player without being able to change it. You can revoke it.",
       uploadTitle: "Early access",
       uploadBody: "Reserve your spot: we'll email you when the beta opens.",
+      uploadOptional: "If you have your plan to hand, upload it: it helps us get ready. Otherwise, your email is enough.",
       uploadWarn: "Before you upload your plan, if you want, cover or delete names and personal details (yours, your trainer's, clients'). Max 10 MB per file.",
-      uploadFrameTitle: "Form to send us your plan",
+      uploadSafe: "Your plan and email: we don't publish them, we don't share them with anyone, and we delete them if you ask.",
+      uploadLoading: "Loading the form…",
+      uploadFrameTitle: "Form to reserve early access",
       uploadFallbackPre: "If the form doesn't load,",
       uploadFallbackLink: "open it here",
       privacyTitle: "Privacy notice",
-      privacyCollect: "What we collect: your plan (file or photo) and the email you leave in the form you send it with. The form runs on Tally, a third-party service, not ours.",
+      privacyControllerPre: "Data controller: Blinko S.r.l.s. — VAT no. 04139060364 — Via Ezio Gibellini 8, 41043 Formigine (MO), Italy — contact:",
+      privacyCollect: "What we collect: the email you leave in the form and, if you upload it, your plan (file or photo). The form runs on Tally, a third-party service, not ours.",
       privacyPurpose: "What we use them for: your email, to let you know when you can try WorkoutPlayer; your plan, only to test and improve the conversion from plan to workout. To test the conversion, your plan goes through a third-party AI service (Anthropic), which doesn't use it to train its models. We don't publish your email or your plan, we don't share them with anyone and we don't use them for anything else.",
       privacyDeletePre: "We delete everything once we no longer need it, or sooner if you ask. Want your plan and email deleted? Email",
       privacyGoat: "Visits: we count visits and clicks anonymously with GoatCounter, a third-party service, without cookies and without personal data.",
@@ -733,49 +836,54 @@
       metaDescription: "Upload your trainer's plan: it becomes a guided workout with timer, sets, rest and notes. Try the live player."
     },
     fr: {
-      topEyebrow: "Test de la demande",
+      skipLink: "Aller au contenu",
       langLabel: "Langue",
-      heroEyebrow: "Du programme au workout guidé",
-      heroTitle: "Transforme ton programme\nen séance guidée.",
-      heroLede: "Tu charges ton programme — en PDF, en Excel ou en photo de la feuille — et tu obtiens une séance avec séries, repos, minuteur et notes, à utiliser directement depuis ton téléphone.",
-      heroFine: "Aperçu gratuit des 2 premiers exercices. Sans inscription.",
+      heroStatus: "Bêta bientôt ouverte",
+      heroTitle: "Transforme ton programme\nen entraînement guidé.",
+      heroLede: "Tu charges ton programme — en PDF, en Excel ou en photo de la feuille — et tu obtiens un entraînement avec séries, repos, minuteur et notes, à utiliser directement depuis ton téléphone.",
+      heroFine: "Au lancement : aperçu gratuit des 2 premiers exercices, sans inscription.",
       step1: "Tu photographies ou charges ton programme",
       step2: "Tu t'entraînes guidé, série après série",
       step1Alt: "Trois formats de programme en éventail : une page PDF, un tableur et la photo d'un programme écrit à la main, « Séance du jour », qui commence par un squat 4x8 à 75 kg.",
       step2Alt: "Le player pendant le squat à la barre : série 2 sur 4, 8 répétitions, 75 kg.",
       priceValue: "4,99 €",
-      priceDesc: "TVA incluse, par programme chargé.",
+      priceDesc: "Au lancement · TVA incluse, par programme chargé.",
+      priceFree: "Réserver, c'est gratuit.",
       ctaUpload: "Réserver l'accès anticipé",
-      ctaFullscreen: "Ouvrir la démo en plein écran ↗",
-      demoEyebrow: "Démo en direct",
+      ctaDemo: "Essaie la démo",
+      why1Lead: "Aucun chiffre inventé.",
+      why1Text: "Si une valeur du programme est incertaine, tu la vois signalée.",
+      why2Lead: "Marche même sans réseau.",
+      why2Text: "À la salle, même sans signal, ta séance continue.",
+      why3Lead: "La voix et les bips te guident.",
+      why3Text: "Suis les temps et les repos sans fixer l'écran.",
       demoTitle: "Essaie-le maintenant",
       demoBody: "Voici un programme d'exemple déjà transformé. Choisis une séance et suis l'entraînement comme à la salle : minuteur, séries, repos et notes du coach.",
-      demoLink: "Ouvre-la en plein écran ↗",
+      demoLink: "Ouvre-la en plein écran",
       demoNote: "Programme d'exemple, aucune donnée réelle.",
       demoFrameTitle: "Démo en direct du player WorkoutPlayer",
-      audEyebrow: "Pas seulement pour s'entraîner seul",
-      audTitle: "Quatre façons de l'utiliser.",
+      demoShotAlt: "Ouvre la démo en plein écran : l'accueil avec les trois séances du programme d'exemple.",
+      demoShotHint: "Touche pour l'essayer",
+      audTitle: "Deux façons de l'utiliser.",
+      audLede: "Pas seulement pour s'entraîner seul.",
       aud1Title: "Tu t'entraînes avec un programme",
       aud1Body: "Tu as un programme écrit par un coach, un kiné ou un ostéopathe ? Charge-le et entraîne-toi tout de suite, guidé pas à pas — dans la langue où il a été écrit.",
-      aud2Title: "Coachs sportifs",
-      aud2Body: "Tu écris le programme pour un client et tu le charges toi-même.",
-      aud2Case: "Tu payes, tu l'envoies : ton client l'exécute avec le player, sans pouvoir le modifier.",
-      aud3Title: "Kinésithérapeutes",
-      aud3Body: "Le programme de rééducation devient une séance guidée, avec temps et séries toujours sous contrôle.",
-      aud3Case: "Tu payes, tu l'envoies à ton patient : il le suit, toi seul peux le modifier.",
-      aud4Title: "Ostéopathes",
-      aud4Body: "Les exercices d'entretien donnés en séance deviennent une séance guidée à faire à la maison.",
-      aud4Case: "Tu payes, tu l'envoies à ton patient : même logique, même player.",
-      uploadEyebrow: "Bientôt",
+      aud2Title: "Coachs sportifs, kinésithérapeutes et ostéopathes",
+      aud2Body: "Tu écris le programme pour un client ou un patient et tu le charges toi-même : un programme de salle, une rééducation ou des exercices à faire à la maison deviennent un entraînement guidé.",
+      aud2Case: "Tu payes et tu l'envoies à ton client ou à ton patient, qui l'exécute avec le player sans pouvoir le modifier. Tu peux révoquer l'envoi.",
       uploadTitle: "Accès anticipé",
       uploadBody: "Réserve ta place : on t'écrit dès que la bêta ouvre.",
+      uploadOptional: "Si tu as ton programme sous la main, charge-le : ça nous aide à nous préparer. Sinon, ton email suffit.",
       uploadWarn: "Avant de charger ton programme, si tu veux, cache ou efface les noms et les données personnelles (les tiennes, celles du coach, de clients). 10 Mo maximum par fichier.",
-      uploadFrameTitle: "Formulaire pour nous envoyer ton programme",
+      uploadSafe: "Ton programme et ton email : on ne les publie pas, on ne les partage avec personne et on les supprime si tu le demandes.",
+      uploadLoading: "Chargement du formulaire…",
+      uploadFrameTitle: "Formulaire pour réserver l'accès anticipé",
       uploadFallbackPre: "Si le formulaire ne se charge pas,",
       uploadFallbackLink: "ouvre-le ici",
       privacyTitle: "Confidentialité",
-      privacyCollect: "Ce qu'on récolte : ton programme (fichier ou photo) et l'email que tu laisses dans le formulaire pour nous l'envoyer. Le formulaire est sur Tally, un service tiers, pas le nôtre.",
-      privacyPurpose: "À quoi ça sert : l'email, à te prévenir quand tu peux essayer WorkoutPlayer ; le programme, seulement à tester et améliorer la conversion du programme en séance. Pour tester la conversion, ton programme passe par un service d'IA tiers (Anthropic), qui ne s'en sert pas pour entraîner ses modèles. Ton email et ton programme, on ne les publie pas, on ne les partage avec personne et on ne s'en sert pour rien d'autre.",
+      privacyControllerPre: "Responsable du traitement : Blinko S.r.l.s. — N° TVA 04139060364 — Via Ezio Gibellini 8, 41043 Formigine (MO), Italie — contact :",
+      privacyCollect: "Ce qu'on récolte : l'email que tu laisses dans le formulaire et, si tu le charges, ton programme (fichier ou photo). Le formulaire est sur Tally, un service tiers, pas le nôtre.",
+      privacyPurpose: "À quoi ça sert : l'email, à te prévenir quand tu peux essayer WorkoutPlayer ; le programme, seulement à tester et améliorer la conversion du programme en entraînement. Pour tester la conversion, ton programme passe par un service d'IA tiers (Anthropic), qui ne s'en sert pas pour entraîner ses modèles. Ton email et ton programme, on ne les publie pas, on ne les partage avec personne et on ne s'en sert pour rien d'autre.",
       privacyDeletePre: "On supprime tout quand on n'en a plus besoin, ou avant si tu le demandes. Tu veux faire supprimer ton programme et ton email ? Écris à",
       privacyGoat: "Visites : on compte les visites et les clics de façon anonyme avec GoatCounter, un service tiers, sans cookies et sans données personnelles.",
       consentLabel: "Statistiques",
@@ -786,55 +894,60 @@
       consentPrefs: "Préférences cookies",
       privacyAnalytics: "Statistiques : on utilise Google Analytics 4 seulement si tu l'acceptes, pour compter les visites et les clics de façon agrégée. Il dépose les cookies _ga et {ga4} pour 13 mois au plus. Pas de publicité, pas de profilage. Google peut traiter les données aux États-Unis, dans le cadre de l'EU-US Data Privacy Framework. Tu peux changer d'avis quand tu veux depuis « Préférences cookies », juste en dessous.",
       daSapereTitle: "À savoir",
-      disclaimerAI: "Les séances de cette page sont générées par IA à partir du programme de ton coach : elles ne remplacent pas l'avis d'un professionnel de santé.",
+      disclaimerAI: "Les entraînements de cette page sont générés par IA à partir du programme de ton coach : ils ne remplacent pas l'avis d'un professionnel de santé.",
       disclaimerDemo: "Le programme montré dans la démo ci-dessus est un exemple : aucun nom, aucune donnée réelle.",
-      metaTitle: "WorkoutPlayer — transforme ton programme en séance guidée",
-      metaDescription: "Charge le programme de ton coach : il devient une séance guidée avec minuteur, séries, repos et notes. Essaie le player en direct."
+      metaTitle: "WorkoutPlayer — transforme ton programme en entraînement guidé",
+      metaDescription: "Charge le programme de ton coach : il devient un entraînement guidé avec minuteur, séries, repos et notes. Essaie le player en direct."
     },
     es: {
-      topEyebrow: "Prueba de demanda",
+      skipLink: "Ir al contenido",
       langLabel: "Idioma",
-      heroEyebrow: "De la rutina al entreno guiado",
+      heroStatus: "Beta muy pronto",
       heroTitle: "Convierte tu rutina\nen un entrenamiento guiado.",
-      heroLede: "Subes tu rutina — en PDF, en Excel o en foto de la hoja impresa — y obtienes un entreno con series, descansos, temporizador y notas que usas directamente desde tu móvil.",
-      heroFine: "Vista previa gratis de los 2 primeros ejercicios. Sin registro.",
+      heroLede: "Subes tu rutina — en PDF, en Excel o en foto de la rutina en papel — y obtienes un entrenamiento con series, descansos, temporizador y notas que usas directamente desde tu móvil.",
+      heroFine: "En el lanzamiento: vista previa gratis de los 2 primeros ejercicios, sin registro.",
       step1: "Fotografías o subes tu rutina",
       step2: "Entrenas guiado, serie a serie",
       step1Alt: "Tres formatos de rutina en abanico: una página PDF, una hoja de cálculo y la foto de una rutina escrita a mano, «Entreno de hoy», que empieza con sentadilla 4x8 con 75 kg.",
       step2Alt: "El player durante la sentadilla con barra: serie 2 de 4, 8 repeticiones, 75 kg.",
       priceValue: "4,99 €",
-      priceDesc: "IVA incluido, por rutina subida.",
+      priceDesc: "En el lanzamiento · IVA incluido, por rutina subida.",
+      priceFree: "Reservar es gratis.",
       ctaUpload: "Reservar acceso anticipado",
-      ctaFullscreen: "Abrir la demo a pantalla completa ↗",
-      demoEyebrow: "Demo en directo",
+      ctaDemo: "Prueba la demo",
+      why1Lead: "Ningún número inventado.",
+      why1Text: "Si un valor de la rutina no está claro, lo verás señalado.",
+      why2Lead: "Funciona también sin conexión.",
+      why2Text: "En el gimnasio, aunque no haya cobertura, la sesión sigue.",
+      why3Lead: "Voz y pitidos te guían.",
+      why3Text: "Sigue tiempos y descansos sin mirar la pantalla todo el rato.",
       demoTitle: "Pruébalo ahora",
-      demoBody: "Esta es una rutina de ejemplo ya transformada. Elige una sesión y sigue el entreno como en el gimnasio: temporizador, series, descansos y notas del entrenador.",
-      demoLink: "Ábrela a pantalla completa ↗",
+      demoBody: "Esta es una rutina de ejemplo ya transformada. Elige una sesión y sigue el entrenamiento como en el gimnasio: temporizador, series, descansos y notas del entrenador.",
+      demoLink: "Ábrela a pantalla completa",
       demoNote: "Rutina de ejemplo, sin datos reales.",
       demoFrameTitle: "Demo en directo del player WorkoutPlayer",
-      audEyebrow: "No solo para entrenar en solitario",
-      audTitle: "Cuatro formas de usarlo.",
+      demoShotAlt: "Abre la demo a pantalla completa: la pantalla de inicio con las tres sesiones de la rutina de ejemplo.",
+      demoShotHint: "Toca para probarla",
+      audTitle: "Dos formas de usarlo.",
+      audLede: "No solo para entrenar en solitario.",
       aud1Title: "Entrenas con una rutina",
       aud1Body: "¿Tienes una rutina de un entrenador, un fisio o un osteópata? Súbela y empieza a entrenar ya, guiado paso a paso — en el idioma en que está escrita.",
-      aud2Title: "Entrenadores personales",
-      aud2Body: "Escribes la rutina para un cliente y la subes tú.",
-      aud2Case: "Pagas tú, se la envías tú: tu cliente la ejecuta con el player, sin poder modificarla.",
-      aud3Title: "Fisioterapeutas",
-      aud3Body: "El plan de rehabilitación se convierte en un entreno guiado, con tiempos y series siempre bajo control.",
-      aud3Case: "Pagas tú, se lo envías al paciente: él lo sigue, solo tú puedes cambiarlo.",
-      aud4Title: "Osteópatas",
-      aud4Body: "Los ejercicios de mantenimiento que das en consulta se convierten en un entreno guiado para hacer en casa.",
-      aud4Case: "Pagas tú, se lo envías al paciente: misma lógica, mismo player.",
-      uploadEyebrow: "Muy pronto",
+      aud2Title: "Entrenadores personales, fisioterapeutas y osteópatas",
+      aud2Body: "Escribes la rutina para un cliente o un paciente y la subes tú: un programa de gimnasio, un plan de rehabilitación o los ejercicios para casa se convierten en un entrenamiento guiado.",
+      aud2Case: "Pagas tú y se la envías a tu cliente o paciente, que la sigue con el player sin poder modificarla. Puedes revocar el envío.",
       uploadTitle: "Acceso anticipado",
       uploadBody: "Reserva tu plaza: te escribimos cuando abramos la beta.",
+      uploadOptional: "Si tienes la rutina a mano, súbela: nos ayuda a prepararnos. Si no, basta con el email.",
       uploadWarn: "Antes de subir tu rutina, si quieres, tapa o borra nombres y datos personales (tuyos, del entrenador, de clientes). Máximo 10 MB por archivo.",
-      uploadFrameTitle: "Formulario para mandarnos tu rutina",
+      uploadSafe: "Tu rutina y tu email: no los publicamos, no los compartimos con nadie y los borramos si nos lo pides.",
+      uploadLoading: "Cargando el formulario…",
+      uploadFrameTitle: "Formulario para reservar el acceso anticipado",
       uploadFallbackPre: "Si el formulario no carga,",
       uploadFallbackLink: "ábrelo aquí",
       privacyTitle: "Privacidad",
-      privacyCollect: "Qué recogemos: tu rutina (archivo o foto) y el email que dejas en el formulario para mandárnosla. El formulario está en Tally, un servicio de terceros, no nuestro.",
-      privacyPurpose: "Para qué sirven: el email, para avisarte cuando puedas probar WorkoutPlayer; la rutina, solo para probar y mejorar la conversión de rutina a entreno. Para probar la conversión, tu rutina pasa por un servicio de IA de terceros (Anthropic), que no la usa para entrenar sus modelos. Tu email y tu rutina no los publicamos, no los compartimos con nadie y no los usamos para nada más.",
+      privacyControllerPre: "Responsable del tratamiento: Blinko S.r.l.s. — N.º IVA 04139060364 — Via Ezio Gibellini 8, 41043 Formigine (MO), Italia — contacto:",
+      privacyCollect: "Qué recogemos: el email que dejas en el formulario y, si la subes, tu rutina (archivo o foto). El formulario está en Tally, un servicio de terceros, no nuestro.",
+      privacyPurpose: "Para qué sirven: el email, para avisarte cuando puedas probar WorkoutPlayer; la rutina, solo para probar y mejorar la conversión de rutina a entrenamiento. Para probar la conversión, tu rutina pasa por un servicio de IA de terceros (Anthropic), que no la usa para entrenar sus modelos. Tu email y tu rutina no los publicamos, no los compartimos con nadie y no los usamos para nada más.",
       privacyDeletePre: "Lo borramos todo cuando ya no nos hace falta, o antes si nos lo pides. ¿Quieres que borremos tu rutina y tu email? Escribe a",
       privacyGoat: "Visitas: contamos las visitas y los clics de forma anónima con GoatCounter, un servicio de terceros, sin cookies y sin datos personales.",
       consentLabel: "Estadísticas",
@@ -845,54 +958,59 @@
       consentPrefs: "Preferencias de cookies",
       privacyAnalytics: "Estadísticas: usamos Google Analytics 4 solo si lo aceptas, para contar visitas y clics de forma agregada. Guarda las cookies _ga y {ga4} durante 13 meses como máximo. Nada de publicidad ni de perfiles. Google puede tratar los datos en Estados Unidos, dentro del EU-US Data Privacy Framework. Puedes cambiar de opinión cuando quieras desde «Preferencias de cookies», aquí debajo.",
       daSapereTitle: "Para que lo sepas",
-      disclaimerAI: "Los entrenos de esta página los genera una IA a partir de la rutina de tu entrenador: no sustituyen el consejo de un profesional de la salud.",
+      disclaimerAI: "Los entrenamientos de esta página los genera una IA a partir de la rutina de tu entrenador: no sustituyen el consejo de un profesional de la salud.",
       disclaimerDemo: "La rutina que se ve en la demo de arriba es de ejemplo: ningún nombre, ningún dato real.",
       metaTitle: "WorkoutPlayer — convierte tu rutina en un entrenamiento guiado",
-      metaDescription: "Sube la rutina de tu entrenador: se convierte en un entreno guiado con temporizador, series, descansos y notas. Prueba el player en directo."
+      metaDescription: "Sube la rutina de tu entrenador: se convierte en un entrenamiento guiado con temporizador, series, descansos y notas. Prueba el player en directo."
     },
     de: {
-      topEyebrow: "Bedarfstest",
+      skipLink: "Zum Inhalt springen",
       langLabel: "Sprache",
-      heroEyebrow: "Vom Trainingsplan zum geführten Workout",
+      heroStatus: "Beta startet bald",
       heroTitle: "Mach aus deinem Trainingsplan\nein geführtes Workout.",
-      heroLede: "Du lädst deinen Trainingsplan hoch — als PDF, Excel-Datei oder Foto der ausgedruckten Seite — und bekommst ein Workout mit Sätzen, Pausen, Timer und Hinweisen, das du direkt auf deinem Handy nutzt.",
-      heroFine: "Kostenlose Vorschau der ersten 2 Übungen. Keine Registrierung.",
+      heroLede: "Du lädst deinen Trainingsplan hoch — als PDF, Excel-Datei oder Foto des Plans auf Papier — und bekommst ein Workout mit Sätzen, Pausen, Timer und Hinweisen, das du direkt auf deinem Handy nutzt.",
+      heroFine: "Zum Start: kostenlose Vorschau der ersten 2 Übungen, ohne Registrierung.",
       step1: "Plan fotografieren oder hochladen",
       step2: "Geführt trainieren, Satz für Satz",
       step1Alt: "Drei Planformate als Fächer: eine PDF-Seite, eine Tabelle und das Foto eines handgeschriebenen Plans, „Training heute“, der mit Kniebeugen 4x8 mit 75 kg beginnt.",
       step2Alt: "Der Player bei der Langhantel-Kniebeuge: Satz 2 von 4, 8 Wiederholungen, 75 kg.",
       priceValue: "4,99 €",
-      priceDesc: "Inkl. MwSt., pro hochgeladenem Plan.",
+      priceDesc: "Zum Start · inkl. MwSt., pro hochgeladenem Plan.",
+      priceFree: "Reservieren ist kostenlos.",
       ctaUpload: "Vorab-Zugang reservieren",
-      ctaFullscreen: "Demo im Vollbild öffnen ↗",
-      demoEyebrow: "Live-Demo",
+      ctaDemo: "Probier die Demo",
+      why1Lead: "Keine erfundenen Zahlen.",
+      why1Text: "Ist ein Wert im Plan unklar, siehst du ihn markiert.",
+      why2Lead: "Funktioniert auch ohne Netz.",
+      why2Text: "Im Studio läuft deine Einheit auch ohne Empfang weiter.",
+      why3Lead: "Stimme und Pieptöne führen dich.",
+      why3Text: "Du folgst Zeiten und Pausen, ohne ständig aufs Display zu schauen.",
       demoTitle: "Probier es jetzt aus",
-      demoBody: "Das ist ein Beispielplan, schon umgewandelt. Wähl eine Einheit und folge dem Training wie im Studio: Timer, Sätze, Pausen und Hinweise deines Trainers.",
-      demoLink: "Im Vollbild öffnen ↗",
+      demoBody: "Das ist ein Beispielplan, schon umgewandelt. Wähl eine Einheit und folge dem Workout wie im Studio: Timer, Sätze, Pausen und Hinweise deines Trainers.",
+      demoLink: "Im Vollbild öffnen",
       demoNote: "Beispielplan, keine echten Daten.",
       demoFrameTitle: "Live-Demo des WorkoutPlayer-Players",
-      audEyebrow: "Nicht nur zum Alleintrainieren",
-      audTitle: "Vier Wege, es zu nutzen.",
+      demoShotAlt: "Demo im Vollbild öffnen: der Startbildschirm mit den drei Einheiten des Beispielplans.",
+      demoShotHint: "Zum Ausprobieren tippen",
+      audTitle: "Zwei Wege, es zu nutzen.",
+      audLede: "Nicht nur zum Alleintrainieren.",
       aud1Title: "Du trainierst mit einem Plan",
       aud1Body: "Hast du einen Plan von einem Trainer, einem Physio oder einem Osteopathen? Lade ihn hoch und starte sofort, Schritt für Schritt geführt — in der Sprache, in der er geschrieben ist.",
-      aud2Title: "Personal Trainer",
-      aud2Body: "Du schreibst den Plan für einen Kunden und lädst ihn selbst hoch.",
-      aud2Case: "Du zahlst, du schickst ihn: dein Kunde führt ihn mit dem Player aus, ohne ihn ändern zu können.",
-      aud3Title: "Physiotherapeuten",
-      aud3Body: "Der Reha-Plan wird zu einem geführten Workout, mit Zeiten und Sätzen immer unter Kontrolle.",
-      aud3Case: "Du zahlst, du schickst ihn an deinen Patienten: er folgt ihm, nur du kannst ihn ändern.",
-      aud4Title: "Osteopathen",
-      aud4Body: "Die Übungen, die du in der Sitzung mitgibst, werden zu einem geführten Workout für zu Hause.",
-      aud4Case: "Du zahlst, du schickst ihn an deinen Patienten: gleiche Logik, gleicher Player.",
-      uploadEyebrow: "Bald verfügbar",
+      aud2Title: "Personal Trainer, Physiotherapeuten und Osteopathen",
+      aud2Body: "Du schreibst den Plan für einen Kunden oder Patienten und lädst ihn selbst hoch: ein Studioprogramm, ein Reha-Plan oder Übungen für zu Hause werden zu einem geführten Workout.",
+      aud2Case: "Du zahlst und schickst ihn deinem Kunden oder Patienten, der ihn mit dem Player ausführt, ohne ihn ändern zu können. Den Zugriff kannst du widerrufen.",
       uploadTitle: "Vorab-Zugang",
       uploadBody: "Sichere dir deinen Platz: Wir schreiben dir, sobald die Beta startet.",
+      uploadOptional: "Hast du deinen Plan zur Hand, lade ihn hoch: Das hilft uns bei der Vorbereitung. Sonst reicht deine E-Mail.",
       uploadWarn: "Deck vor dem Hochladen, wenn du willst, Namen und persönliche Daten ab oder lösch sie (deine, die deines Trainers, die von Kunden). Maximal 10 MB pro Datei.",
-      uploadFrameTitle: "Formular, um uns deinen Plan zu schicken",
+      uploadSafe: "Plan und E-Mail: Wir veröffentlichen sie nicht, geben sie an niemanden weiter und löschen sie, wenn du uns darum bittest.",
+      uploadLoading: "Formular wird geladen…",
+      uploadFrameTitle: "Formular für den Vorab-Zugang",
       uploadFallbackPre: "Falls das Formular nicht lädt,",
       uploadFallbackLink: "öffne es hier",
       privacyTitle: "Datenschutz",
-      privacyCollect: "Was wir erfassen: deinen Plan (Datei oder Foto) und die E-Mail-Adresse, die du im Formular angibst, mit dem du ihn uns schickst. Das Formular läuft über Tally, einen Dienst eines Drittanbieters, nicht unseren.",
+      privacyControllerPre: "Verantwortlicher: Blinko S.r.l.s. — USt-IdNr. 04139060364 — Via Ezio Gibellini 8, 41043 Formigine (MO), Italien — Kontakt:",
+      privacyCollect: "Was wir erfassen: die E-Mail-Adresse, die du im Formular angibst, und, falls du ihn hochlädst, deinen Plan (Datei oder Foto). Das Formular läuft über Tally, einen Dienst eines Drittanbieters, nicht unseren.",
       privacyPurpose: "Wofür: deine E-Mail, um dir Bescheid zu geben, wenn du WorkoutPlayer ausprobieren kannst; dein Plan nur, um die Umwandlung vom Plan ins Workout zu testen und zu verbessern. Zum Testen der Umwandlung läuft dein Plan über einen KI-Dienst eines Drittanbieters (Anthropic), der ihn nicht zum Trainieren seiner Modelle nutzt. Wir veröffentlichen weder deine E-Mail noch deinen Plan, geben sie an niemanden weiter und nutzen sie für nichts anderes.",
       privacyDeletePre: "Wir löschen alles, sobald wir es nicht mehr brauchen, oder früher, wenn du uns darum bittest. Plan und E-Mail löschen lassen? Schreib an",
       privacyGoat: "Besuche: Wir zählen Besuche und Klicks anonym mit GoatCounter, einem Dienst eines Drittanbieters, ohne Cookies und ohne personenbezogene Daten.",
@@ -947,7 +1065,8 @@
       var key = el.getAttribute("data-i18n");
       var val = dict[key] != null ? dict[key] : fallback[key];
       if (val == null) return;
-      el.innerHTML = escapeHtml(val.replace("{ga4}", GA.cookie())).split("\n").join("<br>");
+      // the space before <br> keeps the words apart where the CSS hides the line break (the title from 900 px)
+      el.innerHTML = escapeHtml(val.replace("{ga4}", GA.cookie())).split("\n").join(" <br>");
     });
     document.querySelectorAll("[data-i18n-title]").forEach(function (el) {
       var key = el.getAttribute("data-i18n-title");
@@ -979,13 +1098,25 @@
         b.setAttribute("aria-current", b.getAttribute("data-lang") === lang ? "true" : "false");
       });
     }
-    var demoFile = "demo-" + lang + ".html";
-    document.querySelectorAll("[data-demo-src]").forEach(function (el) { el.src = demoFile; });
-    document.querySelectorAll("[data-demo-link]").forEach(function (el) { el.href = demoFile; });
+    demoFile = "demo-" + lang + ".html";
+    document.querySelectorAll("[data-demo-link], [data-demo-shot]").forEach(function (el) { el.href = demoFile; });
+    demoFrame();
     try { localStorage.setItem("wp-lang", lang); } catch (e) {}
     GA.lang(lang);
+    UPLOAD.lang(lang);
     drawStepsArrow();
   }
+
+  /* The live demo (the iframe) only from 600 px; below, the phone shows the still image of the demo home, so a phone never
+     downloads the demo. Rechecked when the width crosses 600 px (a phone turned sideways). */
+  var WIDE = matchMedia("(min-width: 600px)"), demoFile = null;
+  function demoFrame() {
+    document.querySelectorAll("[data-demo-src]").forEach(function (el) {
+      if (!WIDE.matches) el.removeAttribute("src");
+      else if (demoFile && el.getAttribute("src") !== demoFile) el.src = demoFile;
+    });
+  }
+  if (WIDE.addEventListener) WIDE.addEventListener("change", demoFrame);
 
   function setLang(lang, updateUrl) {
     if (SUPPORTED.indexOf(lang) === -1) return;
@@ -1060,16 +1191,18 @@
     addEventListener("resize", revealStepsArrow);
   })();
 
-  /* ---------- Statistiche: Google Analytics 4 solo con il consenso (modalità di consenso v2 «base») ----------
-     Senza GA_MEASUREMENT_ID (in testa alla pagina) non succede niente. Con l'ID:
-     - il consenso parte negato per tutto (analytics_storage, ad_storage, ad_user_data, ad_personalization) e gtag.js si carica
-       solo dopo «Accetta»: prima nessuna richiesta a Google. Niente Google Signals né personalizzazione degli annunci; cookie
-       di 13 mesi (390 giorni) che non si allungano a ogni visita;
-     - il banner compare al primo scorrimento oltre 160 px o al primo tocco su un pulsante o un link, mai al caricamento sopra
-       «Prenota»; «Preferenze cookie» nel piè di pagina lo riapre. La scelta vale 6 mesi (localStorage); ritirare il consenso
-       lo nega, spegne il tag e cancella i cookie _ga*;
-     - la pagina vista automatica e ogni evento portano page_lang (aggiornato se cambi lingua); gli eventi (cta_prenota,
-       cta_demo con cta_position hero | demo, demo_interazione, iscrizione) partono dagli agganci comuni più sotto. */
+  /* ---------- Analytics: Google Analytics 4 only with consent (consent mode v2 "basic") ----------
+     Without GA_MEASUREMENT_ID (at the top of the page) nothing happens. With the ID:
+     - consent starts denied for everything (analytics_storage, ad_storage, ad_user_data, ad_personalization) and gtag.js loads
+       only after «Accetta»: no request to Google before that. No Google Signals, no ad personalisation; 13-month cookies
+       (390 days) that are not extended on every visit;
+     - the banner appears on the first scroll past 160 px or the first tap on a button or link (not the one on «Prenota», nor the
+       jump to the form that follows it), never on load above «Prenota», and it never covers the Tally form (it steps aside
+       while the form passes under it); «Preferenze cookie» in the footer reopens it. The choice lasts 6 months (localStorage);
+       withdrawing consent denies it, switches the tag off and deletes the _ga* cookies;
+     - the automatic page view and every event carry page_lang (updated if you change language); the events (cta_prenota,
+       cta_demo with cta_position hero | demo, demo_interazione, iscrizione, cta_prenota_demo_bar) fire from the shared hooks
+       further down. */
   var GA = (function () {
     var id = String(GA_MEASUREMENT_ID || "").trim();
     if (!/^G-[A-Z0-9]{4,}$/.test(id)) return { lang: function () {}, cookie: function () { return "_ga_…"; }, track: function () { return false; } };
@@ -1118,9 +1251,24 @@
       clearCookies();
     }
     function track(name, params) { if (!on) return false; gtag("event", name, params || {}); return true; }   // solo col consenso
+    // The banner never covers the Tally form: when the form passes under it, it steps aside (.away: invisible and out of the
+    // Tab order) and comes back once the form has gone by. Rechecked on scroll, on resize and when the form changes height
+    // (Tally makes it taller when it arrives).
+    var form = document.querySelector("#manda-scheda .upload-embed"), queued = false;
+    function place() {
+      queued = false;
+      if (banner.hidden || !form) return;
+      var f = form.getBoundingClientRect(), b = banner.getBoundingClientRect();
+      banner.classList.toggle("away", f.height > 0 && f.top < b.bottom && f.bottom > b.top && f.left < b.right && f.right > b.left);
+    }
+    function queue() { if (!queued) { queued = true; requestAnimationFrame(place); } }
+    addEventListener("scroll", queue, { passive: true });
+    addEventListener("resize", queue);
+    if (form && "ResizeObserver" in window) new ResizeObserver(queue).observe(form);
     function show() {
       if (!banner.hidden) return;
       banner.hidden = false;
+      place();
       document.body.style.paddingBottom = banner.offsetHeight + 16 + "px";   // il fondo della pagina resta raggiungibile
     }
     function hide() { banner.hidden = true; document.body.style.paddingBottom = ""; }
@@ -1143,8 +1291,15 @@
     else {
       clearCookies();   // senza un consenso valido non restano cookie _ga*
       if (scelta === null) {
-        var onScroll = function () { if (window.scrollY > 160) arm(); };
-        var onTap = function (e) { if (e.target.closest && e.target.closest("a, button") && !e.target.closest("#consent")) arm(); };
+        // the tap on «Prenota» does not bring it up, nor does the jump to the form that follows (scrolling does not count for one
+        // second): it appears on the next real scroll, and stays aside while the form passes under it
+        var quietUntil = 0;
+        var onScroll = function () { if (window.scrollY > 160 && Date.now() > quietUntil) arm(); };
+        var onTap = function (e) {
+          if (!e.target.closest || !e.target.closest("a, button") || e.target.closest("#consent")) return;
+          if (e.target.closest('a[href="#manda-scheda"]')) { quietUntil = Date.now() + 1000; return; }
+          arm();
+        };
         var arm = function () {
           removeEventListener("scroll", onScroll);
           document.removeEventListener("click", onTap, true);
@@ -1194,7 +1349,54 @@
     };
   })();
 
-  /* ---------- Eventi: un solo aggancio per clic, demo e modulo; GoatCounter sempre, Google Analytics solo col consenso ---------- */
+  /* ---------- Early access form: the one for the language shown ----------
+     UPLOAD_FORM_URLS[language], otherwise UPLOAD_FORM_URL (at the top of the page). render() calls it on every language change:
+     if the form is the same nothing happens; if it changes, the iframe is replaced with a new one (Tally sets up an iframe only
+     once) and "Carico il modulo…" shows again until the new form has arrived. Without a form for the language the section is
+     hidden. The loader is Tally's official one (tally.so/widgets/embed.js; if it does not load, the iframe gets its address
+     directly): it runs with the first language, once the iframe already has its data-tally-src. */
+  var UPLOAD = (function () {
+    var sec = document.getElementById("manda-scheda"), wait = sec.querySelector(".upload-wait"), current = null, tallyFailed = false;
+    var TALLY_JS = "https://tally.so/widgets/embed.js";
+    function formId(url) { var m = /^https:\/\/(?:www\.)?tally\.so\/(?:r|embed)\/([\w-]+)/.exec(String(url || "").trim()); return m && m[1]; }
+    function fill() { document.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function (f) { f.src = f.dataset.tallySrc; }); }
+    function loadTally() {
+      if (typeof Tally !== "undefined") Tally.loadEmbeds();
+      else if (tallyFailed) fill();
+      else if (!document.querySelector('script[src="' + TALLY_JS + '"]')) {
+        var s = document.createElement("script");
+        s.src = TALLY_JS;
+        s.onload = loadTally;
+        s.onerror = function () { tallyFailed = true; fill(); };
+        document.body.appendChild(s);
+      }
+    }
+    function watch(frame) { frame.addEventListener("load", function () { if (frame.getAttribute("src")) wait.hidden = true; }); }
+    watch(sec.querySelector("iframe"));
+    return {
+      lang: function (lang) {
+        var id = formId(UPLOAD_FORM_URLS[lang]) || formId(UPLOAD_FORM_URL);
+        sec.hidden = !id;
+        if (!id || id === current) return;
+        var old = sec.querySelector(".upload-embed iframe"), frame = old;
+        if (current) {   // form change: a new iframe with the same attributes (title included) but none of those set by Tally
+          frame = document.createElement("iframe");
+          ["loading", "width", "height", "frameborder", "marginheight", "marginwidth", "data-i18n-title", "title"].forEach(function (a) { if (old.hasAttribute(a)) frame.setAttribute(a, old.getAttribute(a)); });
+          watch(frame);
+          old.replaceWith(frame);
+        }
+        current = id;
+        wait.hidden = false;
+        frame.setAttribute("data-tally-src", "https://tally.so/embed/" + id + "?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1");
+        sec.querySelector("[data-upload-link]").href = "https://tally.so/r/" + id;
+        loadTally();
+      }
+    };
+  })();
+
+  /* ---------- Events: one hook each for clicks, demo and form; GoatCounter always, Google Analytics only with consent ----------
+     «Prova la demo» (hero) leads to the demo section; «Aprila a schermo intero» (in the section) opens the demo in this tab.
+     Event names unchanged: cta-demo-hero / cta_demo hero and cta-demo-sezione / cta_demo demo. */
   (function () {
     document.addEventListener("click", function (e) {
       var a = e.target.closest && e.target.closest("a");
@@ -1202,22 +1404,38 @@
       if (a.matches('.offer a[href="#manda-scheda"]')) {
         GA.track("cta_prenota");
         GC.count("cta-prenota", "Clic su «Prenota l'accesso anticipato»");
+      } else if (a.matches('.offer a[href="#demo"]')) {
+        GA.track("cta_demo", { cta_position: "hero" });
+        GC.count("cta-demo-hero", "Click on «Prova la demo» (hero)");
       } else if (a.hasAttribute("data-demo-link")) {
-        var hero = !!a.closest(".offer");
-        GA.track("cta_demo", { cta_position: hero ? "hero" : "demo" });
-        GC.count(hero ? "cta-demo-hero" : "cta-demo-sezione", hero ? "Clic su «Apri la demo a schermo intero» (in alto)" : "Clic su «Aprila a schermo intero» (sezione demo)");
+        GA.track("cta_demo", { cta_position: "demo" });
+        GC.count("cta-demo-sezione", "Click on «Aprila a schermo intero» (demo section)");
+      } else if (a.hasAttribute("data-demo-shot")) {
+        demoTouched("Tap on the demo image (phone)");   // below 600 px the still image is the demo
       }
     });
-    // primo tocco dentro la demo, una volta per pagina (per GA la prima volta col consenso); la demo è della stessa origine
+    // first touch of the demo, once per page (for GA, the first time with consent): inside the iframe (the demo has the same
+    // origin) or, below 600 px, on the still image that opens it
     var frame = document.querySelector(".demo iframe"), demoGA = false, demoGC = false;
+    function demoTouched(title) {
+      if (!demoGC) { demoGC = true; GC.count("demo-interazione", title); }
+      if (!demoGA) demoGA = GA.track("demo_interazione");
+    }
     if (frame) frame.addEventListener("load", function () {
       try {
-        frame.contentDocument.addEventListener("pointerdown", function () {
-          if (!demoGC) { demoGC = true; GC.count("demo-interazione", "Primo tocco dentro la demo"); }
-          if (!demoGA) demoGA = GA.track("demo_interazione");
-        }, true);
+        frame.contentDocument.addEventListener("pointerdown", function () { demoTouched("First touch inside the demo"); }, true);
       } catch (err) {}
     });
+    // «Prenota» in the bar of the fullscreen demo arrives here with ?from=demo-bar: counted once (GoatCounter always, GA only if
+    // consent was already given), then the parameter leaves the address with history.replaceState, so a reload or a shared
+    // link does not count it again. The page view keeps its path (/<lang> on GoatCounter).
+    var here = new URL(location.href);
+    if (here.searchParams.get("from") === "demo-bar") {
+      GA.track("cta_prenota_demo_bar");
+      GC.count("cta-prenota-demo-bar", "Click on «Prenota l'accesso anticipato» (fullscreen demo bar)");
+      here.searchParams.delete("from");
+      history.replaceState(history.state, "", here);
+    }
     // modulo inviato: Tally manda «Tally.FormSubmitted» con postMessage (developers.tally.so/widgets/events); solo da tally.so,
     // e nessun dato del modulo va alle statistiche
     addEventListener("message", function (e) {
@@ -1226,6 +1444,15 @@
       GA.track("iscrizione");
       GC.count("iscrizione", "Modulo di accesso anticipato inviato");
     });
+  })();
+
+  /* ---------- Privacy notice: collapsed by default; a link to #privacy (the banner's «Informativa», a shared URL) opens it ---------- */
+  (function () {
+    var notice = document.getElementById("privacy");
+    function openIfTarget() { if (location.hash === "#privacy") notice.open = true; }
+    document.addEventListener("click", function (e) { if (e.target.closest && e.target.closest('a[href="#privacy"]')) notice.open = true; });
+    addEventListener("hashchange", openIfTarget);
+    openIfTarget();
   })();
 
   render(detectLang());
